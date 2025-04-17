@@ -21,7 +21,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
             <Shield className="h-8 w-8 text-security" />
-            <span className="font-bold text-lg md:text-xl text-security">Mạng Lưới An Toàn Việt</span>
+            <span className="font-bold text-lg md:text-xl text-security">Take Them Down</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-gray-700 hover:text-security font-medium transition-colors">
@@ -76,10 +76,10 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
               <Shield className="h-6 w-6 text-security" />
-              <span className="font-bold">Mạng Lưới An Toàn Việt</span>
+              <span className="font-bold">Take Them Down</span>
             </div>
             <div className="text-sm text-gray-500">
-              &copy; {new Date().getFullYear()} Mạng Lưới An Toàn Việt - Dự án phi lợi nhuận
+              &copy; {new Date().getFullYear()} Take Them Down - Dự án phi lợi nhuận
             </div>
           </div>
         </div>

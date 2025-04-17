@@ -1,5 +1,5 @@
 
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, Facebook } from "lucide-react";
 
 const ContactSection = () => {
   return (
@@ -33,8 +33,19 @@ const ContactSection = () => {
               <h3 className="text-xl font-bold mb-4">Thông tin liên hệ</h3>
               <div className="flex items-center gap-3 mb-4">
                 <Mail className="h-5 w-5 text-security" />
-                <a href="mailto:lienhe@mangluoiantoanviet.com" className="text-gray-700 hover:text-security">
-                  lienhe@mangluoiantoanviet.com
+                <a href="mailto:takethemdown.help@gmail.com" className="text-gray-700 hover:text-security">
+                  takethemdown.help@gmail.com
+                </a>
+              </div>
+              <div className="flex items-center gap-3 mb-4">
+                <Facebook className="h-5 w-5 text-security" />
+                <a 
+                  href="https://www.facebook.com/takethemdown.vn/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-gray-700 hover:text-security"
+                >
+                  Facebook Page
                 </a>
               </div>
               <div className="flex items-center gap-3">
