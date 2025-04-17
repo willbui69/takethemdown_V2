@@ -1,14 +1,32 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://takethemdown.com.vn/sitemap.xml
+
+# Rules
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1  
 
-User-agent: Twitterbot
+User-agent: Yandex
 Allow: /
+Crawl-delay: 1
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 1
+
+User-agent: Cốc Cốc Bot
+Allow: /
+Crawl-delay: 1
 
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+User-agent: Twitterbot
 Allow: /
