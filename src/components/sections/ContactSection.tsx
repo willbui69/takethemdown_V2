@@ -1,4 +1,3 @@
-
 import { Mail, Phone, Facebook } from "lucide-react";
 
 const ContactSection = () => {
@@ -16,12 +15,11 @@ const ContactSection = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
               <h3 className="text-xl font-bold mb-4">Gửi yêu cầu hỗ trợ</h3>
-              {/* Jotform iframe placeholder - replace with actual Jotform embed code */}
               <iframe 
                 id="jotform-iframe"
                 title="Biểu mẫu yêu cầu hỗ trợ"
                 className="w-full h-[500px] border-0"
-                src="https://form.jotform.com/your-jotform-id-here"
+                src="https://submit.jotform.com/251084322682454"
               >
                 Loading...
               </iframe>
