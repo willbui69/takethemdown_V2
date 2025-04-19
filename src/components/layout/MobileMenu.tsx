@@ -28,6 +28,10 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
   
   const scrollToSection = (id: string) => {
     onClose();
+    if (window.location.pathname !== '/') {
+      window.location.href = `/#${id}`;
+      return;
+    }
     setTimeout(() => {
       const element = document.getElementById(id);
       element?.scrollIntoView({ behavior: 'smooth' });
@@ -63,6 +67,15 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                 onClick={onClose}
               >
                 Trang chủ
+              </Link>
+            </li>
+            <li>
+              <Link 
+                to="/blog" 
+                className="block py-2 text-gray-700 hover:text-security font-medium"
+                onClick={onClose}
+              >
+                Blog
               </Link>
             </li>
             <li>

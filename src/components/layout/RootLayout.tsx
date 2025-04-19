@@ -1,4 +1,3 @@
-
 import { ReactNode, useState } from "react";
 import { Link } from "react-router-dom";
 import { Shield, Menu } from "lucide-react";
@@ -12,6 +11,10 @@ const RootLayout = ({ children }: RootLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const scrollToSection = (id: string) => {
+    if (window.location.pathname !== '/') {
+      window.location.href = `/#${id}`;
+      return;
+    }
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -26,6 +29,9 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-gray-700 hover:text-security font-medium transition-colors">
               Trang chủ
+            </Link>
+            <Link to="/blog" className="text-gray-700 hover:text-security font-medium transition-colors">
+              Blog
             </Link>
             <button 
               onClick={() => scrollToSection("services")} 
