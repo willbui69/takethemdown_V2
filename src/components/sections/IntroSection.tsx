@@ -9,7 +9,7 @@ const IntroSection = () => {
         <AnimatedElement className="text-center max-w-3xl mx-auto mb-12">
           <h2 className="text-3xl font-bold mb-4">Về Dự Án Của Chúng Tôi</h2>
           <p className="text-gray-600">
-            Mạng Lưới An Toàn Việt là dự án phi lợi nhuận, được tạo ra với sứ mệnh bảo vệ người dùng 
+            Take Them Down là dự án phi lợi nhuận, được tạo ra với sứ mệnh bảo vệ người dùng 
             internet và doanh nghiệp Việt Nam khỏi các mối đe dọa trên không gian mạng.
           </p>
         </AnimatedElement>
