@@ -48,7 +48,7 @@ const ContactSection = () => {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-5 w-5 text-security" />
-                <span className="text-gray-700">Chỉ tiếp nhận qua email và form</span>
+                <span className="text-gray-700">Chỉ tiếp nhận qua email, form và Facebook page</span>
               </div>
             </div>
             
