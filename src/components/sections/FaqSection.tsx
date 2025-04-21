@@ -11,7 +11,7 @@ const FaqSection = () => {
   const faqs: FaqItem[] = [
     {
       question: "Dịch vụ có miễn phí không?",
-      answer: "Có, tất cả dịch vụ của Mạng Lưới An Toàn Việt đều được cung cấp miễn phí. Chúng tôi là dự án phi lợi nhuận hoạt động với mục tiêu vì cộng đồng, giúp bảo vệ không gian mạng Việt Nam được an toàn hơn."
+      answer: "Có, tất cả dịch vụ của Take Them Down đều được cung cấp miễn phí. Chúng tôi là dự án phi lợi nhuận hoạt động với mục tiêu vì cộng đồng, giúp bảo vệ không gian mạng Việt Nam được an toàn hơn."
     },
     {
       question: "Có đảm bảo bảo mật thông tin không?",
@@ -83,3 +83,4 @@ const FaqSection = () => {
 };
 
 export default FaqSection;
+
