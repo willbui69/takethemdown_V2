@@ -491,7 +491,7 @@ const vietnamLocalContacts: LocalContact[] = [
         phone: "(0220) 3891 888",
         email: "stttt@haiduong.gov.vn",
         reportLink: "Không có",
-        address: "4 Thống Nhất, P. Lê Thanh Nghị, TP. Hải Dương, Hải Dương"
+        address: "4 Thống Nhất, P. Lê Thanh Nghị, TP. Hải Dương, Hải Dư��ng"
       }
     ]
   },
@@ -765,4 +765,116 @@ const vietnamLocalContacts: LocalContact[] = [
     province: "Ninh Bình",
     channels: [
       {
-        name: "Công an tỉnh Ninh Bình (tr
+        name: "Công an tỉnh Ninh Bình (trực ban)",
+        phone: "(0229) 3871 134",
+        email: "Không có thông tin",
+        reportLink: "Không có",
+        address: "Đường Trần Hưng Đạo, P. Đông Thành, TP. Ninh Bình, Ninh Bình"
+      },
+      {
+        name: "Sở TT&TT Ninh Bình",
+        phone: "(0229) 3871 868",
+        email: "stttt@ninhbinh.gov.vn",
+        reportLink: "Không có",
+        address: "40 Đường Phạm Sư Mệnh, P. Đông Thành, TP. Ninh Bình, Ninh Bình"
+      }
+    ]
+  },
+  {
+    province: "Phú Thọ",
+    channels: [
+      {
+        name: "Công an tỉnh Phú Thọ (trực ban)",
+        phone: "(0210) 3813 838",
+        email: "Không có thông tin",
+        reportLink: "Không có",
+        address: "24 Nguyễn Tất Thành, P. Tân Dân, TP. Việt Trì, Phú Thọ"
+      },
+      {
+        name: "Sở TT&TT Phú Thọ",
+        phone: "(0210) 3846 394",
+        email: "stttt@phutho.gov.vn",
+        reportLink: "Không có",
+        address: "1 Đại lộ Hùng Vương, P. Gia Cẩm, TP. Việt Trì, Phú Thọ"
+      }
+    ]
+  },
+  {
+    province: "Phú Yên",
+    channels: [
+      {
+        name: "Công an tỉnh Phú Yên (trực ban)",
+        phone: "(0257) 3823 888",
+        email: "Không có thông tin",
+        reportLink: "Không có",
+        address: "159 Lê Duẩn, P. 6, TP. Tuy Hòa, Phú Yên"
+      },
+      {
+        name: "Sở TT&TT Phú Yên",
+        phone: "(0257) 3841 314",
+        email: "stttt@phuyen.gov.vn",
+        reportLink: "Không có",
+        address: "92 Lê Duẩn, P. 7, TP. Tuy Hòa, Phú Yên"
+      }
+    ]
+  },
+  {
+    province: "Quảng Bình",
+    channels: [
+      {
+        name: "Công an tỉnh Quảng Bình (trực ban)",
+        phone: "(0232) 3822 394",
+        email: "Không có thông tin",
+        reportLink: "Không có",
+        address: "65 Quang Trung, TP. Đồng Hới, Quảng Bình"
+      },
+      {
+        name: "Sở TT&TT Quảng Bình",
+        phone: "(0232) 3828 888",
+        email: "stttt@quangbinh.gov.vn",
+        reportLink: "Không có",
+        address: "14 Võ Duy Dương, P. Nam Lý, TP. Đồng Hới, Quảng Bình"
+      }
+    ]
+  },
+  {
+    province: "Quảng Nam",
+    channels: [
+      {
+        name: "Công an tỉnh Quảng Nam (trực ban)",
+        phone: "(0235) 3852 589",
+        email: "Không có thông tin",
+        reportLink: "Không có",
+        address: "19 Trần Hưng Đạo, TP. Tam Kỳ, Quảng Nam"
+      },
+      {
+        name: "Sở TT&TT Quảng Nam",
+        phone: "(0235) 3852 500",
+        email: "stttt@quangnam.gov.vn",
+        reportLink: "Không có",
+        address: "115 Hùng Vương, TP. Tam Kỳ, Quảng Nam"
+      }
+    ]
+  },
+  {
+    province: "Quảng Ngãi",
+    channels: [
+      {
+        name: "Công an tỉnh Quảng Ngãi (trực ban)",
+        phone: "(0255) 3711 113",
+        email: "Không có thông tin",
+        reportLink: "Không có",
+        address: "102 Hùng Vương, P. Trần Phú, TP. Quảng Ngãi, Quảng Ngãi"
+      },
+      {
+        name: "Sở TT&TT Quảng Ngãi",
+        phone: "(0255) 3828 828",
+        email: "stttt@quangngai.gov.vn",
+        reportLink: "Không có",
+        address: "62 Hùng Vương, P. Trần Phú, TP. Quảng Ngãi, Quảng Ngãi"
+      }
+    ]
+  }
+];
+
+export default vietnamLocalContacts;
