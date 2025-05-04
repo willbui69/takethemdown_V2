@@ -979,6 +979,595 @@ const ReportingResourcesSection = () => {
           address: "25 Trần Hưng Đạo, P. Vĩnh Thanh Vân, TP. Rạch Giá, Kiên Giang"
         }
       ]
+    },
+    {
+      province: "Kon Tum",
+      channels: [
+        {
+          name: "Công an tỉnh Kon Tum (trực ban)",
+          phone: "(0260) 3862 260",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "294 Bà Triệu, P. Quang Trung, TP. Kon Tum, Kon Tum"
+        },
+        {
+          name: "Sở TT&TT Kon Tum",
+          phone: "(0260) 3911 888",
+          email: "stttt@kontum.gov.vn",
+          reportLink: "Không có",
+          address: "112 Trần Phú, TP. Kon Tum, Kon Tum"
+        }
+      ]
+    },
+    {
+      province: "Lai Châu",
+      channels: [
+        {
+          name: "Công an tỉnh Lai Châu (trực ban)",
+          phone: "(0213) 3876 513",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Phường Đông Phong, TP. Lai Châu, Lai Châu"
+        },
+        {
+          name: "Sở TT&TT Lai Châu",
+          phone: "(0213) 3876 688",
+          email: "stttt@laichau.gov.vn",
+          reportLink: "Không có",
+          address: "Tổ 23, P. Tân Phong, TP. Lai Châu, Lai Châu"
+        }
+      ]
+    },
+    {
+      province: "Lâm Đồng",
+      channels: [
+        {
+          name: "Công an tỉnh Lâm Đồng (trực ban)",
+          phone: "(0263) 3822 164",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "01 Trần Quốc Toản, P. 10, TP. Đà Lạt, Lâm Đồng"
+        },
+        {
+          name: "Sở TT&TT Lâm Đồng",
+          phone: "(0263) 3822 000",
+          email: "stttt@lamdong.gov.vn",
+          reportLink: "Không có",
+          address: "02 Trần Quốc Toản, P. 10, TP. Đà Lạt, Lâm Đồng"
+        }
+      ]
+    },
+    {
+      province: "Lạng Sơn",
+      channels: [
+        {
+          name: "Công an tỉnh Lạng Sơn (trực ban)",
+          phone: "(0205) 3812 613",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Số 04, đường Cửa Nam, P. Chi Lăng, TP. Lạng Sơn, Lạng Sơn"
+        },
+        {
+          name: "Sở TT&TT Lạng Sơn",
+          phone: "(0205) 3814 605",
+          email: "stttt@langson.gov.vn",
+          reportLink: "Không có",
+          address: "Số 151, đường Hoàng Văn Thụ, P. Chi Lăng, TP. Lạng Sơn"
+        }
+      ]
+    },
+    {
+      province: "Lào Cai",
+      channels: [
+        {
+          name: "Công an tỉnh Lào Cai (trực ban)",
+          phone: "(0214) 3824 954",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Đại lộ Trần Hưng Đạo, P. Nam Cường, TP. Lào Cai, Lào Cai"
+        },
+        {
+          name: "Sở TT&TT Lào Cai",
+          phone: "(0214) 3840 046",
+          email: "contact-stttt@laocai.gov.vn",
+          reportLink: "Không có",
+          address: "Đường Hoàng Liên, TP. Lào Cai, Lào Cai"
+        }
+      ]
+    },
+    {
+      province: "Long An",
+      channels: [
+        {
+          name: "Công an tỉnh Long An (trực ban)",
+          phone: "(0272) 3825 555",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Số 76 Châu Văn Giác, P. 5, TP. Tân An, Long An"
+        },
+        {
+          name: "Sở TT&TT Long An",
+          phone: "(0272) 3821 678",
+          email: "stttt@longan.gov.vn",
+          reportLink: "Không có",
+          address: "62 Cách Mạng Tháng 8, P.1, TP. Tân An, Long An"
+        }
+      ]
+    },
+    {
+      province: "Nam Định",
+      channels: [
+        {
+          name: "Công an tỉnh Nam Định (trực ban)",
+          phone: "(0228) 3849 238",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "55 Đông A, P. Cửa Bắc, TP. Nam Định, Nam Định"
+        },
+        {
+          name: "Sở TT&TT Nam Định",
+          phone: "(0228) 3631 468",
+          email: "stttt@namdinh.gov.vn",
+          reportLink: "Không có",
+          address: "21 Đường Hoàng Hoa Thám, TP. Nam Định, Nam Định"
+        }
+      ]
+    },
+    {
+      province: "Nghệ An",
+      channels: [
+        {
+          name: "Công an tỉnh Nghệ An (trực ban)",
+          phone: "(0238) 3830 279",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "65 Nguyễn Thái Học, TP. Vinh, Nghệ An"
+        },
+        {
+          name: "Sở TT&TT Nghệ An",
+          phone: "(0238) 3844 093",
+          email: "tttt@nghean.gov.vn",
+          reportLink: "Không có",
+          address: "06 Đại lộ V.I.Lê Nin, TP. Vinh, Nghệ An"
+        }
+      ]
+    },
+    {
+      province: "Ninh Bình",
+      channels: [
+        {
+          name: "Công an tỉnh Ninh Bình (trực ban)",
+          phone: "(0229) 3874 582",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Đường Nguyễn Huệ, P. Nam Thành, TP. Ninh Bình, Ninh Bình"
+        },
+        {
+          name: "Sở TT&TT Ninh Bình",
+          phone: "(0229) 3873 388",
+          email: "stttt@ninhbinh.gov.vn",
+          reportLink: "Không có",
+          address: "50 Lê Hồng Phong, P. Đông Thành, TP. Ninh Bình, Ninh Bình"
+        }
+      ]
+    },
+    {
+      province: "Ninh Thuận",
+      channels: [
+        {
+          name: "Công an tỉnh Ninh Thuận (trực ban)",
+          phone: "(0259) 3823 015",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "01 Ngô Gia Tự, P. Tấn Tài, TP. Phan Rang-Tháp Chàm, Ninh Thuận"
+        },
+        {
+          name: "Sở TT&TT Ninh Thuận",
+          phone: "(0259) 3835 688",
+          email: "sotttt@ninhthuan.gov.vn",
+          reportLink: "Không có",
+          address: "17 Nguyễn Trãi, TP. Phan Rang-Tháp Chàm, Ninh Thuận"
+        }
+      ]
+    },
+    {
+      province: "Phú Thọ",
+      channels: [
+        {
+          name: "Công an tỉnh Phú Thọ (trực ban)",
+          phone: "(0210) 3855 516",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Phường Tân Dân, TP. Việt Trì, Phú Thọ"
+        },
+        {
+          name: "Sở TT&TT Phú Thọ",
+          phone: "(0210) 3846 462",
+          email: "sotttt@phutho.gov.vn",
+          reportLink: "Không có",
+          address: "1335 đường Hùng Vương, P. Tiên Cát, TP. Việt Trì, Phú Thọ"
+        }
+      ]
+    },
+    {
+      province: "Phú Yên",
+      channels: [
+        {
+          name: "Công an tỉnh Phú Yên (trực ban)",
+          phone: "(0257) 3823 580",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "159 Nguyễn Huệ, TP. Tuy Hòa, Phú Yên"
+        },
+        {
+          name: "Sở TT&TT Phú Yên",
+          phone: "(0257) 3843 800",
+          email: "stttt@phuyen.gov.vn",
+          reportLink: "Không có",
+          address: "02 Trần Phú, TP. Tuy Hòa, Phú Yên"
+        }
+      ]
+    },
+    {
+      province: "Quảng Bình",
+      channels: [
+        {
+          name: "Công an tỉnh Quảng Bình (trực ban)",
+          phone: "(0232) 3822 324",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "27 Nguyễn Hữu Cảnh, P. Đồng Hới, TP. Đồng Hới, Quảng Bình"
+        },
+        {
+          name: "Sở TT&TT Quảng Bình",
+          phone: "(0232) 3823 888",
+          email: "stttt@quangbinh.gov.vn",
+          reportLink: "Không có",
+          address: "02 Hương Giang, TP. Đồng Hới, Quảng Bình"
+        }
+      ]
+    },
+    {
+      province: "Quảng Nam",
+      channels: [
+        {
+          name: "Công an tỉnh Quảng Nam (trực ban)",
+          phone: "(0235) 3852 589",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "19 Trần Hưng Đạo, TP. Tam Kỳ, Quảng Nam"
+        },
+        {
+          name: "Sở TT&TT Quảng Nam",
+          phone: "(0235) 3811 888",
+          email: "stttt@quangnam.gov.vn",
+          reportLink: "Không có",
+          address: "268 Trưng Nữ Vương, TP. Tam Kỳ, Quảng Nam"
+        }
+      ]
+    },
+    {
+      province: "Quảng Ngãi",
+      channels: [
+        {
+          name: "Công an tỉnh Quảng Ngãi (trực ban)",
+          phone: "(0255) 3826 417",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "40 Hàm Nghi, TP. Quảng Ngãi, Quảng Ngãi"
+        },
+        {
+          name: "Sở TT&TT Quảng Ngãi",
+          phone: "(0255) 3828 555",
+          email: "stttt@quangngai.gov.vn",
+          reportLink: "Không có",
+          address: "19 Hùng Vương, TP. Quảng Ngãi, Quảng Ngãi"
+        }
+      ]
+    },
+    {
+      province: "Quảng Ninh",
+      channels: [
+        {
+          name: "Công an tỉnh Quảng Ninh (trực ban)",
+          phone: "(0203) 3836 006",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Phường Hồng Hà, TP. Hạ Long, Quảng Ninh"
+        },
+        {
+          name: "Sở TT&TT Quảng Ninh",
+          phone: "(0203) 3835 678",
+          email: "stttt@quangninh.gov.vn",
+          reportLink: "Không có",
+          address: "Đường 25/4, P. Bạch Đằng, TP. Hạ Long, Quảng Ninh"
+        }
+      ]
+    },
+    {
+      province: "Quảng Trị",
+      channels: [
+        {
+          name: "Công an tỉnh Quảng Trị (trực ban)",
+          phone: "(0233) 3850 042",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "34 Hùng Vương, TP. Đông Hà, Quảng Trị"
+        },
+        {
+          name: "Sở TT&TT Quảng Trị",
+          phone: "(0233) 3851 888",
+          email: "stttt@quangtri.gov.vn",
+          reportLink: "Không có",
+          address: "23 Hùng Vương, TP. Đông Hà, Quảng Trị"
+        }
+      ]
+    },
+    {
+      province: "Sóc Trăng",
+      channels: [
+        {
+          name: "Công an tỉnh Sóc Trăng (trực ban)",
+          phone: "(0299) 3826 999",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "58 Tô Thị Huỳnh, P. 2, TP. Sóc Trăng, Sóc Trăng"
+        },
+        {
+          name: "Sở TT&TT Sóc Trăng",
+          phone: "(0299) 3827 797",
+          email: "stttt@soctrang.gov.vn",
+          reportLink: "Không có",
+          address: "Số 18, Đường Trần Hưng Đạo, P. 2, TP. Sóc Trăng, Sóc Trăng"
+        }
+      ]
+    },
+    {
+      province: "Sơn La",
+      channels: [
+        {
+          name: "Công an tỉnh Sơn La (trực ban)",
+          phone: "(0212) 3856 033",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Tổ 8, P. Quyết Thắng, TP. Sơn La, Sơn La"
+        },
+        {
+          name: "Sở TT&TT Sơn La",
+          phone: "(0212) 3856 880",
+          email: "stttt@sonla.gov.vn",
+          reportLink: "Không có",
+          address: "Tỉnh ủy Sơn La, P. Tô Hiệu, TP. Sơn La, Sơn La"
+        }
+      ]
+    },
+    {
+      province: "Tây Ninh",
+      channels: [
+        {
+          name: "Công an tỉnh Tây Ninh (trực ban)",
+          phone: "(0276) 3822 233",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "636 Cách Mạng Tháng Tám, P. Hiệp Ninh, TP. Tây Ninh, Tây Ninh"
+        },
+        {
+          name: "Sở TT&TT Tây Ninh",
+          phone: "(0276) 3824 777",
+          email: "stttt@tayninh.gov.vn",
+          reportLink: "Không có",
+          address: "23 Hoàng Lê Kha, P. 3, TP. Tây Ninh, Tây Ninh"
+        }
+      ]
+    },
+    {
+      province: "Thái Bình",
+      channels: [
+        {
+          name: "Công an tỉnh Thái Bình (trực ban)",
+          phone: "(0227) 3831 003",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Số 228 Hai Bà Trưng, P. Quang Trung, TP. Thái Bình, Thái Bình"
+        },
+        {
+          name: "Sở TT&TT Thái Bình",
+          phone: "(0227) 3831 960",
+          email: "stttt@thaibinh.gov.vn",
+          reportLink: "Không có",
+          address: "79 Lê Lợi, P. Đề Thám, TP. Thái Bình, Thái Bình"
+        }
+      ]
+    },
+    {
+      province: "Thái Nguyên",
+      channels: [
+        {
+          name: "Công an tỉnh Thái Nguyên (trực ban)",
+          phone: "(0208) 3855 313",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Phường Trưng Vương, TP. Thái Nguyên, Thái Nguyên"
+        },
+        {
+          name: "Sở TT&TT Thái Nguyên",
+          phone: "(0208) 3655 388",
+          email: "sotttt@thainguyen.gov.vn",
+          reportLink: "Không có",
+          address: "Số 18, đường Nha Trang, P. Trưng Vương, TP. Thái Nguyên, Thái Nguyên"
+        }
+      ]
+    },
+    {
+      province: "Thanh Hóa",
+      channels: [
+        {
+          name: "Công an tỉnh Thanh Hóa (trực ban)",
+          phone: "(0237) 3854 091",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "27 Nguyễn Trãi, P. Ba Đình, TP. Thanh Hóa, Thanh Hóa"
+        },
+        {
+          name: "Sở TT&TT Thanh Hóa",
+          phone: "(0237) 3851 688",
+          email: "stttt@thanhhoa.gov.vn",
+          reportLink: "Không có",
+          address: "45 Đại lộ Lê Lợi, P. Lam Sơn, TP. Thanh Hóa, Thanh Hóa"
+        }
+      ]
+    },
+    {
+      province: "Thừa Thiên Huế",
+      channels: [
+        {
+          name: "Công an tỉnh Thừa Thiên Huế (trực ban)",
+          phone: "(0234) 3824 242",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Số 01 Lê Lai, P. Vĩnh Ninh, TP. Huế, Thừa Thiên Huế"
+        },
+        {
+          name: "Sở TT&TT Thừa Thiên Huế",
+          phone: "(0234) 3813 511",
+          email: "stttt@thuathienhue.gov.vn",
+          reportLink: "Không có",
+          address: "18 Lý Thường Kiệt, TP. Huế, Thừa Thiên Huế"
+        }
+      ]
+    },
+    {
+      province: "Tiền Giang",
+      channels: [
+        {
+          name: "Công an tỉnh Tiền Giang (trực ban)",
+          phone: "(0273) 3873 234",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "56 Tôn Đức Thắng, P. 5, TP. Mỹ Tho, Tiền Giang"
+        },
+        {
+          name: "Sở TT&TT Tiền Giang",
+          phone: "(0273) 3872 446",
+          email: "stttt@tiengiang.gov.vn",
+          reportLink: "Không có",
+          address: "43A Võ Duy Linh, P. 2, TP. Mỹ Tho, Tiền Giang"
+        }
+      ]
+    },
+    {
+      province: "TP. Hồ Chí Minh",
+      channels: [
+        {
+          name: "Công an TP. Hồ Chí Minh (Phòng ANM&PCTP CNC)",
+          phone: "(028) 3838 7200",
+          email: "catp@tphcm.gov.vn",
+          reportLink: "Không có",
+          address: "268 Trần Hưng Đạo, P. Nguyễn Cư Trinh, Q.1, TP. Hồ Chí Minh"
+        },
+        {
+          name: "Sở TT&TT TP. Hồ Chí Minh",
+          phone: "(028) 3520 2727",
+          email: "stttt@tphcm.gov.vn",
+          reportLink: "Không có",
+          address: "59 Lý Tự Trọng, P. Bến Nghé, Q.1, TP. Hồ Chí Minh"
+        }
+      ]
+    },
+    {
+      province: "Trà Vinh",
+      channels: [
+        {
+          name: "Công an tỉnh Trà Vinh (trực ban)",
+          phone: "(0294) 3851 304",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "06 Lý Tự Trọng, P. 1, TP. Trà Vinh, Trà Vinh"
+        },
+        {
+          name: "Sở TT&TT Trà Vinh",
+          phone: "(0294) 3851 717",
+          email: "stttt@travinh.gov.vn",
+          reportLink: "Không có",
+          address: "04 Lê Thánh Tôn, P. 2, TP. Trà Vinh, Trà Vinh"
+        }
+      ]
+    },
+    {
+      province: "Tuyên Quang",
+      channels: [
+        {
+          name: "Công an tỉnh Tuyên Quang (trực ban)",
+          phone: "(0207) 3822 060",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Phường Tân Quang, TP. Tuyên Quang, Tuyên Quang"
+        },
+        {
+          name: "Sở TT&TT Tuyên Quang",
+          phone: "(0207) 3750 888",
+          email: "stttt@tuyenquang.gov.vn",
+          reportLink: "Không có",
+          address: "150 Trần Hưng Đạo, P. Minh Xuân, TP. Tuyên Quang, Tuyên Quang"
+        }
+      ]
+    },
+    {
+      province: "Vĩnh Long",
+      channels: [
+        {
+          name: "Công an tỉnh Vĩnh Long (trực ban)",
+          phone: "(0270) 3823 155",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "99A Phạm Thái Bường, P. 4, TP. Vĩnh Long, Vĩnh Long"
+        },
+        {
+          name: "Sở TT&TT Vĩnh Long",
+          phone: "(0270) 3822 242",
+          email: "sotttt@vinhlong.gov.vn",
+          reportLink: "Không có",
+          address: "12 Hoàng Thái Hiếu, P. 1, TP. Vĩnh Long, Vĩnh Long"
+        }
+      ]
+    },
+    {
+      province: "Vĩnh Phúc",
+      channels: [
+        {
+          name: "Công an tỉnh Vĩnh Phúc (trực ban)",
+          phone: "(0211) 3862 144",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Phường Liên Bảo, TP. Vĩnh Yên, Vĩnh Phúc"
+        },
+        {
+          name: "Sở TT&TT Vĩnh Phúc",
+          phone: "(0211) 3862 629",
+          email: "sotttt@vinhphuc.gov.vn",
+          reportLink: "Không có",
+          address: "40 Nguyễn Trãi, P. Đống Đa, TP. Vĩnh Yên, Vĩnh Phúc"
+        }
+      ]
+    },
+    {
+      province: "Yên Bái",
+      channels: [
+        {
+          name: "Công an tỉnh Yên Bái (trực ban)",
+          phone: "(0216) 3852 451",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "S. 725 Nguyễn Tất Thành, P. Đồng Tâm, TP. Yên Bái, Yên Bái"
+        },
+        {
+          name: "Sở TT&TT Yên Bái",
+          phone: "(0216) 3841 688",
+          email: "stttt@yenbai.gov.vn",
+          reportLink: "Không có",
+          address: "Số 5, đường Đinh Tiên Hoàng, TP. Yên Bái, Yên Bái"
+        }
+      ]
     }
   ];
 
