@@ -1,3 +1,4 @@
+
 import { Shield, Building, Flag, Mail, Phone, Globe, MapPin, Search } from "lucide-react";
 import { 
   Accordion, 
@@ -434,6 +435,29 @@ const ReportingResourcesSection = () => {
     }
   }, [searchQuery, selectedProvince]);
 
+  // Helper function to render contact channels
+  const renderContactChannels = (channels, limit = 1) => {
+    return channels.slice(0, limit).map((channel, idx) => (
+      <div key={idx} className="space-y-1 text-xs">
+        <h5 className="font-medium text-xs">{channel.name}</h5>
+        
+        {channel.phone !== "Không có thông tin" && (
+          <div className="flex items-start">
+            <Phone className="h-3 w-3 text-security mr-1.5 mt-0.5 flex-shrink-0" />
+            <span className="truncate">{channel.phone}</span>
+          </div>
+        )}
+        
+        {channel.email !== "Không có thông tin" && (
+          <div className="flex items-start">
+            <Mail className="h-3 w-3 text-security mr-1.5 mt-0.5 flex-shrink-0" />
+            <span className="truncate">{channel.email}</span>
+          </div>
+        )}
+      </div>
+    ));
+  };
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -700,9 +724,12 @@ const ReportingResourcesSection = () => {
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="p-4">
-                            <div className="text-sm text-gray-500">
-                              Nhấn để xem chi tiết thông tin liên hệ
-                            </div>
+                            {renderContactChannels(province.channels)}
+                            {province.channels.length > 1 && (
+                              <div className="mt-2 text-xs text-security hover:underline">
+                                Xem thêm {province.channels.length - 1} đầu mối khác
+                              </div>
+                            )}
                           </CardContent>
                         </Card>
                       ))}
