@@ -1088,7 +1088,7 @@ const ReportingResourcesSection = () => {
               <div className="grid gap-4">
                 {(selectedProvince 
                   ? vietnamLocalContacts.filter(p => p.province === selectedProvince)
-                  : filteredItems as LocalContact[]
+                  : (filteredItems && Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems : vietnamLocalContacts)
                 ).map((province) => (
                   <Card key={province.province}>
                     <CardHeader>
@@ -1097,7 +1097,7 @@ const ReportingResourcesSection = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {province.channels.map((channel, idx) => (
+                      {province.channels && province.channels.map((channel, idx) => (
                         <div key={idx} className="border-t pt-4 mt-4 first:border-t-0 first:pt-0 first:mt-0">
                           <h3 className="font-medium mb-2">{channel.name}</h3>
                           <div className="grid gap-2 text-sm">
@@ -1145,13 +1145,13 @@ const ReportingResourcesSection = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(filteredItems && filteredItems.length > 0 ? filteredItems : asianCountries).map((country) => (
+                    {(filteredItems && Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems : asianCountries).map((country: CountryContact) => (
                       <TableRow key={country.country}>
                         <TableCell className="font-medium">{country.country}</TableCell>
                         <TableCell>{country.phone}</TableCell>
                         <TableCell>{country.email}</TableCell>
                         <TableCell>
-                          {country.reportLink.startsWith("http") ? (
+                          {country.reportLink?.startsWith("http") ? (
                             <a href={country.reportLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                               Truy cập
                             </a>
@@ -1183,13 +1183,13 @@ const ReportingResourcesSection = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(filteredItems && filteredItems.length > 0 ? filteredItems : englishSpeakingCountries).map((country) => (
+                    {(filteredItems && Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems : englishSpeakingCountries).map((country: CountryContact) => (
                       <TableRow key={country.country}>
                         <TableCell className="font-medium">{country.country}</TableCell>
                         <TableCell>{country.phone}</TableCell>
                         <TableCell>{country.email}</TableCell>
                         <TableCell>
-                          {country.reportLink.startsWith("http") ? (
+                          {country.reportLink?.startsWith("http") ? (
                             <a href={country.reportLink.split("\n")[0]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                               Truy cập
                             </a>
@@ -1221,13 +1221,13 @@ const ReportingResourcesSection = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(filteredItems && filteredItems.length > 0 ? filteredItems : internationalOrganizations).map((org) => (
+                    {(filteredItems && Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems : internationalOrganizations).map((org: InternationalOrg) => (
                       <TableRow key={org.organization}>
                         <TableCell className="font-medium">{org.organization}</TableCell>
                         <TableCell>{org.phone}</TableCell>
                         <TableCell>{org.email}</TableCell>
                         <TableCell>
-                          {org.reportLink.startsWith("http") ? (
+                          {org.reportLink?.startsWith("http") ? (
                             <a href={org.reportLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                               Truy cập
                             </a>
