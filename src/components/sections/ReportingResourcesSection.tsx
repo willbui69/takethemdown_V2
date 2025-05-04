@@ -1,4 +1,4 @@
-import { Shield, Building, Flag, Mail, Phone, Globe, MapPin } from "lucide-react";
+import { Shield, Building, Flag, Mail, Phone, Globe, MapPin, Search } from "lucide-react";
 import { 
   Accordion, 
   AccordionContent, 
@@ -15,6 +15,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 
 interface ResourceLink {
   name: string;
@@ -51,6 +62,9 @@ interface LocalContact {
 }
 
 const ReportingResourcesSection = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
+
   // Original resource categories
   const resourceCategories: ResourceCategory[] = [
     {
@@ -392,6 +406,22 @@ const ReportingResourcesSection = () => {
     { country: "INHOPE", phone: "-", email: "-", reportLink: "https://www.inhope.org/" }
   ];
 
+  // Filter local contacts based on search query
+  const filteredLocalContacts = vietnamLocalContacts.filter((contact) =>
+    contact.province.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Function to handle province selection
+  const handleProvinceSelect = (province: string) => {
+    setSelectedProvince(province);
+    setSearchQuery(province);
+  };
+
+  // Get the selected province details
+  const selectedProvinceData = vietnamLocalContacts.find(
+    (contact) => contact.province === selectedProvince
+  );
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -545,22 +575,58 @@ const ReportingResourcesSection = () => {
               <div className="mb-6">
                 <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-4">
                   <p className="text-sm">
-                    Bảng dưới đây liệt kê đầu mối liên hệ của Công an và Sở Thông tin & Truyền thông tại các tỉnh thành Việt Nam. 
+                    Tìm kiếm đầu mối liên hệ của Công an và Sở Thông tin & Truyền thông tại các tỉnh thành Việt Nam. 
                     Bạn có thể báo cáo trực tiếp tới các đơn vị này khi gặp lừa đảo trực tuyến.
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {vietnamLocalContacts.map((province) => (
-                    <Card key={province.province} className="overflow-hidden">
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Search className="h-5 w-5 text-gray-400" />
+                    <Input
+                      placeholder="Tìm kiếm tỉnh thành..."
+                      className="max-w-sm"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        if (e.target.value === "") setSelectedProvince(null);
+                      }}
+                    />
+                  </div>
+
+                  {searchQuery && !selectedProvince && (
+                    <div className="border rounded-md max-w-sm mb-4">
+                      <Command>
+                        <CommandInput placeholder="Tìm kiếm tỉnh thành..." value={searchQuery} onValueChange={setSearchQuery} />
+                        <CommandEmpty>Không tìm thấy kết quả</CommandEmpty>
+                        <CommandGroup>
+                          <ScrollArea className="h-72">
+                            {filteredLocalContacts.map((contact) => (
+                              <CommandItem 
+                                key={contact.province} 
+                                onSelect={() => handleProvinceSelect(contact.province)}
+                                className="cursor-pointer"
+                              >
+                                <MapPin className="h-4 w-4 mr-2" />
+                                {contact.province}
+                              </CommandItem>
+                            ))}
+                          </ScrollArea>
+                        </CommandGroup>
+                      </Command>
+                    </div>
+                  )}
+
+                  {selectedProvince && selectedProvinceData && (
+                    <Card key={selectedProvinceData.province} className="mb-4">
                       <CardHeader className="bg-security/10 p-4">
                         <CardTitle className="text-lg flex items-center">
                           <MapPin className="h-5 w-5 mr-2 text-security" />
-                          {province.province}
+                          {selectedProvinceData.province}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-4">
-                        {province.channels.map((channel, idx) => (
+                        {selectedProvinceData.channels.map((channel, idx) => (
                           <div key={idx} className="mb-3 pb-3 border-b border-gray-100 last:border-b-0 last:mb-0 last:pb-0">
                             <h4 className="font-medium text-sm mb-2">{channel.name}</h4>
                             
@@ -598,7 +664,50 @@ const ReportingResourcesSection = () => {
                         ))}
                       </CardContent>
                     </Card>
-                  ))}
+                  )}
+
+                  {!selectedProvince && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredLocalContacts.slice(0, 6).map((province) => (
+                        <Card 
+                          key={province.province} 
+                          className="overflow-hidden cursor-pointer hover:border-security/50 transition-colors"
+                          onClick={() => setSelectedProvince(province.province)}
+                        >
+                          <CardHeader className="bg-security/10 p-4">
+                            <CardTitle className="text-lg flex items-center">
+                              <MapPin className="h-5 w-5 mr-2 text-security" />
+                              {province.province}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-4">
+                            <div className="text-sm text-gray-500">
+                              Nhấn để xem chi tiết thông tin liên hệ
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {!searchQuery && !selectedProvince && (
+                    <div className="flex justify-center mt-4">
+                      <Select onValueChange={(value) => handleProvinceSelect(value)}>
+                        <SelectTrigger className="w-full max-w-sm">
+                          <SelectValue placeholder="Chọn tỉnh thành để xem thông tin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <ScrollArea className="h-72">
+                            {vietnamLocalContacts.map((contact) => (
+                              <SelectItem key={contact.province} value={contact.province}>
+                                {contact.province}
+                              </SelectItem>
+                            ))}
+                          </ScrollArea>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
               </div>
             </TabsContent>
