@@ -1,4 +1,3 @@
-
 import { Shield, Building, Flag, Mail, Phone, Globe } from "lucide-react";
 import { 
   Accordion, 
@@ -113,7 +112,7 @@ const ReportingResourcesSection = () => {
     { country: "Pakistan", phone: "9911", email: "helpdesk@nr3c.gov.pk", reportLink: "https://www.fia.gov.pk/en/cyber-crime" },
     { country: "Bangladesh", phone: "999", email: "-", reportLink: "https://dmp.police.gov.bd/" },
     { country: "Sri Lanka", phone: "119", email: "-", reportLink: "https://cert.gov.lk/" },
-    { country: "Nepal", phone: "100", email: "-", reportLink: "- (Đến trực tiếp hoặc gửi email đến Cục An ninh mạng)" }
+    { country: "Nepal", phone: "100", email: "-", reportLink: "https://www.nepalpolice.gov.np/other_links/detail/cyber-bureau/" }
   ];
 
   const englishSpeakingContacts: CountryContact[] = [
