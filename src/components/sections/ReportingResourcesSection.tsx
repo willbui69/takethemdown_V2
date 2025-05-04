@@ -76,6 +76,180 @@ const ReportingResourcesSection = () => {
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [activeDataSource, setActiveDataSource] = useState<'resources' | 'local' | 'asian' | 'english' | 'international'>('resources');
 
+  // Asian countries data
+  const asianCountries: CountryContact[] = [
+    {
+      country: "China",
+      phone: "110 (police) / 96110",
+      email: "–",
+      reportLink: "– (report via local Public Security Bureau websites)"
+    },
+    {
+      country: "Hong Kong",
+      phone: "999",
+      email: "–",
+      reportLink: "https://www.police.gov.hk/ppp_en/04_crime_matters/cybercrime_report.html"
+    },
+    {
+      country: "Japan",
+      phone: "110",
+      email: "–",
+      reportLink: "https://www.npa.go.jp/cyber/"
+    },
+    {
+      country: "South Korea",
+      phone: "112 / 118",
+      email: "–",
+      reportLink: "https://www.police.go.kr/eng/index.do?menuCd=020202"
+    },
+    {
+      country: "Taiwan",
+      phone: "110 / 165",
+      email: "–",
+      reportLink: "https://www.iwin.org.tw/"
+    },
+    {
+      country: "Indonesia",
+      phone: "110",
+      email: "–",
+      reportLink: "https://patrolisiber.id/"
+    },
+    {
+      country: "Malaysia",
+      phone: "999 / 997",
+      email: "report@cyber57.gov.my",
+      reportLink: "https://www.cybersecurity.my/"
+    },
+    {
+      country: "Philippines",
+      phone: "911",
+      email: "info@cicc.gov.ph",
+      reportLink: "https://www.anticybercrime.org/"
+    },
+    {
+      country: "Singapore",
+      phone: "999 / 1800-255-0000",
+      email: "–",
+      reportLink: "https://eservices.police.gov.sg/content/policehub/home.html"
+    },
+    {
+      country: "Thailand",
+      phone: "191",
+      email: "–",
+      reportLink: "http://www.technologycrime.go.th/"
+    },
+    {
+      country: "Vietnam",
+      phone: "113",
+      email: "toxico@canhsat.vn",
+      reportLink: "https://toxico.mps.gov.vn/"
+    },
+    {
+      country: "India",
+      phone: "100 / 112 / Hotline 1930",
+      email: "–",
+      reportLink: "https://cybercrime.gov.in/"
+    },
+    {
+      country: "Pakistan",
+      phone: "9911",
+      email: "helpdesk@nr3c.gov.pk",
+      reportLink: "https://www.fia.gov.pk/en/cyber-crime"
+    },
+    {
+      country: "Bangladesh",
+      phone: "999",
+      email: "–",
+      reportLink: "https://dmp.police.gov.bd/"
+    },
+    {
+      country: "Sri Lanka",
+      phone: "119",
+      email: "report@cert.gov.lk",
+      reportLink: "https://cert.gov.lk/"
+    },
+    {
+      country: "Nepal",
+      phone: "100",
+      email: "cyberbureau@nepalpolice.gov.np",
+      reportLink: "– (walk-in or email to Cyber Bureau)"
+    }
+  ];
+
+  // English-speaking countries data
+  const englishSpeakingCountries: CountryContact[] = [
+    {
+      country: "USA",
+      phone: "– (see below)",
+      email: "–",
+      reportLink: "https://www.ic3.gov/ (cybercrime)\nhttps://report.cybertip.org/ (child abuse)"
+    },
+    {
+      country: "UK",
+      phone: "0300 123 2040 / 101 / 999",
+      email: "–",
+      reportLink: "https://www.actionfraud.police.uk/\nhttps://www.ceop.police.uk/safety-centre/"
+    },
+    {
+      country: "Canada",
+      phone: "1-888 495 8501 / 911",
+      email: "–",
+      reportLink: "https://www.antifraudcentre-centreantifraude.ca/\nhttps://www.cybertip.ca/"
+    },
+    {
+      country: "Australia",
+      phone: "1300 292 371 / 000",
+      email: "–",
+      reportLink: "https://www.cyber.gov.au/report\nhttps://www.esafety.gov.au/report"
+    },
+    {
+      country: "New Zealand",
+      phone: "0508 638 723 / 111 / 105",
+      email: "–",
+      reportLink: "https://report.netsafe.org.nz/\nhttps://www.cert.govt.nz/"
+    },
+    {
+      country: "Ireland",
+      phone: "1800 666 111 / 999 / 112",
+      email: "–",
+      reportLink: "https://www.crimestoppers.ie/\nhttps://www.hotline.ie/"
+    },
+    {
+      country: "South Africa",
+      phone: "08600 10111 / 10111",
+      email: "–",
+      reportLink: "https://www.saps.gov.za/services/crimestop.php"
+    }
+  ];
+
+  // International organizations data
+  const internationalOrganizations: InternationalOrg[] = [
+    {
+      organization: "INTERPOL",
+      phone: "–",
+      email: "–",
+      reportLink: "Always report via your local police"
+    },
+    {
+      organization: "Europol (EC3)",
+      phone: "–",
+      email: "–",
+      reportLink: "National police portals (listed at Europol)"
+    },
+    {
+      organization: "CEOP (UK child protection)",
+      phone: "–",
+      email: "–",
+      reportLink: "https://www.ceop.police.uk/safety-centre/"
+    },
+    {
+      organization: "INHOPE",
+      phone: "–",
+      email: "–",
+      reportLink: "https://www.inhope.org/"
+    }
+  ];
+
   useEffect(() => {
     // Filter data based on the active tab and search query
     if (searchQuery.trim()) {
@@ -797,3 +971,280 @@ const ReportingResourcesSection = () => {
           name: "Sở TT&TT Kiên Giang",
           phone: "(0297) 3944 405",
           email: "stttt@kiengiang.gov.vn",
+          reportLink: "Không có",
+          address: "25 Trần Hưng Đạo, P. Vĩnh Thanh Vân, TP. Rạch Giá, Kiên Giang"
+        }
+      ]
+    }
+  ];
+
+  return (
+    <div className="container mx-auto py-12">
+      <h1 className="text-3xl font-bold text-center mb-8">Nguồn lực báo cáo nội dung lừa đảo</h1>
+      <div className="mb-6">
+        <div className="flex items-center space-x-2 bg-background border rounded-md px-3 mb-4">
+          <Search className="h-4 w-4 opacity-50" />
+          <Input 
+            type="search" 
+            placeholder="Tìm kiếm nguồn lực..." 
+            className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
+        <Tabs defaultValue="resources" className="w-full" onValueChange={(value) => setActiveDataSource(value as any)}>
+          <TabsList className="grid grid-cols-5 mb-4">
+            <TabsTrigger value="resources">Nguồn lực</TabsTrigger>
+            <TabsTrigger value="local">Việt Nam</TabsTrigger>
+            <TabsTrigger value="asian">Châu Á</TabsTrigger>
+            <TabsTrigger value="english">Tiếng Anh</TabsTrigger>
+            <TabsTrigger value="international">Quốc tế</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="resources">
+            <div className="grid gap-6 md:grid-cols-1">
+              {filteredItems.length > 0 ? (
+                <Accordion type="single" collapsible className="w-full">
+                  {filteredItems.map((category: ResourceCategory) => (
+                    <AccordionItem key={category.id} value={category.id}>
+                      <AccordionTrigger>
+                        <div className="flex items-center gap-2">
+                          {category.icon}
+                          <span>{category.title}</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <p className="mb-4 text-muted-foreground">{category.description}</p>
+                        <div className="space-y-4">
+                          {category.resources.map((resource, index) => (
+                            <Card key={index}>
+                              <CardHeader>
+                                <CardTitle>
+                                  {resource.url ? (
+                                    <a href={resource.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-2">
+                                      {resource.name} <Globe className="h-4 w-4" />
+                                    </a>
+                                  ) : (
+                                    resource.name
+                                  )}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <p className="text-muted-foreground">{resource.description}</p>
+                                {resource.email && (
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <Mail className="h-4 w-4 text-muted-foreground" />
+                                    <a href={`mailto:${resource.email}`} className="text-primary hover:underline">
+                                      {resource.email}
+                                    </a>
+                                  </div>
+                                )}
+                                {resource.phone && (
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <Phone className="h-4 w-4 text-muted-foreground" />
+                                    <span>{resource.phone}</span>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              ) : (
+                <div className="text-center py-10">
+                  <p className="text-muted-foreground">Không tìm thấy kết quả phù hợp. Vui lòng thử từ khóa khác.</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="local">
+            <div className="space-y-4">
+              <div className="mb-4">
+                <Select 
+                  value={selectedProvince || ""}
+                  onValueChange={(value) => setSelectedProvince(value)}
+                >
+                  <SelectTrigger className="w-full md:w-[300px]">
+                    <SelectValue placeholder="Chọn tỉnh/thành phố" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <ScrollArea className="h-[400px]">
+                      {vietnamLocalContacts.map((province) => (
+                        <SelectItem key={province.province} value={province.province}>
+                          {province.province}
+                        </SelectItem>
+                      ))}
+                    </ScrollArea>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-4">
+                {(selectedProvince 
+                  ? vietnamLocalContacts.filter(p => p.province === selectedProvince)
+                  : filteredItems as LocalContact[]
+                ).map((province) => (
+                  <Card key={province.province}>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MapPin className="h-5 w-5" /> {province.province}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {province.channels.map((channel, idx) => (
+                        <div key={idx} className="border-t pt-4 mt-4 first:border-t-0 first:pt-0 first:mt-0">
+                          <h3 className="font-medium mb-2">{channel.name}</h3>
+                          <div className="grid gap-2 text-sm">
+                            <div className="flex gap-2 items-start">
+                              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                              <span>{channel.address}</span>
+                            </div>
+                            <div className="flex gap-2 items-start">
+                              <Phone className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                              <span>{channel.phone}</span>
+                            </div>
+                            <div className="flex gap-2 items-start">
+                              <Mail className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                              <span>{channel.email}</span>
+                            </div>
+                            {channel.reportLink !== "Không có" && (
+                              <div className="flex gap-2 items-start">
+                                <Globe className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                                <span>{channel.reportLink}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="asian">
+            <Card>
+              <CardHeader>
+                <CardTitle>Cơ quan hỗ trợ tại các quốc gia châu Á</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Quốc gia</TableHead>
+                      <TableHead>Điện thoại</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Trang báo cáo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(filteredItems as CountryContact[]).map((country) => (
+                      <TableRow key={country.country}>
+                        <TableCell className="font-medium">{country.country}</TableCell>
+                        <TableCell>{country.phone}</TableCell>
+                        <TableCell>{country.email}</TableCell>
+                        <TableCell>
+                          {country.reportLink.startsWith("http") ? (
+                            <a href={country.reportLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                              Truy cập
+                            </a>
+                          ) : (
+                            country.reportLink
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="english">
+            <Card>
+              <CardHeader>
+                <CardTitle>Cơ quan hỗ trợ tại các quốc gia nói tiếng Anh</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Quốc gia</TableHead>
+                      <TableHead>Điện thoại</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Trang báo cáo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(filteredItems as CountryContact[]).map((country) => (
+                      <TableRow key={country.country}>
+                        <TableCell className="font-medium">{country.country}</TableCell>
+                        <TableCell>{country.phone}</TableCell>
+                        <TableCell>{country.email}</TableCell>
+                        <TableCell>
+                          {country.reportLink.startsWith("http") ? (
+                            <a href={country.reportLink.split("\n")[0]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                              Truy cập
+                            </a>
+                          ) : (
+                            country.reportLink
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="international">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tổ chức quốc tế</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tổ chức</TableHead>
+                      <TableHead>Điện thoại</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Trang báo cáo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(filteredItems as InternationalOrg[]).map((org) => (
+                      <TableRow key={org.organization}>
+                        <TableCell className="font-medium">{org.organization}</TableCell>
+                        <TableCell>{org.phone}</TableCell>
+                        <TableCell>{org.email}</TableCell>
+                        <TableCell>
+                          {org.reportLink.startsWith("http") ? (
+                            <a href={org.reportLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                              Truy cập
+                            </a>
+                          ) : (
+                            org.reportLink
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default ReportingResourcesSection;
