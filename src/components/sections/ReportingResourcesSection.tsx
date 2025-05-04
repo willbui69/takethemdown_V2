@@ -1,4 +1,3 @@
-
 import { Shield, Building, Flag, Mail, Phone, Globe, MapPin, Search } from "lucide-react";
 import { 
   Accordion, 
@@ -83,7 +82,7 @@ const ReportingResourcesSection = () => {
       country: "China",
       phone: "110 (police) / 96110",
       email: "–",
-      reportLink: "– (report via local Public Security Bureau websites)"
+      reportLink: "– (báo cáo qua trang web Cục An ninh Công cộng địa phương)"
     },
     {
       country: "Hong Kong",
@@ -173,7 +172,7 @@ const ReportingResourcesSection = () => {
       country: "Nepal",
       phone: "100",
       email: "cyberbureau@nepalpolice.gov.np",
-      reportLink: "– (walk-in or email to Cyber Bureau)"
+      reportLink: "https://www.nepalpolice.gov.np/other_links/detail/cyber-bureau/"
     }
   ];
 
@@ -229,13 +228,13 @@ const ReportingResourcesSection = () => {
       organization: "INTERPOL",
       phone: "–",
       email: "–",
-      reportLink: "Always report via your local police"
+      reportLink: "Luôn báo cáo thông qua cảnh sát địa phương"
     },
     {
       organization: "Europol (EC3)",
       phone: "–",
       email: "–",
-      reportLink: "National police portals (listed at Europol)"
+      reportLink: "Cổng thông tin cảnh sát quốc gia (được liệt kê tại Europol)"
     },
     {
       organization: "CEOP (UK child protection)",
