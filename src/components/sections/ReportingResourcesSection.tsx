@@ -1,4 +1,3 @@
-
 import { Shield, Building, Flag, Mail, Phone, Globe, MapPin, Search } from "lucide-react";
 import { 
   Accordion, 
@@ -435,10 +434,10 @@ const ReportingResourcesSection = () => {
     }
   }, [searchQuery, selectedProvince]);
 
-  // Helper function to render contact channels
-  const renderContactChannels = (channels, limit = 1) => {
-    return channels.slice(0, limit).map((channel, idx) => (
-      <div key={idx} className="space-y-1 text-xs">
+  // Helper function to render contact channels - updated to show all channels
+  const renderContactChannels = (channels) => {
+    return channels.map((channel, idx) => (
+      <div key={idx} className="space-y-1 text-xs mb-2 last:mb-0">
         <h5 className="font-medium text-xs">{channel.name}</h5>
         
         {channel.phone !== "Không có thông tin" && (
@@ -723,13 +722,8 @@ const ReportingResourcesSection = () => {
                               {province.province}
                             </CardTitle>
                           </CardHeader>
-                          <CardContent className="p-4">
+                          <CardContent className="p-4 max-h-48 overflow-y-auto">
                             {renderContactChannels(province.channels)}
-                            {province.channels.length > 1 && (
-                              <div className="mt-2 text-xs text-security hover:underline">
-                                Xem thêm {province.channels.length - 1} đầu mối khác
-                              </div>
-                            )}
                           </CardContent>
                         </Card>
                       ))}
