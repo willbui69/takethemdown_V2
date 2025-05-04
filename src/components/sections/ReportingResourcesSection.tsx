@@ -1,3 +1,4 @@
+
 import { Shield, Building, Flag, Mail, Phone, Globe, MapPin, Search } from "lucide-react";
 import { 
   Accordion, 
@@ -352,6 +353,96 @@ const ReportingResourcesSection = () => {
           name: "Google",
           url: "https://safebrowsing.google.com/safebrowsing/report_phish/",
           description: "Báo cáo trang web lừa đảo hoặc phishing trên Google."
+        },
+        {
+          name: "Microsoft",
+          url: "https://www.microsoft.com/en-us/wdsi/support/report-unsafe-site",
+          description: "Báo cáo trang web độc hại trên Microsoft."
+        },
+        {
+          name: "Fortiguard",
+          url: "https://www.fortiguard.com/webfilter",
+          description: "Công cụ phân tích và báo cáo trang web độc hại của Fortinet."
+        },
+        {
+          name: "BrightCloud",
+          url: "https://www.brightcloud.com/tools/url-ip-lookup.php",
+          description: "Công cụ kiểm tra và phân loại URL/IP của Webroot."
+        },
+        {
+          name: "CRDF",
+          url: "https://threatcenter.crdf.fr/submit_url.html",
+          description: "Trung tâm báo cáo mối đe dọa của CRDF."
+        },
+        {
+          name: "Netcraft",
+          url: "https://report.netcraft.com/report",
+          description: "Báo cáo trang web lừa đảo và độc hại."
+        },
+        {
+          name: "Palo Alto Networks",
+          url: "https://urlfiltering.paloaltonetworks.com/",
+          description: "Dịch vụ lọc URL của Palo Alto Networks."
+        },
+        {
+          name: "ESET",
+          url: "https://phishing.eset.com/en-us/report",
+          description: "Báo cáo trang web lừa đảo đến ESET."
+        },
+        {
+          name: "Trend Micro",
+          url: "https://global.sitesafety.trendmicro.com/index.php",
+          description: "Kiểm tra và báo cáo độ an toàn của trang web."
+        },
+        {
+          name: "BitDefender",
+          url: "https://www.youtube.com/watch?v=0fIUiv9-UFk",
+          description: "Hướng dẫn báo cáo trang web độc hại đến BitDefender."
+        },
+        {
+          name: "McAfee",
+          url: "https://sitelookup.mcafee.com/",
+          description: "Kiểm tra an toàn trang web và báo cáo với McAfee."
+        },
+        {
+          name: "Forcepoint",
+          url: "https://csi.forcepoint.com/",
+          description: "Kiểm tra trang web và báo cáo phân loại sai với Forcepoint."
+        },
+        {
+          name: "Symantec",
+          url: "https://sitereview.symantec.com/#/",
+          description: "Đánh giá và báo cáo trang web với Symantec."
+        },
+        {
+          name: "Spam404",
+          url: "https://www.spam404.com/report.html",
+          description: "Báo cáo trang web lừa đảo và scam với Spam404."
+        },
+        {
+          name: "Kaspersky",
+          url: "https://opentip.kaspersky.com/",
+          description: "Công cụ phân tích URL và file độc hại của Kaspersky."
+        },
+        {
+          name: "Cisco Talos",
+          url: "https://talosintelligence.com/reputation_center",
+          description: "Kiểm tra và báo cáo URL/IP đáng ngờ với Cisco Talos."
+        },
+        {
+          name: "Avira",
+          url: "https://www.avira.com/en/analysis/submit-url",
+          description: "Gửi URL đáng ngờ để Avira phân tích."
+        },
+        {
+          name: "Alibaba",
+          url: "https://www.alibabacloud.com/ko/report?_p_lc=1",
+          description: "Báo cáo trang web độc hại với Alibaba Cloud."
+        },
+        {
+          name: "ICANN",
+          url: "https://icann-nsp.my.site.com/compliance/s/abuse-domain",
+          description: "Báo cáo lạm dụng tên miền với ICANN."
         }
       ]
     },
