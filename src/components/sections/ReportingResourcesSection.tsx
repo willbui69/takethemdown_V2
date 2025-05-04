@@ -1,3 +1,4 @@
+
 import { Shield, Building, Flag, Mail, Phone, Globe } from "lucide-react";
 import { 
   Accordion, 
@@ -97,7 +98,7 @@ const ReportingResourcesSection = () => {
 
   // International reporting contacts
   const asianContacts: CountryContact[] = [
-    { country: "China", phone: "110 (police) / 96110", email: "-", reportLink: "- (report via local Public Security Bureau websites)" },
+    { country: "China", phone: "110 (police) / 96110", email: "-", reportLink: "- (Báo cáo qua trang web của Cục An ninh địa phương)" },
     { country: "Hong Kong", phone: "999", email: "-", reportLink: "https://www.police.gov.hk/ppp_en/04_crime_matters/cybercrime_report.html" },
     { country: "Japan", phone: "110", email: "-", reportLink: "https://www.npa.go.jp/cyber/" },
     { country: "South Korea", phone: "112 / 118", email: "-", reportLink: "https://www.police.go.kr/eng/index.do?menuCd=020202" },
@@ -112,7 +113,7 @@ const ReportingResourcesSection = () => {
     { country: "Pakistan", phone: "9911", email: "helpdesk@nr3c.gov.pk", reportLink: "https://www.fia.gov.pk/en/cyber-crime" },
     { country: "Bangladesh", phone: "999", email: "-", reportLink: "https://dmp.police.gov.bd/" },
     { country: "Sri Lanka", phone: "119", email: "-", reportLink: "https://cert.gov.lk/" },
-    { country: "Nepal", phone: "100", email: "-", reportLink: "- (walk-in or email to Cyber Bureau)" }
+    { country: "Nepal", phone: "100", email: "-", reportLink: "- (Đến trực tiếp hoặc gửi email đến Cục An ninh mạng)" }
   ];
 
   const englishSpeakingContacts: CountryContact[] = [
@@ -161,8 +162,8 @@ const ReportingResourcesSection = () => {
   ];
 
   const internationalOrgs: CountryContact[] = [
-    { country: "INTERPOL", phone: "-", email: "-", reportLink: "Always report via your local police" },
-    { country: "Europol (EC3)", phone: "-", email: "-", reportLink: "National police portals (listed at Europol)" },
+    { country: "INTERPOL", phone: "-", email: "-", reportLink: "Luôn báo cáo qua cơ quan công an địa phương" },
+    { country: "Europol (EC3)", phone: "-", email: "-", reportLink: "Cổng thông tin của cơ quan công an quốc gia (được liệt kê tại Europol)" },
     { country: "CEOP (UK child protection)", phone: "-", email: "-", reportLink: "https://www.ceop.police.uk/safety-centre/" },
     { country: "INHOPE", phone: "-", email: "-", reportLink: "https://www.inhope.org/" }
   ];
