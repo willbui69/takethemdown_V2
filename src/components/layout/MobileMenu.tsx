@@ -90,6 +90,15 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               </button>
             </li>
             <li>
+              <Link
+                to="/reporting"
+                className="block py-2 text-gray-700 hover:text-security font-medium"
+                onClick={onClose}
+              >
+                Báo cáo
+              </Link>
+            </li>
+            <li>
               <button 
                 className="block w-full text-left py-2 text-gray-700 hover:text-security font-medium"
                 onClick={() => scrollToSection("contact")}

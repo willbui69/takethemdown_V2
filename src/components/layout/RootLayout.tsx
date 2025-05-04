@@ -45,6 +45,12 @@ const RootLayout = ({ children }: RootLayoutProps) => {
             >
               Câu hỏi
             </button>
+            <Link 
+              to="/reporting" 
+              className="text-gray-700 hover:text-security font-medium transition-colors"
+            >
+              Báo cáo
+            </Link>
             <button 
               onClick={() => scrollToSection("contact")} 
               className="bg-security text-white px-4 py-2 rounded-md hover:bg-security-light transition-colors"
