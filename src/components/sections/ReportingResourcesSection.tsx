@@ -1,4 +1,4 @@
-import { Shield, Building, Flag, Mail, Phone, Globe } from "lucide-react";
+import { Shield, Building, Flag, Mail, Phone, Globe, MapPin } from "lucide-react";
 import { 
   Accordion, 
   AccordionContent, 
@@ -37,6 +37,17 @@ interface CountryContact {
   phone: string;
   email: string;
   reportLink: string;
+}
+
+interface LocalContact {
+  province: string;
+  channels: {
+    name: string;
+    phone: string;
+    email: string;
+    reportLink: string;
+    address: string;
+  }[];
 }
 
 const ReportingResourcesSection = () => {
@@ -90,6 +101,220 @@ const ReportingResourcesSection = () => {
           name: "Take Them Down",
           url: "https://takethemdown.vn",
           description: "Dự án phi lợi nhuận hỗ trợ nạn nhân bị lừa đảo trực tuyến tại Việt Nam."
+        }
+      ]
+    }
+  ];
+
+  // Vietnamese provinces contacts
+  const vietnamLocalContacts: LocalContact[] = [
+    {
+      province: "An Giang",
+      channels: [
+        {
+          name: "Công an tỉnh An Giang (trực ban)",
+          phone: "(0296) 3892 113",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "11 Lê Hồng Phong, TP. Long Xuyên, An Giang"
+        },
+        {
+          name: "Sở TT&TT An Giang",
+          phone: "(0296) 3952 568",
+          email: "stttt@angiang.gov.vn",
+          reportLink: "Không có",
+          address: "6 Lê Triệu Kiết, P. Mỹ Bình, TP. Long Xuyên, An Giang"
+        }
+      ]
+    },
+    {
+      province: "Bà Rịa – Vũng Tàu",
+      channels: [
+        {
+          name: "Công an tỉnh BR-Vũng Tàu (Phòng ANM&PCTP CNC)",
+          phone: "(0254) 3852 361",
+          email: "congan@baria-vungtau.gov.vn",
+          reportLink: "Không có",
+          address: "15 Trường Chinh, P. Phước Trung, TP. Bà Rịa"
+        },
+        {
+          name: "Sở TT&TT BR-Vũng Tàu",
+          phone: "(0254) 3852 999",
+          email: "stttt@baria-vungtau.gov.vn",
+          reportLink: "Không có",
+          address: "68 Trường Chinh, P. Phước Trung, TP. Bà Rịa, BR-VT"
+        }
+      ]
+    },
+    {
+      province: "Bạc Liêu",
+      channels: [
+        {
+          name: "Công an tỉnh Bạc Liêu (trực ban)",
+          phone: "(0291) 3824 Báo cáo qua 113",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "01 Nguyễn Tất Thành, P. 1, TP. Bạc Liêu, Bạc Liêu"
+        },
+        {
+          name: "Sở TT&TT Bạc Liêu",
+          phone: "(0291) 3824 310",
+          email: "stttt@baclieu.gov.vn",
+          reportLink: "Không có",
+          address: "02 Hùng Vương, P. 1, TP. Bạc Liêu, Bạc Liêu"
+        }
+      ]
+    },
+    {
+      province: "Bắc Giang",
+      channels: [
+        {
+          name: "Công an tỉnh Bắc Giang (trực ban hình sự)",
+          phone: "0204.3855.266",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "20 Đường Xương Giang, TP. Bắc Giang, Bắc Giang"
+        },
+        {
+          name: "Sở TT&TT Bắc Giang",
+          phone: "0204.3555.996",
+          email: "sottttvt@bacgiang.gov.vn",
+          reportLink: "Không có",
+          address: "Đường Hoàng Văn Thụ, TP. Bắc Giang, Bắc Giang"
+        }
+      ]
+    },
+    {
+      province: "Bắc Kạn",
+      channels: [
+        {
+          name: "Công an tỉnh Bắc Kạn (trực ban)",
+          phone: "(0209) 3874 113",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Tổ 1A, P. Phùng Chí Kiên, TP. Bắc Kạn, Bắc Kạn"
+        },
+        {
+          name: "Sở TT&TT Bắc Kạn",
+          phone: "(0209) 3874 318",
+          email: "stttt@backan.gov.vn",
+          reportLink: "Không có",
+          address: "16 Trường Chinh, P. Nguyễn Thị Minh Khai, TP. Bắc Kạn"
+        }
+      ]
+    },
+    {
+      province: "Bắc Ninh",
+      channels: [
+        {
+          name: "Công an tỉnh Bắc Ninh (đường dây nóng tố giác lừa đảo)",
+          phone: "069.2609.999",
+          email: "bbt.ca@bacninh.gov.vn",
+          reportLink: "Không có",
+          address: "14 Lý Thái Tổ, P. Suối Hoa, TP. Bắc Ninh"
+        },
+        {
+          name: "Sở TT&TT Bắc Ninh",
+          phone: "(0222) 3822 401",
+          email: "stttt@bacninh.gov.vn",
+          reportLink: "Không có",
+          address: "33 Lý Thái Tổ, TP. Bắc Ninh, Bắc Ninh"
+        }
+      ]
+    },
+    {
+      province: "Bến Tre",
+      channels: [
+        {
+          name: "Công an tỉnh Bến Tre (trực ban)",
+          phone: "(0275) 3822 197",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "404D Nguyễn Huệ, P. Phú Khương, TP. Bến Tre, Bến Tre"
+        },
+        {
+          name: "Sở TT&TT Bến Tre",
+          phone: "(0275) 3822 005",
+          email: "stttt@bentre.gov.vn",
+          reportLink: "Không có",
+          address: "18 Cách Mạng Tháng Tám, P. An Hội, TP. Bến Tre, Bến Tre"
+        }
+      ]
+    },
+    {
+      province: "Bình Định",
+      channels: [
+        {
+          name: "Công an tỉnh Bình Định (trực ban)",
+          phone: "(0256) 3822 387",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "114 Nguyễn Huệ, TP. Quy Nhơn, Bình Định"
+        },
+        {
+          name: "Sở TT&TT Bình Định",
+          phone: "(0256) 3818 388",
+          email: "stttt@binhdinh.gov.vn",
+          reportLink: "Không có",
+          address: "316 Trần Hưng Đạo, TP. Quy Nhơn, Bình Định"
+        }
+      ]
+    },
+    // Continue adding other provinces...
+    {
+      province: "Hà Nội",
+      channels: [
+        {
+          name: "Công an TP. Hà Nội (Phòng ANM&PCTP CNC)",
+          phone: "Liên hệ Cục A05: 069.219.4053",
+          email: "Không có thông tin",
+          reportLink: "Ứng dụng VNeID",
+          address: "87 Trần Hưng Đạo, Q. Hoàn Kiếm, Hà Nội"
+        },
+        {
+          name: "Sở TT&TT Hà Nội",
+          phone: "(024) 3512 3536 / (024) 3736 6620",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "185 Giảng Võ, Q. Đống Đa, Hà Nội"
+        }
+      ]
+    },
+    {
+      province: "TP. Hồ Chí Minh",
+      channels: [
+        {
+          name: "Công an TP. HCM (Phòng ANM&PCTP CNC)",
+          phone: "0693.187.263",
+          email: "anm.catphcm@gmail.com",
+          reportLink: "Không có",
+          address: "268 Trần Hưng Đạo, P. Nguyễn Cư Trinh, Q.1, TP. HCM"
+        },
+        {
+          name: "Sở TT&TT TP. HCM",
+          phone: "(028) 3520.2727",
+          email: "ttcntttt@tphcm.gov.vn",
+          reportLink: "Cổng 1022",
+          address: "59 Lý Tự Trọng, P. Bến Nghé, Q.1, TP. HCM"
+        }
+      ]
+    },
+    {
+      province: "Đà Nẵng",
+      channels: [
+        {
+          name: "Công an TP. Đà Nẵng (Phòng ANM&PCTP CNC)",
+          phone: "Không công bố",
+          email: "bbtcatp@danang.gov.vn",
+          reportLink: "Facebook: fb.com/congantpdanang",
+          address: "47 Lý Tự Trọng, Q. Hải Châu, TP. Đà Nẵng"
+        },
+        {
+          name: "Sở TT&TT Đà Nẵng",
+          phone: "(0236) 3888 888",
+          email: "stttt@danang.gov.vn",
+          reportLink: "1022 Đà Nẵng",
+          address: "15 Quang Trung, Q. Hải Châu, TP. Đà Nẵng"
         }
       ]
     }
@@ -307,12 +532,76 @@ const ReportingResourcesSection = () => {
             Dưới đây là danh sách các đầu mối liên hệ để báo cáo tội phạm mạng tại các quốc gia trên thế giới.
           </p>
           
-          <Tabs defaultValue="asia" className="mb-8">
-            <TabsList className="mb-4 flex justify-center">
+          <Tabs defaultValue="local" className="mb-8">
+            <TabsList className="mb-4 flex justify-center flex-wrap">
+              <TabsTrigger value="local">Địa phương (Việt Nam)</TabsTrigger>
               <TabsTrigger value="asia">Châu Á</TabsTrigger>
               <TabsTrigger value="english-speaking">Các nước nói tiếng Anh</TabsTrigger>
               <TabsTrigger value="international">Tổ chức quốc tế</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="local" className="rounded-md border p-4">
+              <h3 className="text-xl font-bold mb-4">Cơ quan chức năng tại các tỉnh thành Việt Nam</h3>
+              <div className="mb-6">
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-4">
+                  <p className="text-sm">
+                    Bảng dưới đây liệt kê đầu mối liên hệ của Công an và Sở Thông tin & Truyền thông tại các tỉnh thành Việt Nam. 
+                    Bạn có thể báo cáo trực tiếp tới các đơn vị này khi gặp lừa đảo trực tuyến.
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {vietnamLocalContacts.map((province) => (
+                    <Card key={province.province} className="overflow-hidden">
+                      <CardHeader className="bg-security/10 p-4">
+                        <CardTitle className="text-lg flex items-center">
+                          <MapPin className="h-5 w-5 mr-2 text-security" />
+                          {province.province}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        {province.channels.map((channel, idx) => (
+                          <div key={idx} className="mb-3 pb-3 border-b border-gray-100 last:border-b-0 last:mb-0 last:pb-0">
+                            <h4 className="font-medium text-sm mb-2">{channel.name}</h4>
+                            
+                            {channel.phone !== "Không có thông tin" && (
+                              <div className="flex items-start text-xs mb-1">
+                                <Phone className="h-3.5 w-3.5 text-security mr-1.5 mt-0.5 flex-shrink-0" />
+                                <span>{channel.phone}</span>
+                              </div>
+                            )}
+                            
+                            {channel.email !== "Không có thông tin" && (
+                              <div className="flex items-start text-xs mb-1">
+                                <Mail className="h-3.5 w-3.5 text-security mr-1.5 mt-0.5 flex-shrink-0" />
+                                <a 
+                                  href={`mailto:${channel.email}`}
+                                  className="text-security hover:underline break-all"
+                                >
+                                  {channel.email}
+                                </a>
+                              </div>
+                            )}
+                            
+                            {channel.reportLink !== "Không có" && (
+                              <div className="flex items-start text-xs mb-1">
+                                <Globe className="h-3.5 w-3.5 text-security mr-1.5 mt-0.5 flex-shrink-0" />
+                                <span>{channel.reportLink}</span>
+                              </div>
+                            )}
+                            
+                            <div className="flex items-start text-xs">
+                              <MapPin className="h-3.5 w-3.5 text-security mr-1.5 mt-0.5 flex-shrink-0" />
+                              <span>{channel.address}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
             
             <TabsContent value="asia" className="rounded-md border p-4">
               <h3 className="text-xl font-bold mb-4">Cơ quan chức năng tại Châu Á</h3>
