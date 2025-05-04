@@ -1,3 +1,4 @@
+
 import { Shield, Building, Flag, Mail, Phone, Globe, MapPin, Search } from "lucide-react";
 import { 
   Accordion, 
@@ -1321,10 +1322,206 @@ const ReportingResourcesSection = () => {
         }
       ]
     }
-  ]; // Add closing bracket for vietnamLocalContacts array
+  ];
 
   return (
-    // ... keep existing code (component JSX)
+    <div className="container mx-auto py-8">
+      <h2 className="text-3xl font-bold mb-6 text-center">Kênh Báo Cáo Lừa Đảo</h2>
+      <p className="text-lg mb-8 text-center">
+        Tìm các kênh báo cáo lừa đảo trực tuyến và thông tin liên hệ của cơ quan chức năng.
+      </p>
+
+      <div className="mb-8">
+        <Input
+          placeholder="Tìm kiếm thông tin liên hệ..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="mb-4"
+        />
+      </div>
+
+      <Tabs defaultValue="resources" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="resources">Tổ chức và đơn vị báo cáo</TabsTrigger>
+          <TabsTrigger value="local">Cơ quan địa phương</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="resources" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {resourceCategories.map((category) => (
+              <Card key={category.id} className="h-full">
+                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                  <div className="bg-muted p-2 rounded-full">
+                    {category.icon}
+                  </div>
+                  <CardTitle className="text-xl">{category.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">{category.description}</p>
+                  <Accordion type="single" collapsible className="w-full">
+                    {category.resources.map((resource, idx) => (
+                      <AccordionItem key={idx} value={`item-${idx}`}>
+                        <AccordionTrigger className="text-left">
+                          {resource.name}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-2">
+                            <p>{resource.description}</p>
+                            {resource.url && (
+                              <p className="flex items-center gap-2">
+                                <Globe className="h-4 w-4" />
+                                <a
+                                  href={resource.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline"
+                                >
+                                  Website
+                                </a>
+                              </p>
+                            )}
+                            {resource.email && (
+                              <p className="flex items-center gap-2">
+                                <Mail className="h-4 w-4" />
+                                <a
+                                  href={`mailto:${resource.email}`}
+                                  className="text-primary hover:underline"
+                                >
+                                  {resource.email}
+                                </a>
+                              </p>
+                            )}
+                            {resource.phone && (
+                              <p className="flex items-center gap-2">
+                                <Phone className="h-4 w-4" />
+                                <span>{resource.phone}</span>
+                              </p>
+                            )}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="local" className="mt-4">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="w-full md:w-1/3">
+              <div className="mb-4 relative">
+                <Input
+                  placeholder="Tìm kiếm tỉnh thành..."
+                  onFocus={() => setShowCommandList(true)}
+                  className="w-full"
+                />
+                {showCommandList && (
+                  <div className="absolute w-full z-10 mt-1 bg-background border rounded-md shadow-lg">
+                    <Command>
+                      <CommandInput placeholder="Tìm kiếm tỉnh thành..." />
+                      <CommandList>
+                        <CommandEmpty>Không tìm thấy kết quả.</CommandEmpty>
+                        <CommandGroup>
+                          {vietnamLocalContacts.map((location) => (
+                            <CommandItem 
+                              key={location.province}
+                              onSelect={() => {
+                                setSelectedProvince(location.province);
+                                setShowCommandList(false);
+                              }}
+                            >
+                              {location.province}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </div>
+                )}
+              </div>
+
+              <div className="h-[600px] overflow-y-auto pr-2 border rounded-md p-4">
+                {vietnamLocalContacts.map((location) => (
+                  <div
+                    key={location.province}
+                    className={`mb-2 p-2 cursor-pointer rounded-md ${
+                      selectedProvince === location.province
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-accent"
+                    }`}
+                    onClick={() => setSelectedProvince(location.province)}
+                  >
+                    {location.province}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="w-full md:w-2/3">
+              {selectedProvince ? (
+                <div>
+                  <h3 className="text-2xl font-semibold mb-4">
+                    {selectedProvince}
+                  </h3>
+                  <div className="space-y-6">
+                    {vietnamLocalContacts
+                      .find((l) => l.province === selectedProvince)
+                      ?.channels.map((channel, idx) => (
+                        <Card key={idx}>
+                          <CardHeader>
+                            <CardTitle>{channel.name}</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              {channel.phone && (
+                                <div className="flex items-start gap-2">
+                                  <Phone className="h-4 w-4 mt-1 shrink-0" />
+                                  <p className="whitespace-pre-line">{channel.phone}</p>
+                                </div>
+                              )}
+                              {channel.email && channel.email !== "Không có thông tin" && (
+                                <div className="flex items-start gap-2">
+                                  <Mail className="h-4 w-4 mt-1 shrink-0" />
+                                  <a
+                                    href={`mailto:${channel.email}`}
+                                    className="text-primary hover:underline"
+                                  >
+                                    {channel.email}
+                                  </a>
+                                </div>
+                              )}
+                              {channel.reportLink && channel.reportLink !== "Không có" && (
+                                <div className="flex items-start gap-2">
+                                  <Flag className="h-4 w-4 mt-1 shrink-0" />
+                                  <span>{channel.reportLink}</span>
+                                </div>
+                              )}
+                              {channel.address && (
+                                <div className="flex items-start gap-2">
+                                  <MapPin className="h-4 w-4 mt-1 shrink-0" />
+                                  <span>{channel.address}</span>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-lg text-muted-foreground">
+                    Vui lòng chọn một tỉnh thành để xem thông tin liên hệ
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
