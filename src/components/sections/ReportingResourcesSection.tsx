@@ -252,6 +252,27 @@ const ReportingResourcesSection = () => {
   ];
 
   useEffect(() => {
+    // Initialize default values before any filtering
+    let initialItems: any[] = [];
+    switch (activeDataSource) {
+      case 'asian':
+        initialItems = [...asianCountries];
+        break;
+      case 'english':
+        initialItems = [...englishSpeakingCountries];
+        break;
+      case 'international':
+        initialItems = [...internationalOrganizations];
+        break;
+      case 'local':
+        initialItems = [...vietnamLocalContacts];
+        break;
+      case 'resources':
+      default:
+        initialItems = [...resourceCategories];
+        break;
+    }
+    
     // Filter data based on the active tab and search query
     if (searchQuery.trim()) {
       switch (activeDataSource) {
@@ -291,24 +312,7 @@ const ReportingResourcesSection = () => {
       }
     } else {
       // If no search query, show all items
-      switch (activeDataSource) {
-        case 'asian':
-          setFilteredItems(asianCountries);
-          break;
-        case 'english':
-          setFilteredItems(englishSpeakingCountries);
-          break;
-        case 'international':
-          setFilteredItems(internationalOrganizations);
-          break;
-        case 'local':
-          setFilteredItems(vietnamLocalContacts);
-          break;
-        case 'resources':
-        default:
-          setFilteredItems(resourceCategories);
-          break;
-      }
+      setFilteredItems(initialItems);
     }
   }, [searchQuery, activeDataSource]);
 
@@ -979,6 +983,11 @@ const ReportingResourcesSection = () => {
     }
   ];
 
+  // Helper function to safely render arrays
+  const renderSafeArray = (arr: any[] | undefined, defaultArr: any[]) => {
+    return (Array.isArray(arr) && arr.length > 0) ? arr : defaultArr;
+  };
+
   return (
     <div className="container mx-auto py-12">
       <h1 className="text-3xl font-bold text-center mb-8">Nguồn lực báo cáo nội dung lừa đảo</h1>
@@ -1005,10 +1014,10 @@ const ReportingResourcesSection = () => {
           
           <TabsContent value="resources">
             <div className="grid gap-6 md:grid-cols-1">
-              {filteredItems.length > 0 ? (
+              {renderSafeArray(filteredItems, resourceCategories).length > 0 ? (
                 <Accordion type="single" collapsible className="w-full">
-                  {filteredItems.map((category: ResourceCategory) => (
-                    <AccordionItem key={category.id} value={category.id}>
+                  {renderSafeArray(filteredItems, resourceCategories).map((category: ResourceCategory, index: number) => (
+                    <AccordionItem key={category.id || index} value={category.id || `category-${index}`}>
                       <AccordionTrigger>
                         <div className="flex items-center gap-2">
                           {category.icon}
@@ -1018,8 +1027,8 @@ const ReportingResourcesSection = () => {
                       <AccordionContent>
                         <p className="mb-4 text-muted-foreground">{category.description}</p>
                         <div className="space-y-4">
-                          {category.resources.map((resource, index) => (
-                            <Card key={index}>
+                          {category.resources && category.resources.map((resource, idx) => (
+                            <Card key={idx}>
                               <CardHeader>
                                 <CardTitle>
                                   {resource.url ? (
@@ -1088,7 +1097,7 @@ const ReportingResourcesSection = () => {
               <div className="grid gap-4">
                 {(selectedProvince 
                   ? vietnamLocalContacts.filter(p => p.province === selectedProvince)
-                  : (filteredItems && Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems : vietnamLocalContacts)
+                  : renderSafeArray(filteredItems, vietnamLocalContacts)
                 ).map((province) => (
                   <Card key={province.province}>
                     <CardHeader>
@@ -1145,7 +1154,7 @@ const ReportingResourcesSection = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(filteredItems && Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems : asianCountries).map((country: CountryContact) => (
+                    {renderSafeArray(filteredItems, asianCountries).map((country: CountryContact) => (
                       <TableRow key={country.country}>
                         <TableCell className="font-medium">{country.country}</TableCell>
                         <TableCell>{country.phone}</TableCell>
@@ -1183,7 +1192,7 @@ const ReportingResourcesSection = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(filteredItems && Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems : englishSpeakingCountries).map((country: CountryContact) => (
+                    {renderSafeArray(filteredItems, englishSpeakingCountries).map((country: CountryContact) => (
                       <TableRow key={country.country}>
                         <TableCell className="font-medium">{country.country}</TableCell>
                         <TableCell>{country.phone}</TableCell>
@@ -1221,7 +1230,7 @@ const ReportingResourcesSection = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(filteredItems && Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems : internationalOrganizations).map((org: InternationalOrg) => (
+                    {renderSafeArray(filteredItems, internationalOrganizations).map((org: InternationalOrg) => (
                       <TableRow key={org.organization}>
                         <TableCell className="font-medium">{org.organization}</TableCell>
                         <TableCell>{org.phone}</TableCell>
