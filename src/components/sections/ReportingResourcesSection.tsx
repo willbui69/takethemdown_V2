@@ -1,4 +1,3 @@
-
 import { Shield, Building, Flag, Mail, Phone, Globe, MapPin, Search } from "lucide-react";
 import { 
   Accordion, 
@@ -26,6 +25,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList
 } from "@/components/ui/command";
 
 interface ResourceLink {
@@ -614,22 +614,24 @@ const ReportingResourcesSection = () => {
                           value={searchQuery} 
                           onValueChange={setSearchQuery}
                         />
-                        <CommandEmpty>Không tìm thấy kết quả</CommandEmpty>
-                        <CommandGroup>
-                          <ScrollArea className="h-72">
-                            {filteredLocalContacts.map((contact) => (
-                              <CommandItem 
-                                key={contact.province} 
-                                onSelect={() => handleProvinceSelect(contact.province)}
-                                value={contact.province}
-                                className="cursor-pointer"
-                              >
-                                <MapPin className="h-4 w-4 mr-2" />
-                                {contact.province}
-                              </CommandItem>
-                            ))}
-                          </ScrollArea>
-                        </CommandGroup>
+                        <CommandList>
+                          <CommandEmpty>Không tìm thấy kết quả</CommandEmpty>
+                          <CommandGroup>
+                            <ScrollArea className="h-72">
+                              {filteredLocalContacts.map((contact) => (
+                                <CommandItem 
+                                  key={contact.province} 
+                                  onSelect={() => handleProvinceSelect(contact.province)}
+                                  value={contact.province}
+                                  className="cursor-pointer"
+                                >
+                                  <MapPin className="h-4 w-4 mr-2" />
+                                  {contact.province}
+                                </CommandItem>
+                              ))}
+                            </ScrollArea>
+                          </CommandGroup>
+                        </CommandList>
                       </Command>
                     </div>
                   )}
