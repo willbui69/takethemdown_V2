@@ -1,3 +1,4 @@
+
 import { Shield, Building, Flag, Mail, Phone, Globe, MapPin, Search } from "lucide-react";
 import { 
   Accordion, 
@@ -1144,7 +1145,7 @@ const ReportingResourcesSection = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(filteredItems as CountryContact[]).map((country) => (
+                    {(filteredItems && filteredItems.length > 0 ? filteredItems : asianCountries).map((country) => (
                       <TableRow key={country.country}>
                         <TableCell className="font-medium">{country.country}</TableCell>
                         <TableCell>{country.phone}</TableCell>
@@ -1182,7 +1183,7 @@ const ReportingResourcesSection = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(filteredItems as CountryContact[]).map((country) => (
+                    {(filteredItems && filteredItems.length > 0 ? filteredItems : englishSpeakingCountries).map((country) => (
                       <TableRow key={country.country}>
                         <TableCell className="font-medium">{country.country}</TableCell>
                         <TableCell>{country.phone}</TableCell>
@@ -1220,7 +1221,7 @@ const ReportingResourcesSection = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(filteredItems as InternationalOrg[]).map((org) => (
+                    {(filteredItems && filteredItems.length > 0 ? filteredItems : internationalOrganizations).map((org) => (
                       <TableRow key={org.organization}>
                         <TableCell className="font-medium">{org.organization}</TableCell>
                         <TableCell>{org.phone}</TableCell>
