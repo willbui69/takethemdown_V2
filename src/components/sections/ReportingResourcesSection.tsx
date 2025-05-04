@@ -1,4 +1,3 @@
-
 import { Shield, Building, Flag, Mail, Phone, Globe } from "lucide-react";
 import { 
   Accordion, 
@@ -90,7 +89,6 @@ const ReportingResourcesSection = () => {
         {
           name: "Take Them Down",
           url: "https://takethemdown.vn",
-          email: "takethemdown.help@gmail.com",
           description: "Dự án phi lợi nhuận hỗ trợ nạn nhân bị lừa đảo trực tuyến tại Việt Nam."
         }
       ]
@@ -105,16 +103,16 @@ const ReportingResourcesSection = () => {
     { country: "South Korea", phone: "112 / 118", email: "-", reportLink: "https://www.police.go.kr/eng/index.do?menuCd=020202" },
     { country: "Taiwan", phone: "110 / 165", email: "-", reportLink: "https://www.iwin.org.tw/" },
     { country: "Indonesia", phone: "110", email: "-", reportLink: "https://patrolisiber.id/" },
-    { country: "Malaysia", phone: "999 / 997", email: "[email protected]", reportLink: "https://www.cybersecurity.my/" },
-    { country: "Philippines", phone: "911", email: "[email protected]", reportLink: "https://www.anticybercrime.org/" },
+    { country: "Malaysia", phone: "999 / 997", email: "-", reportLink: "https://www.cybersecurity.my/" },
+    { country: "Philippines", phone: "911", email: "-", reportLink: "https://www.anticybercrime.org/" },
     { country: "Singapore", phone: "999 / 1800-255-0000", email: "-", reportLink: "https://eservices.police.gov.sg/content/policehub/home.html" },
     { country: "Thailand", phone: "191", email: "-", reportLink: "http://www.technologycrime.go.th/" },
-    { country: "Vietnam", phone: "113", email: "[email protected]", reportLink: "https://toxico.mps.gov.vn/" },
+    { country: "Vietnam", phone: "113", email: "-", reportLink: "https://toxico.mps.gov.vn/" },
     { country: "India", phone: "100 / 112 / Hotline 1930", email: "-", reportLink: "https://cybercrime.gov.in/" },
     { country: "Pakistan", phone: "9911", email: "helpdesk@nr3c.gov.pk", reportLink: "https://www.fia.gov.pk/en/cyber-crime" },
     { country: "Bangladesh", phone: "999", email: "-", reportLink: "https://dmp.police.gov.bd/" },
-    { country: "Sri Lanka", phone: "119", email: "[email protected]", reportLink: "https://cert.gov.lk/" },
-    { country: "Nepal", phone: "100", email: "[email protected]", reportLink: "- (walk-in or email to Cyber Bureau)" }
+    { country: "Sri Lanka", phone: "119", email: "-", reportLink: "https://cert.gov.lk/" },
+    { country: "Nepal", phone: "100", email: "-", reportLink: "- (walk-in or email to Cyber Bureau)" }
   ];
 
   const englishSpeakingContacts: CountryContact[] = [
