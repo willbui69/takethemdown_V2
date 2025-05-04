@@ -122,7 +122,7 @@ const ReportingResourcesSection = () => {
     }
   ];
 
-  // Vietnamese provinces contacts
+  // Vietnamese provinces contacts - updated with all provinces
   const vietnamLocalContacts: LocalContact[] = [
     {
       province: "An Giang",
@@ -276,42 +276,117 @@ const ReportingResourcesSection = () => {
         }
       ]
     },
-    // Continue adding other provinces...
     {
-      province: "Hà Nội",
+      province: "Bình Dương",
       channels: [
         {
-          name: "Công an TP. Hà Nội (Phòng ANM&PCTP CNC)",
-          phone: "Liên hệ Cục A05: 069.219.4053",
-          email: "Không có thông tin",
-          reportLink: "Ứng dụng VNeID",
-          address: "87 Trần Hưng Đạo, Q. Hoàn Kiếm, Hà Nội"
-        },
-        {
-          name: "Sở TT&TT Hà Nội",
-          phone: "(024) 3512 3536 / (024) 3736 6620",
+          name: "Công an tỉnh Bình Dương (đường dây nóng)",
+          phone: "(0274) 3822 638",
           email: "Không có thông tin",
           reportLink: "Không có",
-          address: "185 Giảng Võ, Q. Đống Đa, Hà Nội"
+          address: "681 CMT8, P. Chánh Nghĩa, TP. Thủ Dầu Một, Bình Dương"
+        },
+        {
+          name: "Sở TT&TT Bình Dương",
+          phone: "(0274) 3822 000",
+          email: "stttt@binhduong.gov.vn",
+          reportLink: "Không có",
+          address: "Tầng 20 Tháp A, Tòa nhà Trung tâm Hành chính, TP. Thủ Dầu Một, Bình Dương"
         }
       ]
     },
     {
-      province: "TP. Hồ Chí Minh",
+      province: "Bình Phước",
       channels: [
         {
-          name: "Công an TP. HCM (Phòng ANM&PCTP CNC)",
-          phone: "0693.187.263",
-          email: "anm.catphcm@gmail.com",
+          name: "Công an tỉnh Bình Phước (đường dây nóng)",
+          phone: "(0271) 3879 434",
+          email: "Không có thông tin",
           reportLink: "Không có",
-          address: "268 Trần Hưng Đạo, P. Nguyễn Cư Trinh, Q.1, TP. HCM"
+          address: "12 Trần Hưng Đạo, P. Tân Phú, TP. Đồng Xoài, Bình Phước"
         },
         {
-          name: "Sở TT&TT TP. HCM",
-          phone: "(028) 3520.2727",
-          email: "ttcntttt@tphcm.gov.vn",
-          reportLink: "Cổng 1022",
-          address: "59 Lý Tự Trọng, P. Bến Nghé, Q.1, TP. HCM"
+          name: "Sở TT&TT Bình Phước",
+          phone: "(0271) 3880 161",
+          email: "stttt@binhphuoc.gov.vn",
+          reportLink: "Không có",
+          address: "0QL14, P. Tân Phú, TP. Đồng Xoài, Bình Phước"
+        }
+      ]
+    },
+    {
+      province: "Bình Thuận",
+      channels: [
+        {
+          name: "Công an tỉnh Bình Thuận (trực ban)",
+          phone: "(0252) 3862 113",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "347 Thủ Khoa Huân, TP. Phan Thiết, Bình Thuận"
+        },
+        {
+          name: "Sở TT&TT Bình Thuận",
+          phone: "(0252) 3833 500",
+          email: "stttt@binhthuan.gov.vn",
+          reportLink: "Không có",
+          address: "06 Nguyễn Tất Thành, TP. Phan Thiết, Bình Thuận"
+        }
+      ]
+    },
+    {
+      province: "Cà Mau",
+      channels: [
+        {
+          name: "Công an tỉnh Cà Mau (trực ban)",
+          phone: "(0290) 3839 113",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "85 Lý Thường Kiệt, P. 6, TP. Cà Mau, Cà Mau"
+        },
+        {
+          name: "Sở TT&TT Cà Mau",
+          phone: "(0290) 3822 382",
+          email: "stttt@camau.gov.vn",
+          reportLink: "Không có",
+          address: "64 Phan Đình Phùng, P. 9, TP. Cà Mau, Cà Mau"
+        }
+      ]
+    },
+    {
+      province: "Cần Thơ",
+      channels: [
+        {
+          name: "Công an TP. Cần Thơ (đường dây nóng)",
+          phone: "069.3672.888",
+          email: "catp@cantho.gov.vn",
+          reportLink: "Không có",
+          address: "9A Trần Phú, P. Cái Khế, Q. Ninh Kiều, TP. Cần Thơ"
+        },
+        {
+          name: "Sở TT&TT Cần Thơ",
+          phone: "(0292) 3762 222",
+          email: "stttt@cantho.gov.vn",
+          reportLink: "Không có",
+          address: "1A Ngô Văn Sở, P. Tân An, Q. Ninh Kiều, TP. Cần Thơ"
+        }
+      ]
+    },
+    {
+      province: "Cao Bằng",
+      channels: [
+        {
+          name: "Công an tỉnh Cao Bằng (trực ban)",
+          phone: "(0206) 3856 226",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "123 Xuân Trường, P. Hợp Giang, TP. Cao Bằng, Cao Bằng"
+        },
+        {
+          name: "Sở TT&TT Cao Bằng",
+          phone: "(0206) 3753 789",
+          email: "stttt@caobang.gov.vn",
+          reportLink: "Không có",
+          address: "11 Hoàng Đình Giong, P. Hợp Giang, TP. Cao Bằng, Cao Bằng"
         }
       ]
     },
@@ -333,569 +408,375 @@ const ReportingResourcesSection = () => {
           address: "15 Quang Trung, Q. Hải Châu, TP. Đà Nẵng"
         }
       ]
-    }
-  ];
-
-  // International reporting contacts
-  const asianContacts: CountryContact[] = [
-    { country: "China", phone: "110 (police) / 96110", email: "-", reportLink: "- (Báo cáo qua trang web của Cục An ninh địa phương)" },
-    { country: "Hong Kong", phone: "999", email: "-", reportLink: "https://www.police.gov.hk/ppp_en/04_crime_matters/cybercrime_report.html" },
-    { country: "Japan", phone: "110", email: "-", reportLink: "https://www.npa.go.jp/cyber/" },
-    { country: "South Korea", phone: "112 / 118", email: "-", reportLink: "https://www.police.go.kr/eng/index.do?menuCd=020202" },
-    { country: "Taiwan", phone: "110 / 165", email: "-", reportLink: "https://www.iwin.org.tw/" },
-    { country: "Indonesia", phone: "110", email: "-", reportLink: "https://patrolisiber.id/" },
-    { country: "Malaysia", phone: "999 / 997", email: "-", reportLink: "https://www.cybersecurity.my/" },
-    { country: "Philippines", phone: "911", email: "-", reportLink: "https://www.anticybercrime.org/" },
-    { country: "Singapore", phone: "999 / 1800-255-0000", email: "-", reportLink: "https://eservices.police.gov.sg/content/policehub/home.html" },
-    { country: "Thailand", phone: "191", email: "-", reportLink: "http://www.technologycrime.go.th/" },
-    { country: "Vietnam", phone: "113", email: "-", reportLink: "https://toxico.mps.gov.vn/" },
-    { country: "India", phone: "100 / 112 / Hotline 1930", email: "-", reportLink: "https://cybercrime.gov.in/" },
-    { country: "Pakistan", phone: "9911", email: "helpdesk@nr3c.gov.pk", reportLink: "https://www.fia.gov.pk/en/cyber-crime" },
-    { country: "Bangladesh", phone: "999", email: "-", reportLink: "https://dmp.police.gov.bd/" },
-    { country: "Sri Lanka", phone: "119", email: "-", reportLink: "https://cert.gov.lk/" },
-    { country: "Nepal", phone: "100", email: "-", reportLink: "https://www.nepalpolice.gov.np/other_links/detail/cyber-bureau/" }
-  ];
-
-  const englishSpeakingContacts: CountryContact[] = [
-    { 
-      country: "USA", 
-      phone: "- (varies by state)", 
-      email: "-", 
-      reportLink: "https://www.ic3.gov/ (cybercrime), https://report.cybertip.org/ (child abuse)" 
     },
-    { 
-      country: "UK", 
-      phone: "0300 123 2040 / 101 / 999", 
-      email: "-", 
-      reportLink: "https://www.actionfraud.police.uk/, https://www.ceop.police.uk/safety-centre/" 
+    {
+      province: "Đắk Lắk",
+      channels: [
+        {
+          name: "Công an tỉnh Đắk Lắk (đường dây nóng tố giác)",
+          phone: "0694.389.211\n02623.818.568",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "58 Nguyễn Tất Thành, TP. Buôn Ma Thuột, Đắk Lắk"
+        },
+        {
+          name: "Sở TT&TT Đắk Lắk",
+          phone: "(0262) 3851 788",
+          email: "stttt@daklak.gov.vn",
+          reportLink: "Không có",
+          address: "08 Nguyễn Tất Thành, TP. Buôn Ma Thuột, Đắk Lắk"
+        }
+      ]
     },
-    { 
-      country: "Canada", 
-      phone: "1-888 495 8501 / 911", 
-      email: "-", 
-      reportLink: "https://www.antifraudcentre-centreantifraude.ca/, https://www.cybertip.ca/" 
+    {
+      province: "Đắk Nông",
+      channels: [
+        {
+          name: "Công an tỉnh Đắk Nông (đường dây nóng)",
+          phone: "0261.3551.567\n0261.3546.788",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "Tổ 2, P. Nghĩa Phú, TP. Gia Nghĩa, Đắk Nông"
+        },
+        {
+          name: "Sở TT&TT Đắk Nông",
+          phone: "(0261) 3545 678",
+          email: "stttt@daknong.gov.vn",
+          reportLink: "Không có",
+          address: "23 Huỳnh Thúc Kháng, P. Nghĩa Tân, TP. Gia Nghĩa, Đắk Nông"
+        }
+      ]
     },
-    { 
-      country: "Australia", 
-      phone: "1300 292 371 / 000", 
-      email: "-", 
-      reportLink: "https://www.cyber.gov.au/report, https://www.esafety.gov.au/report" 
+    {
+      province: "Điện Biên",
+      channels: [
+        {
+          name: "Công an tỉnh Điện Biên (trực ban)",
+          phone: "(0215) 3824 328",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "679 Võ Nguyên Giáp, P. Him Lam, TP. Điện Biên Phủ, Điện Biên"
+        },
+        {
+          name: "Sở TT&TT Điện Biên",
+          phone: "(0215) 3814 446",
+          email: "stttt@dienbien.gov.vn",
+          reportLink: "Không có",
+          address: "Tổ 2, P. Mường Thanh, TP. Điện Biên Phủ, Điện Biên"
+        }
+      ]
     },
-    { 
-      country: "New Zealand", 
-      phone: "0508 638 723 / 111 / 105", 
-      email: "-", 
-      reportLink: "https://report.netsafe.org.nz/, https://www.cert.govt.nz/" 
+    {
+      province: "Đồng Nai",
+      channels: [
+        {
+          name: "Công an tỉnh Đồng Nai (đường dây nóng)",
+          phone: "(0251) 8820 999",
+          email: "congan@dongnai.gov.vn",
+          reportLink: "Không có",
+          address: "161 Phạm Văn Thuận, P. Tân Tiến, TP. Biên Hòa, Đồng Nai"
+        },
+        {
+          name: "Sở TT&TT Đồng Nai",
+          phone: "(0251) 3822 999",
+          email: "stttt@dongnai.gov.vn",
+          reportLink: "Không có",
+          address: "15 Đồng Khởi, P. Tân Tiến, TP. Biên Hòa, Đồng Nai"
+        }
+      ]
     },
-    { 
-      country: "Ireland", 
-      phone: "1800 666 111 / 999 / 112", 
-      email: "-", 
-      reportLink: "https://www.crimestoppers.ie/, https://www.hotline.ie/" 
+    {
+      province: "Đồng Tháp",
+      channels: [
+        {
+          name: "Công an tỉnh Đồng Tháp (trực ban)",
+          phone: "(0277) 3883 138",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "15 Lê Đại Hành, P. Mỹ Phú, TP. Cao Lãnh, Đồng Tháp"
+        },
+        {
+          name: "Sở TT&TT Đồng Tháp",
+          phone: "(0277) 3872 451",
+          email: "stttt@dongthap.gov.vn",
+          reportLink: "Không có",
+          address: "27 Lê Quý Đôn, P. 1, TP. Cao Lãnh, Đồng Tháp"
+        }
+      ]
     },
-    { 
-      country: "South Africa", 
-      phone: "08600 10111 / 10111", 
-      email: "-", 
-      reportLink: "https://www.saps.gov.za/services/crimestop.php" 
-    }
-  ];
-
-  const internationalOrgs: CountryContact[] = [
-    { country: "INTERPOL", phone: "-", email: "-", reportLink: "Luôn báo cáo qua cơ quan công an địa phương" },
-    { country: "Europol (EC3)", phone: "-", email: "-", reportLink: "Cổng thông tin của cơ quan công an quốc gia (được liệt kê tại Europol)" },
-    { country: "CEOP (UK child protection)", phone: "-", email: "-", reportLink: "https://www.ceop.police.uk/safety-centre/" },
-    { country: "INHOPE", phone: "-", email: "-", reportLink: "https://www.inhope.org/" }
-  ];
-
-  // Filter local contacts based on search query
-  const filteredLocalContacts = vietnamLocalContacts.filter((contact) =>
-    contact.province.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Function to handle province selection
-  const handleProvinceSelect = (province: string) => {
-    setSelectedProvince(province);
-    setSearchQuery(province);
-    setShowCommandList(false);
-  };
-
-  // Get the selected province details
-  const selectedProvinceData = vietnamLocalContacts.find(
-    (contact) => contact.province === selectedProvince
-  );
-
-  // Show command list when search query is not empty and no province is selected
-  useEffect(() => {
-    if (searchQuery && !selectedProvince) {
-      setShowCommandList(true);
-    } else {
-      setShowCommandList(false);
-    }
-  }, [searchQuery, selectedProvince]);
-
-  // Helper function to render contact channels - updated to show all channels
-  const renderContactChannels = (channels) => {
-    return channels.map((channel, idx) => (
-      <div key={idx} className="space-y-1 text-xs mb-2 last:mb-0">
-        <h5 className="font-medium text-xs">{channel.name}</h5>
-        
-        {channel.phone !== "Không có thông tin" && (
-          <div className="flex items-start">
-            <Phone className="h-3 w-3 text-security mr-1.5 mt-0.5 flex-shrink-0" />
-            <span className="truncate">{channel.phone}</span>
-          </div>
-        )}
-        
-        {channel.email !== "Không có thông tin" && (
-          <div className="flex items-start">
-            <Mail className="h-3 w-3 text-security mr-1.5 mt-0.5 flex-shrink-0" />
-            <span className="truncate">{channel.email}</span>
-          </div>
-        )}
-      </div>
-    ));
-  };
-
-  return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <h1 className="text-4xl font-bold mb-4">Hướng Dẫn Báo Cáo</h1>
-          <p className="text-gray-600">
-            Trang này cung cấp thông tin về cách báo cáo các hoạt động lừa đảo trực tuyến đến các cơ quan chức năng và tổ chức có trách nhiệm.
-          </p>
-        </div>
-
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-center">Khi nào nên báo cáo?</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center">Gặp trang web lừa đảo</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Nếu bạn phát hiện trang web giả mạo các tổ chức tài chính, doanh nghiệp hoặc cá nhân với mục đích lừa đảo.</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center">Bị mất tiền hoặc thông tin</CardTitle>  
-              </CardHeader>
-              <CardContent>
-                <p>Nếu bạn đã trở thành nạn nhân của lừa đảo, mất tiền hoặc thông tin cá nhân nhạy cảm.</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center">Bị giả mạo danh tính</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Nếu ai đó đang giả mạo bạn hoặc tổ chức của bạn trên mạng xã hội hoặc các nền tảng trực tuyến.</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-center">Các bước báo cáo hiệu quả</h2>
-          
-          <div className="bg-gray-50 p-6 rounded-lg mb-8">
-            <ol className="list-decimal pl-5 space-y-4">
-              <li>
-                <span className="font-medium">Thu thập bằng chứng</span>: Chụp màn hình, lưu URL, tin nhắn và mọi thông tin liên quan.
-              </li>
-              <li>
-                <span className="font-medium">Ghi lại thời gian</span>: Ghi chú thời gian xảy ra sự việc và các chi tiết quan trọng.
-              </li>
-              <li>
-                <span className="font-medium">Liên hệ cơ quan có thẩm quyền</span>: Báo cáo cho các cơ quan thực thi pháp luật hoặc tổ chức liên quan.
-              </li>
-              <li>
-                <span className="font-medium">Báo cáo trên nền tảng</span>: Sử dụng công cụ báo cáo của nền tảng nơi xảy ra vi phạm.
-              </li>
-              <li>
-                <span className="font-medium">Đề phòng thiệt hại</span>: Thay đổi mật khẩu, thông báo cho ngân hàng nếu liên quan đến tài chính.
-              </li>
-            </ol>
-          </div>
-        </div>
-
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-center">Nguồn lực báo cáo</h2>
-          
-          <Accordion type="single" collapsible className="w-full mb-8">
-            {resourceCategories.map((category) => (
-              <AccordionItem key={category.id} value={category.id}>
-                <AccordionTrigger className="flex items-center">
-                  <div className="flex items-center">
-                    {category.icon}
-                    <span className="ml-3">{category.title}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <p className="mb-4 text-gray-600">{category.description}</p>
-                  
-                  <div className="space-y-4">
-                    {category.resources.map((resource, index) => (
-                      <div key={index} className="p-4 bg-white border border-gray-200 rounded-md">
-                        <h4 className="font-medium mb-2">{resource.name}</h4>
-                        <p className="text-sm text-gray-600 mb-2">{resource.description}</p>
-                        
-                        <div className="mt-2 space-y-1">
-                          {resource.url && (
-                            <div className="flex items-center text-sm">
-                              <Flag className="h-4 w-4 text-security mr-2" />
-                              <a 
-                                href={resource.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="text-security hover:underline"
-                              >
-                                {resource.url}
-                              </a>
-                            </div>
-                          )}
-                          
-                          {resource.email && (
-                            <div className="flex items-center text-sm">
-                              <Mail className="h-4 w-4 text-security mr-2" />
-                              <a 
-                                href={`mailto:${resource.email}`} 
-                                className="text-security hover:underline"
-                              >
-                                {resource.email}
-                              </a>
-                            </div>
-                          )}
-                          
-                          {resource.phone && (
-                            <div className="flex items-center text-sm">
-                              <Phone className="h-4 w-4 text-security mr-2" />
-                              <a 
-                                href={`tel:${resource.phone}`} 
-                                className="text-security hover:underline"
-                              >
-                                {resource.phone}
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-          
-          <h2 className="text-2xl font-bold mb-6 text-center">Danh bạ cơ quan chức năng quốc tế</h2>
-          <p className="text-gray-600 mb-6 text-center">
-            Dưới đây là danh sách các đầu mối liên hệ để báo cáo tội phạm mạng tại các quốc gia trên thế giới.
-          </p>
-          
-          <Tabs defaultValue="local" className="mb-8">
-            <TabsList className="mb-4 flex justify-center flex-wrap">
-              <TabsTrigger value="local">Địa phương (Việt Nam)</TabsTrigger>
-              <TabsTrigger value="asia">Châu Á</TabsTrigger>
-              <TabsTrigger value="english-speaking">Các nước nói tiếng Anh</TabsTrigger>
-              <TabsTrigger value="international">Tổ chức quốc tế</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="local" className="rounded-md border p-4">
-              <h3 className="text-xl font-bold mb-4">Cơ quan chức năng tại các tỉnh thành Việt Nam</h3>
-              <div className="mb-6">
-                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-4">
-                  <p className="text-sm">
-                    Tìm kiếm đầu mối liên hệ của Công an và Sở Thông tin & Truyền thông tại các tỉnh thành Việt Nam. 
-                    Bạn có thể báo cáo trực tiếp tới các đơn vị này khi gặp lừa đảo trực tuyến.
-                  </p>
-                </div>
-                
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Search className="h-5 w-5 text-gray-400" />
-                    <Input
-                      placeholder="Tìm kiếm tỉnh thành..."
-                      className="max-w-sm"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        if (e.target.value === "") setSelectedProvince(null);
-                      }}
-                    />
-                  </div>
-
-                  {showCommandList && filteredLocalContacts.length > 0 && (
-                    <div className="border rounded-md max-w-sm mb-4">
-                      <Command>
-                        <CommandInput 
-                          placeholder="Tìm kiếm tỉnh thành..." 
-                          value={searchQuery} 
-                          onValueChange={setSearchQuery}
-                        />
-                        <CommandList>
-                          <CommandEmpty>Không tìm thấy kết quả</CommandEmpty>
-                          <CommandGroup>
-                            <ScrollArea className="h-72">
-                              {filteredLocalContacts.map((contact) => (
-                                <CommandItem 
-                                  key={contact.province} 
-                                  onSelect={() => handleProvinceSelect(contact.province)}
-                                  value={contact.province}
-                                  className="cursor-pointer"
-                                >
-                                  <MapPin className="h-4 w-4 mr-2" />
-                                  {contact.province}
-                                </CommandItem>
-                              ))}
-                            </ScrollArea>
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </div>
-                  )}
-
-                  {selectedProvince && selectedProvinceData && (
-                    <Card key={selectedProvinceData.province} className="mb-4">
-                      <CardHeader className="bg-security/10 p-4">
-                        <CardTitle className="text-lg flex items-center">
-                          <MapPin className="h-5 w-5 mr-2 text-security" />
-                          {selectedProvinceData.province}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        {selectedProvinceData.channels.map((channel, idx) => (
-                          <div key={idx} className="mb-3 pb-3 border-b border-gray-100 last:border-b-0 last:mb-0 last:pb-0">
-                            <h4 className="font-medium text-sm mb-2">{channel.name}</h4>
-                            
-                            {channel.phone !== "Không có thông tin" && (
-                              <div className="flex items-start text-xs mb-1">
-                                <Phone className="h-3.5 w-3.5 text-security mr-1.5 mt-0.5 flex-shrink-0" />
-                                <span>{channel.phone}</span>
-                              </div>
-                            )}
-                            
-                            {channel.email !== "Không có thông tin" && (
-                              <div className="flex items-start text-xs mb-1">
-                                <Mail className="h-3.5 w-3.5 text-security mr-1.5 mt-0.5 flex-shrink-0" />
-                                <a 
-                                  href={`mailto:${channel.email}`}
-                                  className="text-security hover:underline break-all"
-                                >
-                                  {channel.email}
-                                </a>
-                              </div>
-                            )}
-                            
-                            {channel.reportLink !== "Không có" && (
-                              <div className="flex items-start text-xs mb-1">
-                                <Globe className="h-3.5 w-3.5 text-security mr-1.5 mt-0.5 flex-shrink-0" />
-                                <span>{channel.reportLink}</span>
-                              </div>
-                            )}
-                            
-                            <div className="flex items-start text-xs">
-                              <MapPin className="h-3.5 w-3.5 text-security mr-1.5 mt-0.5 flex-shrink-0" />
-                              <span>{channel.address}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {!selectedProvince && !showCommandList && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {filteredLocalContacts.slice(0, 6).map((province) => (
-                        <Card 
-                          key={province.province} 
-                          className="overflow-hidden cursor-pointer hover:border-security/50 transition-colors"
-                          onClick={() => setSelectedProvince(province.province)}
-                        >
-                          <CardHeader className="bg-security/10 p-4">
-                            <CardTitle className="text-lg flex items-center">
-                              <MapPin className="h-5 w-5 mr-2 text-security" />
-                              {province.province}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-4 max-h-48 overflow-y-auto">
-                            {renderContactChannels(province.channels)}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {!searchQuery && !selectedProvince && (
-                    <div className="flex justify-center mt-4">
-                      <Select onValueChange={(value) => handleProvinceSelect(value)}>
-                        <SelectTrigger className="w-full max-w-sm">
-                          <SelectValue placeholder="Chọn tỉnh thành để xem thông tin" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <ScrollArea className="h-72">
-                            {vietnamLocalContacts.map((contact) => (
-                              <SelectItem key={contact.province} value={contact.province}>
-                                {contact.province}
-                              </SelectItem>
-                            ))}
-                          </ScrollArea>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="asia" className="rounded-md border p-4">
-              <h3 className="text-xl font-bold mb-4">Cơ quan chức năng tại Châu Á</h3>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[180px]">Quốc gia</TableHead>
-                      <TableHead>Số điện thoại</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Liên kết báo cáo</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {asianContacts.map((contact, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{contact.country}</TableCell>
-                        <TableCell>{contact.phone}</TableCell>
-                        <TableCell>
-                          {contact.email !== "-" ? (
-                            <a href={`mailto:${contact.email}`} className="text-security hover:underline">
-                              {contact.email}
-                            </a>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {contact.reportLink.startsWith("http") ? (
-                            <a href={contact.reportLink} target="_blank" rel="noopener noreferrer" className="text-security hover:underline flex items-center">
-                              <Globe className="h-4 w-4 mr-1" /> Truy cập
-                            </a>
-                          ) : (
-                            contact.reportLink
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="english-speaking" className="rounded-md border p-4">
-              <h3 className="text-xl font-bold mb-4">Cơ quan chức năng tại các nước nói tiếng Anh</h3>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[180px]">Quốc gia</TableHead>
-                      <TableHead>Số điện thoại</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Liên kết báo cáo</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {englishSpeakingContacts.map((contact, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{contact.country}</TableCell>
-                        <TableCell>{contact.phone}</TableCell>
-                        <TableCell>
-                          {contact.email !== "-" ? (
-                            <a href={`mailto:${contact.email}`} className="text-security hover:underline">
-                              {contact.email}
-                            </a>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {contact.reportLink.includes("http") ? (
-                            contact.reportLink.split(", ").map((link, i) => {
-                              const [url, description] = link.split(" (");
-                              const desc = description ? `(${description}` : "";
-                              return (
-                                <div key={i} className="mb-2">
-                                  <a href={url} target="_blank" rel="noopener noreferrer" className="text-security hover:underline flex items-center">
-                                    <Globe className="h-4 w-4 mr-1" /> Truy cập {desc}
-                                  </a>
-                                </div>
-                              );
-                            })
-                          ) : (
-                            contact.reportLink
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="international" className="rounded-md border p-4">
-              <h3 className="text-xl font-bold mb-4">Tổ chức quốc tế</h3>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[180px]">Tổ chức</TableHead>
-                      <TableHead>Số điện thoại</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Liên kết báo cáo</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {internationalOrgs.map((contact, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{contact.country}</TableCell>
-                        <TableCell>{contact.phone}</TableCell>
-                        <TableCell>{contact.email}</TableCell>
-                        <TableCell>
-                          {contact.reportLink.startsWith("http") ? (
-                            <a href={contact.reportLink} target="_blank" rel="noopener noreferrer" className="text-security hover:underline flex items-center">
-                              <Globe className="h-4 w-4 mr-1" /> Truy cập
-                            </a>
-                          ) : (
-                            contact.reportLink
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        <div className="bg-security/10 p-6 rounded-lg">
-          <h3 className="text-xl font-bold mb-3">Liên hệ Take Them Down</h3>
-          <p className="mb-4">
-            Nếu bạn cần hỗ trợ thêm trong quá trình báo cáo, đội ngũ của Take Them Down luôn sẵn sàng giúp đỡ bạn. 
-            Chúng tôi có thể hướng dẫn quy trình báo cáo và cung cấp thông tin về các nguồn lực phù hợp.
-          </p>
-          <a 
-            href="/#contact" 
-            className="inline-flex items-center bg-security text-white px-4 py-2 rounded-md hover:bg-security-light transition-colors"
-          >
-            Liên hệ hỗ trợ
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-export default ReportingResourcesSection;
+    {
+      province: "Gia Lai",
+      channels: [
+        {
+          name: "Công an tỉnh Gia Lai (Phòng ANM&PCTP CNC)",
+          phone: "(0269) 3823 903",
+          email: "gialai@canhsat.vn",
+          reportLink: "Không có",
+          address: "267A Trần Phú, P. Diên Hồng, TP. Pleiku, Gia Lai"
+        },
+        {
+          name: "Sở TT&TT Gia Lai",
+          phone: "(0269) 3822 326",
+          email: "stttt@gialai.gov.vn",
+          reportLink: "Không có",
+          address: "17 Trần Hưng Đạo, TP. Pleiku, Gia Lai"
+        }
+      ]
+    },
+    {
+      province: "Hà Giang",
+      channels: [
+        {
+          name: "Công an tỉnh Hà Giang (trực ban)",
+          phone: "(0219) 3863 268",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "170 Trần Phú, P. Minh Khai, TP. Hà Giang, Hà Giang"
+        },
+        {
+          name: "Sở TT&TT Hà Giang",
+          phone: "(0219) 3865 404",
+          email: "stttt@hagiang.gov.vn",
+          reportLink: "Không có",
+          address: "148 Trần Phú, P. Minh Khai, TP. Hà Giang, Hà Giang"
+        }
+      ]
+    },
+    {
+      province: "Hà Nam",
+      channels: [
+        {
+          name: "Công an tỉnh Hà Nam (đường dây nóng)",
+          phone: "(0226) 3852 673",
+          email: "conganhanamonline@gmail.com",
+          reportLink: "Tố giác online",
+          address: "558 Lý Thường Kiệt, P. Lê Hồng Phong, TP. Phủ Lý, Hà Nam"
+        },
+        {
+          name: "Sở TT&TT Hà Nam",
+          phone: "(0226) 3852 968",
+          email: "stttt@hanam.gov.vn",
+          reportLink: "Không có",
+          address: "9 Trần Phú, TP. Phủ Lý, Hà Nam"
+        }
+      ]
+    },
+    {
+      province: "Hà Nội",
+      channels: [
+        {
+          name: "Công an TP. Hà Nội (Phòng ANM&PCTP CNC)",
+          phone: "Liên hệ Cục A05: 069.219.4053",
+          email: "Không có thông tin",
+          reportLink: "Ứng dụng VNeID",
+          address: "87 Trần Hưng Đạo, Q. Hoàn Kiếm, Hà Nội"
+        },
+        {
+          name: "Sở TT&TT Hà Nội",
+          phone: "(024) 3512 3536\n(024) 3736 6620",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "185 Giảng Võ, Q. Đống Đa, Hà Nội"
+        }
+      ]
+    },
+    {
+      province: "Hà Tĩnh",
+      channels: [
+        {
+          name: "Công an tỉnh Hà Tĩnh (đường dây nóng)",
+          phone: "069.2926.112\n069.2928.312",
+          email: "admin@conganhatinh.gov.vn",
+          reportLink: "Facebook: fb.com/conganhatinh",
+          address: "04 Nguyễn Thiếp, TP. Hà Tĩnh, Hà Tĩnh"
+        },
+        {
+          name: "Sở TT&TT Hà Tĩnh",
+          phone: "(0239) 3856 266",
+          email: "stttt@hatinh.gov.vn",
+          reportLink: "Không có",
+          address: "64 Phan Đình Phùng, TP. Hà Tĩnh, Hà Tĩnh"
+        }
+      ]
+    },
+    {
+      province: "Hải Dương",
+      channels: [
+        {
+          name: "Công an tỉnh Hải Dương (Phòng ANM&PCTP CNC)",
+          phone: "084.615.1151",
+          email: "Không có thông tin",
+          reportLink: "Facebook: fb.com/Tocongtac151CongantinhHaiDuong",
+          address: "35B Đại lộ Hồ Chí Minh, P. Nguyễn Trãi, TP. Hải Dương"
+        },
+        {
+          name: "Sở TT&TT Hải Dương",
+          phone: "(0220) 3891 888",
+          email: "stttt@haiduong.gov.vn",
+          reportLink: "Không có",
+          address: "4 Thống Nhất, P. Lê Thanh Nghị, TP. Hải Dương, Hải Dương"
+        }
+      ]
+    },
+    {
+      province: "Hải Phòng",
+      channels: [
+        {
+          name: "Công an TP. Hải Phòng (trực ban)",
+          phone: "(0225) 3747 138",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "4 Lê Đại Hành, Q. Hồng Bàng, TP. Hải Phòng"
+        },
+        {
+          name: "Sở TT&TT Hải Phòng",
+          phone: "(0225) 3820 888",
+          email: "sotttt@haiphong.gov.vn",
+          reportLink: "Không có",
+          address: "62 Trần Phú, Q. Ngô Quyền, TP. Hải Phòng"
+        }
+      ]
+    },
+    {
+      province: "Hậu Giang",
+      channels: [
+        {
+          name: "Công an tỉnh Hậu Giang (trực ban)",
+          phone: "(0293) 3873 138",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "9 Điện Biên Phủ, KV4, P. V, TP. Vị Thanh, Hậu Giang"
+        },
+        {
+          name: "Sở TT&TT Hậu Giang",
+          phone: "(0293) 3583 399",
+          email: "stttt@haugiang.gov.vn",
+          reportLink: "Không có",
+          address: "02 Điện Biên Phủ, P. V, TP. Vị Thanh, Hậu Giang"
+        }
+      ]
+    },
+    {
+      province: "Hòa Bình",
+      channels: [
+        {
+          name: "Công an tỉnh Hòa Bình (trực ban)",
+          phone: "(0218) 3854 284",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "473 Trần Hưng Đạo, TP. Hòa Bình, Hòa Bình"
+        },
+        {
+          name: "Sở TT&TT Hòa Bình",
+          phone: "(0218) 3854 305",
+          email: "stttt@hoabinh.gov.vn",
+          reportLink: "Không có",
+          address: "25 An Dương Vương, P. Phương Lâm, TP. Hòa Bình, Hòa Bình"
+        }
+      ]
+    },
+    {
+      province: "Hưng Yên",
+      channels: [
+        {
+          name: "Công an tỉnh Hưng Yên (Phòng ANM&PCTP CNC)",
+          phone: "(0221) 3863 465",
+          email: "conganhungyen@hungyen.gov.vn",
+          reportLink: "Không có",
+          address: "45 Hải Thượng Lãn Ông, P. Hiến Nam, TP. Hưng Yên"
+        },
+        {
+          name: "Sở TT&TT Hưng Yên",
+          phone: "(0221) 3861 394",
+          email: "stttt@hungyen.gov.vn",
+          reportLink: "Không có",
+          address: "Đường Quảng Trường, P. Hiến Nam, TP. Hưng Yên, Hưng Yên"
+        }
+      ]
+    },
+    {
+      province: "Khánh Hòa",
+      channels: [
+        {
+          name: "Công an tỉnh Khánh Hòa (trực ban)",
+          phone: "(0258) 3852 113",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "80 Trần Phú, TP. Nha Trang, Khánh Hòa"
+        },
+        {
+          name: "Sở TT&TT Khánh Hòa",
+          phone: "(0258) 3819 200",
+          email: "stttt@khanhhoa.gov.vn",
+          reportLink: "Không có",
+          address: "01 Trần Phú, TP. Nha Trang, Khánh Hòa"
+        }
+      ]
+    },
+    {
+      province: "Kiên Giang",
+      channels: [
+        {
+          name: "Công an tỉnh Kiên Giang (trực ban)",
+          phone: "(0297) 3862 888",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "20 Lạc Hồng, P. Vĩnh Lạc, TP. Rạch Giá, Kiên Giang"
+        },
+        {
+          name: "Sở TT&TT Kiên Giang",
+          phone: "(0297) 3944 405",
+          email: "stttt@kiengiang.gov.vn",
+          reportLink: "Không có",
+          address: "25 Trần Hưng Đạo, P. Vĩnh Thanh Vân, TP. Rạch Giá, Kiên Giang"
+        }
+      ]
+    },
+    {
+      province: "Kon Tum",
+      channels: [
+        {
+          name: "Công an tỉnh Kon Tum (trực ban)",
+          phone: "(0260) 3862 138",
+          email: "Không có thông tin",
+          reportLink: "Không có",
+          address: "254 Trần Phú, TP. Kon Tum, Kon Tum"
+        },
+        {
+          name: "Sở TT&TT Kon Tum",
+          phone: "(0260) 3866 405",
+          email: "stttt@kontum.gov.vn",
+          reportLink: "Không có",
+          address: "250 Trần Phú, TP. Kon Tum, Kon Tum"
+        }
+      ]
+    },
+    {
+      province: "Lai Châu",
+      channels: [
+        {
+          name: "Công an tỉnh Lai Châu (Phòng ANM&PCTP CNC)",
+          phone: "(0213) 3876 527",
+          email: "congan@laichau.gov.vn",
+          reportLink: "Facebook: fb.com/Congantinhlaichau",
+          address: "Tổ 16, P. Tân Phong, TP. Lai Châu, Lai Châu"
+        },
+        {
+          name: "Sở TT&TT Lai Châu",
+          phone: "(0213) 3799 898",
+          email: "stttt@laichau.gov.vn",
+          reportLink: "Không có",
+          address: "190 Trần Phú, P. Tân Phong, TP. Lai Châu, Lai Châu"
+        }
+      ]
+    },
+    {
+      province: "Lâm Đồng",
+      channels: [
+        {
+          name: "Công an tỉnh Lâm Đồng (đường dây nóng)",
+          phone: "0263.822.097\n0693.446.109",
+          email: "ca@lamdong.gov.vn",
+          reportLink: "Không có",
+          address: "04 Trần Bình Trọng, P. 5, TP. Đà Lạt, Lâm Đồng"
+        },
