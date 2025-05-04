@@ -1,3 +1,4 @@
+
 import { Shield, Building, Flag, Mail, Phone, Globe, MapPin, Search } from "lucide-react";
 import { 
   Accordion, 
@@ -17,7 +18,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Command,
@@ -64,6 +65,7 @@ interface LocalContact {
 const ReportingResourcesSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
+  const [showCommandList, setShowCommandList] = useState(false);
 
   // Original resource categories
   const resourceCategories: ResourceCategory[] = [
@@ -415,12 +417,22 @@ const ReportingResourcesSection = () => {
   const handleProvinceSelect = (province: string) => {
     setSelectedProvince(province);
     setSearchQuery(province);
+    setShowCommandList(false);
   };
 
   // Get the selected province details
   const selectedProvinceData = vietnamLocalContacts.find(
     (contact) => contact.province === selectedProvince
   );
+
+  // Show command list when search query is not empty and no province is selected
+  useEffect(() => {
+    if (searchQuery && !selectedProvince) {
+      setShowCommandList(true);
+    } else {
+      setShowCommandList(false);
+    }
+  }, [searchQuery, selectedProvince]);
 
   return (
     <section className="py-16 bg-white">
@@ -594,10 +606,14 @@ const ReportingResourcesSection = () => {
                     />
                   </div>
 
-                  {searchQuery && !selectedProvince && (
+                  {showCommandList && filteredLocalContacts.length > 0 && (
                     <div className="border rounded-md max-w-sm mb-4">
                       <Command>
-                        <CommandInput placeholder="Tìm kiếm tỉnh thành..." value={searchQuery} onValueChange={setSearchQuery} />
+                        <CommandInput 
+                          placeholder="Tìm kiếm tỉnh thành..." 
+                          value={searchQuery} 
+                          onValueChange={setSearchQuery}
+                        />
                         <CommandEmpty>Không tìm thấy kết quả</CommandEmpty>
                         <CommandGroup>
                           <ScrollArea className="h-72">
@@ -605,6 +621,7 @@ const ReportingResourcesSection = () => {
                               <CommandItem 
                                 key={contact.province} 
                                 onSelect={() => handleProvinceSelect(contact.province)}
+                                value={contact.province}
                                 className="cursor-pointer"
                               >
                                 <MapPin className="h-4 w-4 mr-2" />
@@ -666,7 +683,7 @@ const ReportingResourcesSection = () => {
                     </Card>
                   )}
 
-                  {!selectedProvince && (
+                  {!selectedProvince && !showCommandList && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {filteredLocalContacts.slice(0, 6).map((province) => (
                         <Card 
