@@ -4,7 +4,7 @@ import { CountryContact } from "@/types/reportingResources";
 const englishSpeakingCountries: CountryContact[] = [
   {
     country: "USA",
-    phone: "– (see below)",
+    phone: "(202) 324-3000",
     email: "–",
     reportLink: "https://www.ic3.gov/ (cybercrime)\nhttps://report.cybertip.org/ (child abuse)"
   },
