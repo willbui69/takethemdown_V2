@@ -1,6 +1,6 @@
 
 import { ReactNode, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Shield, Menu } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 
@@ -10,9 +10,17 @@ interface RootLayoutProps {
 
 const RootLayout = ({ children }: RootLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   
   const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    // If we're on the home page, scroll to the section
+    if (location.pathname === "/") {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // If we're on another page, navigate to home and then scroll to section
+      navigate(`/#${id}`);
+    }
   };
 
   return (
