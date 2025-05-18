@@ -1,11 +1,12 @@
 
-import { createContext, useState, useContext, ReactNode } from 'react';
+import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { toast } from '@/components/ui/sonner';
 import { Subscription } from '@/types/ransomware';
+import { fetchAllVictims } from '@/services/ransomwareAPI';
 
 interface SubscriptionContextType {
   subscriptions: Subscription[];
-  addSubscription: (email: string) => Promise<void>;
+  addSubscription: (email: string, countries: string[] | null) => Promise<void>;
   verifySubscription: (token: string) => Promise<boolean>;
   unsubscribe: (token: string) => Promise<boolean>;
   loading: boolean;
@@ -29,8 +30,58 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Set up data refresh every 4 hours
+  useEffect(() => {
+    // Immediately fetch data when component mounts
+    fetchRansomwareData();
+    
+    // Set up interval for every 4 hours (4 * 60 * 60 * 1000 = 14400000 ms)
+    const intervalId = setInterval(fetchRansomwareData, 14400000);
+    
+    // Clean up the interval when component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const fetchRansomwareData = async () => {
+    try {
+      console.log("Fetching ransomware data for scheduled 4-hour update...");
+      const victims = await fetchAllVictims();
+      console.log(`Fetched ${victims.length} victims in scheduled update`);
+      
+      // Here you would process the data and send notifications to subscribers
+      // based on their country preferences
+      notifySubscribers(victims);
+    } catch (error) {
+      console.error("Error in scheduled data update:", error);
+    }
+  };
+
+  // In a real implementation, this would send actual emails
+  const notifySubscribers = (victims: any[]) => {
+    if (subscriptions.length === 0) return;
+    
+    console.log(`Processing notifications for ${subscriptions.length} subscribers`);
+    
+    subscriptions.forEach(sub => {
+      if (!sub.verified) return;
+      
+      // Filter victims based on subscriber's country preferences
+      let relevantVictims = victims;
+      if (sub.countries && sub.countries.length > 0) {
+        relevantVictims = victims.filter(victim => 
+          sub.countries!.includes(victim.country || "Unknown")
+        );
+      }
+      
+      if (relevantVictims.length > 0) {
+        console.log(`Would send notification to ${sub.email} for ${relevantVictims.length} victims`);
+        // In a real app, this would make an API call to send an email
+      }
+    });
+  };
+
   // In a real implementation, these would interact with a backend
-  const addSubscription = async (email: string) => {
+  const addSubscription = async (email: string, countries: string[] | null) => {
     try {
       setLoading(true);
       // Mock API call - in real app this would be a fetch to backend
@@ -43,6 +94,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
         createdAt: new Date().toISOString(),
         verificationToken: `verify-${Math.random().toString(36).substring(2, 15)}`,
         unsubscribeToken: `unsub-${Math.random().toString(36).substring(2, 15)}`,
+        countries: countries || undefined,
       };
       
       setSubscriptions(prev => [...prev, newSubscription]);
