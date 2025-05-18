@@ -25,28 +25,28 @@ const SubscriptionManage = () => {
           const result = await verifySubscription(verifyToken);
           if (result) {
             setStatus("success");
-            setMessage("Your subscription has been successfully verified. You will now receive ransomware alerts.");
+            setMessage("Đăng ký của bạn đã được xác nhận thành công. Bây giờ bạn sẽ nhận được cảnh báo về ransomware.");
           } else {
             setStatus("error");
-            setMessage("Invalid or expired verification token. Please try subscribing again.");
+            setMessage("Mã xác nhận không hợp lệ hoặc đã hết hạn. Vui lòng thử đăng ký lại.");
           }
         } else if (unsubToken) {
           const result = await unsubscribe(unsubToken);
           if (result) {
             setStatus("success");
-            setMessage("You have been successfully unsubscribed. You will no longer receive ransomware alerts.");
+            setMessage("Bạn đã hủy đăng ký thành công. Bạn sẽ không nhận được thông báo về ransomware nữa.");
           } else {
             setStatus("error");
-            setMessage("Invalid or expired unsubscribe token.");
+            setMessage("Mã hủy đăng ký không hợp lệ hoặc đã hết hạn.");
           }
         } else {
           setStatus("error");
-          setMessage("Invalid request. Missing verification or unsubscribe token.");
+          setMessage("Yêu cầu không hợp lệ. Thiếu mã xác nhận hoặc mã hủy đăng ký.");
         }
       } catch (error) {
         console.error("Error processing subscription request:", error);
         setStatus("error");
-        setMessage("An unexpected error occurred. Please try again later.");
+        setMessage("Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.");
       }
     };
     
@@ -59,17 +59,17 @@ const SubscriptionManage = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-center">
-              Subscription Management
+              Quản Lý Đăng Ký
             </CardTitle>
             <CardDescription className="text-center">
-              Manage your ransomware alert notifications
+              Quản lý thông báo cảnh báo ransomware của bạn
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center py-8">
             {loading || status === "loading" ? (
               <div className="text-center">
                 <CircleAlert className="h-16 w-16 text-amber-500 mx-auto mb-4" />
-                <p>Processing your request...</p>
+                <p>Đang xử lý yêu cầu của bạn...</p>
               </div>
             ) : status === "success" ? (
               <div className="text-center">
@@ -85,7 +85,7 @@ const SubscriptionManage = () => {
           </CardContent>
           <CardFooter>
             <Button className="w-full" onClick={() => navigate("/ransomware")}>
-              Return to Monitoring Dashboard
+              Quay Lại Trang Giám Sát
             </Button>
           </CardFooter>
         </Card>

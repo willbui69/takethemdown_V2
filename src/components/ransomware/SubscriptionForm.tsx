@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,10 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useSubscription } from '@/context/SubscriptionContext';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Mail } from 'lucide-react';
+import { Mail, ExternalLink } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Vui lòng nhập địa chỉ email hợp lệ' }),
@@ -29,8 +29,10 @@ const countries = [
 ];
 
 export const SubscriptionForm = () => {
-  const { addSubscription, loading } = useSubscription();
+  const { addSubscription, loading, getVerificationLink } = useSubscription();
   const [submitted, setSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState<string>('');
+  const [verificationLink, setVerificationLink] = useState<string | undefined>();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -44,12 +46,19 @@ export const SubscriptionForm = () => {
   const notificationType = form.watch('notificationType');
 
   const onSubmit = async (values: FormValues) => {
+    setSubmittedEmail(values.email);
     await addSubscription(
       values.email, 
       values.notificationType === 'all' ? null : values.selectedCountries
     );
     setSubmitted(true);
     form.reset();
+    
+    // Give the subscription system time to update
+    setTimeout(() => {
+      const link = getVerificationLink(values.email);
+      setVerificationLink(link);
+    }, 100);
   };
 
   return (
@@ -59,10 +68,27 @@ export const SubscriptionForm = () => {
       {submitted ? (
         <div className="text-center py-4">
           <p className="text-green-600 mb-2">Cảm ơn bạn đã đăng ký!</p>
-          <p className="text-gray-600">Vui lòng kiểm tra email của bạn để xác nhận đăng ký.</p>
+          <p className="text-gray-600 mb-4">Vui lòng kiểm tra email của bạn để xác nhận đăng ký.</p>
+          
+          {verificationLink && (
+            <Alert className="mb-4 bg-blue-50">
+              <AlertDescription className="text-sm">
+                <span className="font-semibold block mb-2">Chú ý: Đây là phiên bản demo</span>
+                Trong ứng dụng thực tế, một email xác thực sẽ được gửi đến {submittedEmail}. Để mô phỏng việc xác thực, bạn có thể sử dụng liên kết dưới đây:
+                <Button 
+                  variant="link" 
+                  className="flex items-center gap-1 mt-2 mx-auto text-blue-600"
+                  onClick={() => window.open(verificationLink, "_blank")}
+                >
+                  Xác Thực Email <ExternalLink className="h-3 w-3" />
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Button 
             variant="outline" 
-            className="mt-4"
+            className="mt-2"
             onClick={() => setSubmitted(false)}
           >
             Đăng ký email khác

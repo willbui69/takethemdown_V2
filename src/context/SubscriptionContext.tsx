@@ -10,6 +10,7 @@ interface SubscriptionContextType {
   verifySubscription: (token: string) => Promise<boolean>;
   unsubscribe: (token: string) => Promise<boolean>;
   loading: boolean;
+  getVerificationLink: (email: string) => string | undefined;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
@@ -80,6 +81,16 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
     });
   };
 
+  // Helper function to get a verification link for a specific email
+  const getVerificationLink = (email: string): string | undefined => {
+    const subscription = subscriptions.find(sub => sub.email === email && !sub.verified);
+    if (subscription && subscription.verificationToken) {
+      // Generate the verification URL that would be in the email
+      return `${window.location.origin}/subscription?verify=${subscription.verificationToken}`;
+    }
+    return undefined;
+  };
+
   // In a real implementation, these would interact with a backend
   const addSubscription = async (email: string, countries: string[] | null) => {
     try {
@@ -98,14 +109,25 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
       };
       
       setSubscriptions(prev => [...prev, newSubscription]);
-      toast.success("Verification email sent! Please check your inbox to confirm subscription.");
+      
+      // Demo notification with link
+      const verificationLink = `${window.location.origin}/subscription?verify=${newSubscription.verificationToken}`;
+      toast.success("Xác thực email đã được gửi!", {
+        description: "Đây là phiên bản demo. Trong ứng dụng thực tế, email xác thực sẽ được gửi.",
+        action: {
+          label: "Xác thực ngay",
+          onClick: () => {
+            window.open(verificationLink, "_blank");
+          }
+        }
+      });
       
       // In a real app, we'd send a verification email here
       console.log(`Verification email sent to ${email} with token ${newSubscription.verificationToken}`);
       
     } catch (error) {
       console.error("Failed to add subscription:", error);
-      toast.error("Failed to subscribe. Please try again later.");
+      toast.error("Không thể đăng ký. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
@@ -130,15 +152,15 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
       );
       
       if (verified) {
-        toast.success("Subscription verified successfully!");
+        toast.success("Đăng ký đã được xác thực thành công!");
       } else {
-        toast.error("Invalid verification token.");
+        toast.error("Mã xác thực không hợp lệ.");
       }
       
       return verified;
     } catch (error) {
       console.error("Failed to verify subscription:", error);
-      toast.error("Failed to verify subscription. Please try again later.");
+      toast.error("Không thể xác thực đăng ký. Vui lòng thử lại sau.");
       return false;
     } finally {
       setLoading(false);
@@ -165,15 +187,15 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
       });
       
       if (unsubscribed) {
-        toast.success("You have been unsubscribed successfully.");
+        toast.success("Bạn đã hủy đăng ký thành công.");
       } else {
-        toast.error("Invalid unsubscribe token.");
+        toast.error("Mã hủy đăng ký không hợp lệ.");
       }
       
       return unsubscribed;
     } catch (error) {
       console.error("Failed to unsubscribe:", error);
-      toast.error("Failed to unsubscribe. Please try again later.");
+      toast.error("Không thể hủy đăng ký. Vui lòng thử lại sau.");
       return false;
     } finally {
       setLoading(false);
@@ -186,6 +208,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
     verifySubscription,
     unsubscribe,
     loading,
+    getVerificationLink,
   };
 
   return (
