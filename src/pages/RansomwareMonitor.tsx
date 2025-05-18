@@ -33,7 +33,7 @@ const RansomwareMonitor = () => {
       const isAvailable = await checkApiAvailability();
       
       if (!isAvailable) {
-        setError("The ransomware.live API is currently unavailable.");
+        setError("API ransomware.live hiện không khả dụng.");
         setLoading(false);
         return;
       }
@@ -53,9 +53,9 @@ const RansomwareMonitor = () => {
         if (allVictimsResult.reason instanceof Error && 
             allVictimsResult.reason.message.includes("Geographic restriction")) {
           setIsGeoBlocked(true);
-          setError("Your location is restricted from accessing ransomware.live data.");
+          setError("Vị trí của bạn bị giới hạn truy cập dữ liệu từ ransomware.live.");
         } else {
-          setError("Failed to load all victims data.");
+          setError("Không thể tải dữ liệu nạn nhân.");
         }
       }
       
@@ -66,7 +66,7 @@ const RansomwareMonitor = () => {
         
         // Only set error if not already set and not a geo-block (which we've already handled)
         if (!isGeoBlocked && !error) {
-          setError("Failed to load recent victims data.");
+          setError("Không thể tải dữ liệu nạn nhân gần đây.");
         }
       }
       
@@ -74,7 +74,7 @@ const RansomwareMonitor = () => {
       
     } catch (err) {
       console.error("Error fetching data:", err);
-      setError("Failed to load ransomware data. Please try again later.");
+      setError("Không thể tải dữ liệu ransomware. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
@@ -86,7 +86,7 @@ const RansomwareMonitor = () => {
     
     // Set up 4-hour refresh interval
     const intervalId = setInterval(() => {
-      console.log("Executing 4-hour scheduled data update");
+      console.log("Đang thực hiện cập nhật dữ liệu theo lịch 4 giờ");
       loadData();
     }, 4 * 60 * 60 * 1000); // 4 hours in milliseconds
     
@@ -99,12 +99,12 @@ const RansomwareMonitor = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-security">Ransomware Monitoring</h1>
+              <h1 className="text-3xl font-bold text-security">Giám Sát Ransomware</h1>
               <p className="text-gray-600">
-                Track ransomware victim data and get alerts on new victims
+                Theo dõi dữ liệu nạn nhân ransomware và nhận thông báo về nạn nhân mới
                 {lastUpdated && (
                   <span className="text-sm text-gray-500 ml-2">
-                    Last updated: {lastUpdated.toLocaleString()}
+                    Cập nhật lần cuối: {lastUpdated.toLocaleString()}
                   </span>
                 )}
               </p>
@@ -117,7 +117,7 @@ const RansomwareMonitor = () => {
                 disabled={loading}
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh Data
+                Làm Mới Dữ Liệu
               </Button>
               <Button
                 variant="outline"
@@ -126,11 +126,11 @@ const RansomwareMonitor = () => {
               >
                 {showAdminPanel ? (
                   <>
-                    <CircleMinus className="h-4 w-4" /> Hide Admin Panel
+                    <CircleMinus className="h-4 w-4" /> Ẩn Bảng Quản Trị
                   </>
                 ) : (
                   <>
-                    <CirclePlus className="h-4 w-4" /> Show Admin Panel
+                    <CirclePlus className="h-4 w-4" /> Hiển Thị Bảng Quản Trị
                   </>
                 )}
               </Button>
@@ -140,9 +140,9 @@ const RansomwareMonitor = () => {
           {isGeoBlocked && (
             <Alert variant="destructive" className="mb-6">
               <ShieldAlert className="h-4 w-4" />
-              <AlertTitle>Geographic Restriction</AlertTitle>
+              <AlertTitle>Giới Hạn Địa Lý</AlertTitle>
               <AlertDescription>
-                Your location is blocked from accessing the ransomware.live API. This may be due to country-specific restrictions enforced by the API provider.
+                Vị trí của bạn bị chặn truy cập vào API ransomware.live. Điều này có thể do các giới hạn cụ thể theo quốc gia được áp dụng bởi nhà cung cấp API.
               </AlertDescription>
             </Alert>
           )}
@@ -165,8 +165,8 @@ const RansomwareMonitor = () => {
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <Tabs defaultValue="all">
               <TabsList>
-                <TabsTrigger value="all">All Victims</TabsTrigger>
-                <TabsTrigger value="recent">Recent (24h)</TabsTrigger>
+                <TabsTrigger value="all">Tất Cả Nạn Nhân</TabsTrigger>
+                <TabsTrigger value="recent">Gần Đây (24h)</TabsTrigger>
               </TabsList>
               <TabsContent value="all" className="pt-4">
                 {error ? (
@@ -198,14 +198,14 @@ const RansomwareMonitor = () => {
           </div>
 
           <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h3 className="text-xl font-semibold mb-2">About This Data</h3>
+            <h3 className="text-xl font-semibold mb-2">Về Dữ Liệu Này</h3>
             <p className="text-gray-700 mb-4">
-              This data is sourced from ransomware.live, which tracks ransomware groups and their victims.
-              The information is updated automatically every 4 hours to provide the most current overview of ransomware activity.
+              Dữ liệu này được lấy từ ransomware.live, trang theo dõi các nhóm ransomware và nạn nhân của họ.
+              Thông tin được cập nhật tự động mỗi 4 giờ để cung cấp tổng quan mới nhất về hoạt động ransomware.
             </p>
             <p className="text-gray-700">
-              Subscribe to receive email notifications when new victims are added to the database. 
-              You can choose to be notified about victims from all countries or select specific countries of interest.
+              Đăng ký để nhận thông báo qua email khi có nạn nhân mới được thêm vào cơ sở dữ liệu. 
+              Bạn có thể chọn nhận thông báo về nạn nhân từ tất cả các quốc gia hoặc chỉ chọn các quốc gia quan tâm.
             </p>
           </div>
         </div>

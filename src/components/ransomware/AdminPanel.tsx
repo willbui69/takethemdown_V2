@@ -19,8 +19,8 @@ export const AdminPanel = () => {
     setFetching(true);
     
     try {
-      toast.info("Fetching latest victim data...", {
-        description: "This may take a few moments",
+      toast.info("Đang tải dữ liệu nạn nhân mới nhất...", {
+        description: "Quá trình này có thể mất một chút thời gian",
         icon: <FileSearch className="h-5 w-5" />
       });
       
@@ -61,15 +61,15 @@ export const AdminPanel = () => {
       setFetchHistory(prev => [newHistory, ...prev]);
       
       if (newCount > 0) {
-        toast.success(`Found ${newCount} new victims!`, {
-          description: "Check the victims table for details",
+        toast.success(`Tìm thấy ${newCount} nạn nhân mới!`, {
+          description: "Kiểm tra bảng nạn nhân để biết chi tiết",
           icon: <DatabaseBackup className="h-5 w-5" />
         });
         // In a real app, we would send notifications here
-        console.log(`Would send notification email about ${newCount} new victims`);
+        console.log(`Sẽ gửi email thông báo về ${newCount} nạn nhân mới`);
       } else {
-        toast.info("No new victims found", {
-          description: "Database is already up to date"
+        toast.info("Không tìm thấy nạn nhân mới", {
+          description: "Cơ sở dữ liệu đã được cập nhật"
         });
       }
       
@@ -86,8 +86,8 @@ export const AdminPanel = () => {
       };
       
       setFetchHistory(prev => [errorHistory, ...prev]);
-      toast.error("Failed to fetch victim data", {
-        description: "Please try again later",
+      toast.error("Không thể tải dữ liệu nạn nhân", {
+        description: "Vui lòng thử lại sau",
         icon: <Bug className="h-5 w-5" />
       });
       
@@ -103,38 +103,38 @@ export const AdminPanel = () => {
   return (
     <div className="space-y-8">
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-semibold mb-4">Admin Controls</h3>
+        <h3 className="text-xl font-semibold mb-4">Điều Khiển Quản Trị</h3>
         <Button 
           onClick={triggerFetch} 
           disabled={fetching}
           className="mb-6"
         >
           {fetching ? (
-            <>Fetching Data...</>
+            <>Đang Tải Dữ Liệu...</>
           ) : (
             <>
               <DatabaseBackup className="h-4 w-4 mr-2" />
-              Trigger Data Fetch
+              Kích Hoạt Tải Dữ Liệu
             </>
           )}
         </Button>
         
-        <h4 className="font-medium mb-2">Fetch History</h4>
+        <h4 className="font-medium mb-2">Lịch Sử Tải</h4>
         <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Total Victims</TableHead>
-                <TableHead>New Victims</TableHead>
+                <TableHead>Thời Gian</TableHead>
+                <TableHead>Trạng Thái</TableHead>
+                <TableHead>Tổng Số Nạn Nhân</TableHead>
+                <TableHead>Nạn Nhân Mới</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {fetchHistory.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-4">
-                    No fetch history yet
+                    Chưa có lịch sử tải
                   </TableCell>
                 </TableRow>
               ) : (
@@ -143,9 +143,9 @@ export const AdminPanel = () => {
                     <TableCell>{formatDate(entry.timestamp)}</TableCell>
                     <TableCell>
                       {entry.successful ? (
-                        <span className="text-green-600">Success</span>
+                        <span className="text-green-600">Thành công</span>
                       ) : (
-                        <span className="text-red-600" title={entry.error}>Failed</span>
+                        <span className="text-red-600" title={entry.error}>Thất bại</span>
                       )}
                     </TableCell>
                     <TableCell>{entry.totalCount}</TableCell>
@@ -159,21 +159,21 @@ export const AdminPanel = () => {
       </div>
       
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-semibold mb-4">Subscribers</h3>
+        <h3 className="text-xl font-semibold mb-4">Người Đăng Ký</h3>
         <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Subscribed On</TableHead>
+                <TableHead>Trạng Thái</TableHead>
+                <TableHead>Đăng Ký Lúc</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {subscriptions.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-center py-4">
-                    No subscribers yet
+                    Chưa có người đăng ký
                   </TableCell>
                 </TableRow>
               ) : (
@@ -182,9 +182,9 @@ export const AdminPanel = () => {
                     <TableCell>{sub.email}</TableCell>
                     <TableCell>
                       {sub.verified ? (
-                        <span className="text-green-600">Verified</span>
+                        <span className="text-green-600">Đã xác nhận</span>
                       ) : (
-                        <span className="text-amber-600">Pending</span>
+                        <span className="text-amber-600">Đang chờ</span>
                       )}
                     </TableCell>
                     <TableCell>{formatDate(sub.createdAt)}</TableCell>

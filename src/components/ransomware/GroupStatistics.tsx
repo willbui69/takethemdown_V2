@@ -47,9 +47,9 @@ export const GroupStatistics = () => {
           if (groupsResult.reason instanceof Error && 
               groupsResult.reason.message.includes("Geographic restriction")) {
             setIsGeoBlocked(true);
-            setError("Your location is restricted from accessing ransomware.live data.");
+            setError("Vị trí của bạn bị giới hạn truy cập dữ liệu từ ransomware.live.");
           } else {
-            setError("Failed to fetch group data");
+            setError("Không thể tải dữ liệu nhóm");
           }
         }
         
@@ -60,11 +60,11 @@ export const GroupStatistics = () => {
           
           // Only set error if not already set and not a geo-block (which we've already handled)
           if (!isGeoBlocked && !error) {
-            setError("Failed to fetch statistics data");
+            setError("Không thể tải dữ liệu thống kê");
           }
         }
       } catch (err) {
-        setError("Failed to fetch ransomware group data");
+        setError("Không thể tải dữ liệu nhóm ransomware");
         console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
@@ -98,9 +98,9 @@ export const GroupStatistics = () => {
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Ransomware Group Statistics</CardTitle>
+            <CardTitle>Thống Kê Nhóm Ransomware</CardTitle>
             <CardDescription>
-              Victim counts by ransomware group
+              Số lượng nạn nhân theo nhóm ransomware
             </CardDescription>
           </div>
           <Select 
@@ -108,12 +108,12 @@ export const GroupStatistics = () => {
             onValueChange={(value) => setFilter(value as any)}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter groups" />
+              <SelectValue placeholder="Lọc nhóm" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Groups</SelectItem>
-              <SelectItem value="active">Active Groups</SelectItem>
-              <SelectItem value="inactive">Inactive Groups</SelectItem>
+              <SelectItem value="all">Tất Cả Nhóm</SelectItem>
+              <SelectItem value="active">Nhóm Hoạt Động</SelectItem>
+              <SelectItem value="inactive">Nhóm Không Hoạt Động</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -131,8 +131,8 @@ export const GroupStatistics = () => {
                 <ShieldAlert className="h-10 w-10 text-red-500" />
                 <p className="text-red-500">{error}</p>
                 <p className="text-gray-500 text-sm text-center max-w-md mt-2">
-                  Your region appears to be blocked from accessing the ransomware.live API.
-                  This may be due to geographic restrictions enforced by the data provider.
+                  Khu vực của bạn dường như bị chặn truy cập vào API ransomware.live.
+                  Điều này có thể do các giới hạn địa lý được áp dụng bởi nhà cung cấp dữ liệu.
                 </p>
               </>
             ) : (
@@ -144,7 +144,7 @@ export const GroupStatistics = () => {
           </div>
         ) : combinedData.length === 0 ? (
           <div className="flex justify-center items-center h-80">
-            <p className="text-gray-500">No data available for the selected filter</p>
+            <p className="text-gray-500">Không có dữ liệu cho bộ lọc đã chọn</p>
           </div>
         ) : (
           <div className="h-80">
@@ -165,7 +165,7 @@ export const GroupStatistics = () => {
                 <Legend />
                 <Bar 
                   dataKey="victims" 
-                  name="Victim Count" 
+                  name="Số Nạn Nhân" 
                   fill="#8884d8" 
                 />
               </BarChart>

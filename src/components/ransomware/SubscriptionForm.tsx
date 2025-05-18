@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Mail } from 'lucide-react';
 
 const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }),
+  email: z.string().email({ message: 'Vui lòng nhập địa chỉ email hợp lệ' }),
   notificationType: z.enum(['all', 'selected']),
   selectedCountries: z.array(z.string()).optional(),
 });
@@ -23,9 +23,9 @@ type FormValues = z.infer<typeof formSchema>;
 
 // Sample list of countries - in a real app, this would come from the API
 const countries = [
-  'United States', 'United Kingdom', 'Canada', 'Australia', 
-  'Germany', 'France', 'Italy', 'Spain', 'Brazil', 'India',
-  'Japan', 'South Korea', 'China', 'Russia', 'South Africa'
+  'Hoa Kỳ', 'Anh', 'Canada', 'Úc', 
+  'Đức', 'Pháp', 'Ý', 'Tây Ban Nha', 'Brazil', 'Ấn Độ',
+  'Nhật Bản', 'Hàn Quốc', 'Trung Quốc', 'Nga', 'Nam Phi', 'Việt Nam'
 ];
 
 export const SubscriptionForm = () => {
@@ -54,18 +54,18 @@ export const SubscriptionForm = () => {
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold mb-4">Subscribe to Ransomware Alerts</h3>
+      <h3 className="text-xl font-semibold mb-4">Đăng Ký Thông Báo Ransomware</h3>
       
       {submitted ? (
         <div className="text-center py-4">
-          <p className="text-green-600 mb-2">Thanks for subscribing!</p>
-          <p className="text-gray-600">Please check your email to verify your subscription.</p>
+          <p className="text-green-600 mb-2">Cảm ơn bạn đã đăng ký!</p>
+          <p className="text-gray-600">Vui lòng kiểm tra email của bạn để xác nhận đăng ký.</p>
           <Button 
             variant="outline" 
             className="mt-4"
             onClick={() => setSubmitted(false)}
           >
-            Subscribe another email
+            Đăng ký email khác
           </Button>
         </div>
       ) : (
@@ -76,7 +76,7 @@ export const SubscriptionForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email address</FormLabel>
+                  <FormLabel>Địa chỉ email</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -98,7 +98,7 @@ export const SubscriptionForm = () => {
               name="notificationType"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>Notification Preferences</FormLabel>
+                  <FormLabel>Tùy Chọn Thông Báo</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -107,11 +107,11 @@ export const SubscriptionForm = () => {
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="all" id="all" />
-                        <Label htmlFor="all">All countries</Label>
+                        <Label htmlFor="all">Tất cả quốc gia</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="selected" id="selected" />
-                        <Label htmlFor="selected">Selected countries only</Label>
+                        <Label htmlFor="selected">Chỉ quốc gia đã chọn</Label>
                       </div>
                     </RadioGroup>
                   </FormControl>
@@ -126,7 +126,7 @@ export const SubscriptionForm = () => {
                 name="selectedCountries"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Select countries</FormLabel>
+                    <FormLabel>Chọn quốc gia</FormLabel>
                     <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md">
                       {countries.map((country) => (
                         <FormField
@@ -168,11 +168,11 @@ export const SubscriptionForm = () => {
             )}
             
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Subscribing...' : 'Subscribe to Updates'}
+              {loading ? 'Đang đăng ký...' : 'Đăng Ký Nhận Thông Báo'}
             </Button>
             <p className="text-sm text-gray-500 mt-2">
-              We'll send you alerts when new ransomware victims are detected.
-              You can unsubscribe at any time.
+              Chúng tôi sẽ gửi cho bạn thông báo khi phát hiện nạn nhân ransomware mới.
+              Bạn có thể hủy đăng ký bất cứ lúc nào.
             </p>
           </form>
         </Form>

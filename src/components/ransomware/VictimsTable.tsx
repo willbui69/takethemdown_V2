@@ -62,7 +62,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search victims, groups, countries..."
+            placeholder="Tìm kiếm nạn nhân, nhóm, quốc gia..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -70,7 +70,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
         </div>
         <Button variant="outline" className="flex items-center gap-2">
           <Filter className="h-4 w-4" /> 
-          Filter
+          Lọc
         </Button>
       </div>
 
@@ -82,7 +82,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                 className="cursor-pointer"
                 onClick={() => handleSort("victim_name")}
               >
-                Organization
+                Tổ Chức
                 {sortField === "victim_name" && (
                   <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
@@ -91,7 +91,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                 className="cursor-pointer"
                 onClick={() => handleSort("group_name")}
               >
-                Group
+                Nhóm
                 {sortField === "group_name" && (
                   <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
@@ -100,7 +100,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                 className="cursor-pointer"
                 onClick={() => handleSort("published")}
               >
-                Published
+                Công Bố
                 {sortField === "published" && (
                   <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
@@ -109,7 +109,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                 className="cursor-pointer"
                 onClick={() => handleSort("industry")}
               >
-                Industry
+                Ngành
                 {sortField === "industry" && (
                   <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
@@ -118,7 +118,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                 className="cursor-pointer"
                 onClick={() => handleSort("country")}
               >
-                Country
+                Quốc Gia
                 {sortField === "country" && (
                   <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
@@ -129,13 +129,13 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
             {loading ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
-                  Loading victims data...
+                  Đang tải dữ liệu nạn nhân...
                 </TableCell>
               </TableRow>
             ) : sortedVictims.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
-                  No victims found matching your criteria
+                  Không tìm thấy nạn nhân phù hợp với tiêu chí của bạn
                 </TableCell>
               </TableRow>
             ) : (
@@ -157,8 +157,8 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                   </TableCell>
                   <TableCell>{victim.group_name}</TableCell>
                   <TableCell>{formatDate(victim.published)}</TableCell>
-                  <TableCell>{victim.industry || "Unknown"}</TableCell>
-                  <TableCell>{victim.country || "Unknown"}</TableCell>
+                  <TableCell>{victim.industry || "Không rõ"}</TableCell>
+                  <TableCell>{victim.country || "Không rõ"}</TableCell>
                 </TableRow>
               ))
             )}
@@ -166,7 +166,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
         </Table>
       </div>
       <div className="text-sm text-gray-500 text-right">
-        Showing {sortedVictims.length} of {victims.length} victims
+        Hiển thị {sortedVictims.length} trong số {victims.length} nạn nhân
       </div>
     </div>
   );
