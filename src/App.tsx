@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ReportingResources from "./pages/ReportingResources";
+import RansomwareMonitor from "./pages/RansomwareMonitor";
+import SubscriptionManage from "./pages/SubscriptionManage";
 import ScrollToTop from "./components/utils/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -21,6 +23,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/reporting" element={<ReportingResources />} />
+          <Route path="/ransomware" element={<RansomwareMonitor />} />
+          <Route path="/subscription" element={<SubscriptionManage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
