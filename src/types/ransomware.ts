@@ -10,3 +10,34 @@ export interface Subscription {
   unsubscribeToken?: string;
   countries?: string[];
 }
+
+// Adding the missing type definitions
+export interface RansomwareVictim {
+  victim_name: string;
+  group_name: string;
+  published: string;
+  url?: string;
+  country?: string;
+  industry?: string;
+  [key: string]: any; // For any additional properties
+}
+
+export interface RansomwareGroup {
+  name: string;
+  active: boolean;
+  url?: string;
+  [key: string]: any; // For any additional properties
+}
+
+export interface RansomwareStat {
+  group: string;
+  count: number;
+  [key: string]: any; // For any additional properties
+}
+
+export interface FetchHistory {
+  timestamp: string;
+  status: string;
+  count?: number;
+  error?: string;
+}

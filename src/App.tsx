@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ReportingResources from "./pages/ReportingResources";
@@ -11,26 +12,30 @@ import RansomwareMonitor from "./pages/RansomwareMonitor";
 import SubscriptionManage from "./pages/SubscriptionManage";
 import ScrollToTop from "./components/utils/ScrollToTop";
 
-const queryClient = new QueryClient();
+// Move queryClient inside the App component to fix the hooks error
+const App = () => {
+  // Create a new QueryClient for each App instance
+  const [queryClient] = useState(() => new QueryClient());
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/reporting" element={<ReportingResources />} />
-          <Route path="/ransomware" element={<RansomwareMonitor />} />
-          <Route path="/subscription" element={<SubscriptionManage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/reporting" element={<ReportingResources />} />
+            <Route path="/ransomware" element={<RansomwareMonitor />} />
+            <Route path="/subscription" element={<SubscriptionManage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
