@@ -36,8 +36,11 @@ export interface RansomwareStat {
 }
 
 export interface FetchHistory {
+  id: string;
   timestamp: string;
-  status: string;
-  count?: number;
+  status?: string;
   error?: string;
+  successful: boolean;
+  totalCount: number;
+  newCount: number;
 }
