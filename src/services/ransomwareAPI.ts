@@ -3,13 +3,17 @@ import { RansomwareGroup, RansomwareStat, RansomwareVictim } from "@/types/ranso
 import { mockVictims, mockRecentVictims, mockGroups, mockStats } from "@/data/mockRansomwareData";
 import { toast } from "sonner";
 
+// The API base URL for ransomware.live
 const API_BASE_URL = "https://api.ransomware.live";
+// Use a CORS proxy to avoid CORS issues when accessing the API
+const CORS_PROXY = "https://corsproxy.io/?";
 let API_AVAILABLE: boolean | null = null;
 
 // Function to check if the API is available
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/groups.json`, { 
+    // Use the CORS proxy for the API check
+    const response = await fetch(`${CORS_PROXY}${encodeURIComponent(`${API_BASE_URL}/api/groups.json`)}`, {
       method: 'HEAD',
       // Use a short timeout to quickly determine API availability
       signal: AbortSignal.timeout(5000)
@@ -25,6 +29,11 @@ export const checkApiAvailability = async (): Promise<boolean> => {
   }
 };
 
+// Helper function to build API URLs with CORS proxy
+const getApiUrl = (endpoint: string): string => {
+  return `${CORS_PROXY}${encodeURIComponent(`${API_BASE_URL}${endpoint}`)}`;
+};
+
 export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
   // If API availability hasn't been checked yet, check it
   if (API_AVAILABLE === null) {
@@ -38,7 +47,7 @@ export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
   }
   
   try {
-    const response = await fetch(`${API_BASE_URL}/api/victims.json`);
+    const response = await fetch(getApiUrl('/api/victims.json'));
     if (!response.ok) {
       throw new Error(`Error fetching victims: ${response.status}`);
     }
@@ -65,7 +74,7 @@ export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVict
   }
   
   try {
-    const response = await fetch(`${API_BASE_URL}/api/victims/${group}.json`);
+    const response = await fetch(getApiUrl(`/api/victims/${group}.json`));
     if (!response.ok) {
       throw new Error(`Error fetching victims for group ${group}: ${response.status}`);
     }
@@ -92,7 +101,7 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
   }
   
   try {
-    const response = await fetch(`${API_BASE_URL}/api/groups.json`);
+    const response = await fetch(getApiUrl('/api/groups.json'));
     if (!response.ok) {
       throw new Error(`Error fetching groups: ${response.status}`);
     }
@@ -119,7 +128,7 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
   }
   
   try {
-    const response = await fetch(`${API_BASE_URL}/api/stats.json`);
+    const response = await fetch(getApiUrl('/api/stats.json'));
     if (!response.ok) {
       throw new Error(`Error fetching stats: ${response.status}`);
     }
@@ -146,7 +155,7 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
   }
   
   try {
-    const response = await fetch(`${API_BASE_URL}/api/today.json`);
+    const response = await fetch(getApiUrl('/api/today.json'));
     if (!response.ok) {
       throw new Error(`Error fetching recent victims: ${response.status}`);
     }
