@@ -4,10 +4,35 @@ import { mockVictims, mockRecentVictims, mockGroups, mockStats } from "@/data/mo
 import { toast } from "sonner";
 
 const API_BASE_URL = "https://api.ransomware.live";
-const USE_MOCK_DATA = true; // Set to true to force using mock data
+let API_AVAILABLE: boolean | null = null;
+
+// Function to check if the API is available
+export const checkApiAvailability = async (): Promise<boolean> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/groups.json`, { 
+      method: 'HEAD',
+      // Use a short timeout to quickly determine API availability
+      signal: AbortSignal.timeout(5000)
+    });
+    
+    API_AVAILABLE = response.ok;
+    console.log(`Ransomware.live API ${API_AVAILABLE ? 'is' : 'is not'} available`);
+    return API_AVAILABLE;
+  } catch (error) {
+    console.error("Error checking API availability:", error);
+    API_AVAILABLE = false;
+    return false;
+  }
+};
 
 export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
-  if (USE_MOCK_DATA) {
+  // If API availability hasn't been checked yet, check it
+  if (API_AVAILABLE === null) {
+    await checkApiAvailability();
+  }
+  
+  // If API is not available, use mock data
+  if (API_AVAILABLE === false) {
     console.log("Using mock victim data instead of API");
     return mockVictims;
   }
@@ -21,12 +46,20 @@ export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
   } catch (error) {
     console.error("Failed to fetch victims:", error);
     toast.error("Failed to fetch victim data. Using offline data instead.");
+    // Set API availability to false for future requests
+    API_AVAILABLE = false;
     return mockVictims;
   }
 };
 
 export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVictim[]> => {
-  if (USE_MOCK_DATA) {
+  // If API availability hasn't been checked yet, check it
+  if (API_AVAILABLE === null) {
+    await checkApiAvailability();
+  }
+  
+  // If API is not available, use mock data
+  if (API_AVAILABLE === false) {
     console.log(`Using mock victim data for group ${group} instead of API`);
     return mockVictims.filter(victim => victim.group_name === group);
   }
@@ -40,12 +73,20 @@ export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVict
   } catch (error) {
     console.error(`Failed to fetch victims for group ${group}:`, error);
     toast.error(`Failed to fetch victim data for ${group}. Using offline data instead.`);
+    // Set API availability to false for future requests
+    API_AVAILABLE = false;
     return mockVictims.filter(victim => victim.group_name === group);
   }
 };
 
 export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
-  if (USE_MOCK_DATA) {
+  // If API availability hasn't been checked yet, check it
+  if (API_AVAILABLE === null) {
+    await checkApiAvailability();
+  }
+  
+  // If API is not available, use mock data
+  if (API_AVAILABLE === false) {
     console.log("Using mock group data instead of API");
     return mockGroups;
   }
@@ -59,12 +100,20 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
   } catch (error) {
     console.error("Failed to fetch groups:", error);
     toast.error("Failed to fetch group data. Using offline data instead.");
+    // Set API availability to false for future requests
+    API_AVAILABLE = false;
     return mockGroups;
   }
 };
 
 export const fetchStats = async (): Promise<RansomwareStat[]> => {
-  if (USE_MOCK_DATA) {
+  // If API availability hasn't been checked yet, check it
+  if (API_AVAILABLE === null) {
+    await checkApiAvailability();
+  }
+  
+  // If API is not available, use mock data
+  if (API_AVAILABLE === false) {
     console.log("Using mock stats data instead of API");
     return mockStats;
   }
@@ -78,12 +127,20 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
   } catch (error) {
     console.error("Failed to fetch stats:", error);
     toast.error("Failed to fetch statistics data. Using offline data instead.");
+    // Set API availability to false for future requests
+    API_AVAILABLE = false;
     return mockStats;
   }
 };
 
 export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
-  if (USE_MOCK_DATA) {
+  // If API availability hasn't been checked yet, check it
+  if (API_AVAILABLE === null) {
+    await checkApiAvailability();
+  }
+  
+  // If API is not available, use mock data
+  if (API_AVAILABLE === false) {
     console.log("Using mock recent victim data instead of API");
     return mockRecentVictims;
   }
@@ -97,6 +154,8 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
   } catch (error) {
     console.error("Failed to fetch recent victims:", error);
     toast.error("Failed to fetch recent victim data. Using offline data instead.");
+    // Set API availability to false for future requests
+    API_AVAILABLE = false;
     return mockRecentVictims;
   }
 };
