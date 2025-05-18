@@ -87,7 +87,7 @@ export const AdminPanel = () => {
       
       setFetchHistory(prev => [errorHistory, ...prev]);
       toast.error("Failed to fetch victim data", {
-        description: "Using cached data instead",
+        description: "Please try again later",
         icon: <Bug className="h-5 w-5" />
       });
       

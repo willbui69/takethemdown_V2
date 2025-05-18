@@ -10,7 +10,7 @@ import { SubscriptionForm } from "@/components/ransomware/SubscriptionForm";
 import { AdminPanel } from "@/components/ransomware/AdminPanel";
 import { fetchAllVictims, fetchRecentVictims } from "@/services/ransomwareAPI";
 import { RansomwareVictim } from "@/types/ransomware";
-import { CirclePlus, CircleMinus, Database, Bug, CloudOff } from "lucide-react";
+import { CirclePlus, CircleMinus, Database, Bug } from "lucide-react";
 import { toast } from "sonner";
 
 const RansomwareMonitor = () => {
@@ -19,7 +19,6 @@ const RansomwareMonitor = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [usingMockData, setUsingMockData] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -37,20 +36,19 @@ const RansomwareMonitor = () => {
           setVictims(allVictimsResult.value);
         } else {
           console.error("Error fetching all victims:", allVictimsResult.reason);
-          setUsingMockData(true);
+          setError("Failed to load all victims data.");
         }
         
         if (todayVictimsResult.status === 'fulfilled') {
           setRecentVictims(todayVictimsResult.value);
         } else {
           console.error("Error fetching recent victims:", todayVictimsResult.reason);
-          setUsingMockData(true);
+          setError((prev) => prev ? prev : "Failed to load recent victims data.");
         }
         
       } catch (err) {
         console.error("Error fetching data:", err);
-        setError("Failed to load ransomware data. Using offline data instead.");
-        setUsingMockData(true);
+        setError("Failed to load ransomware data. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -86,18 +84,6 @@ const RansomwareMonitor = () => {
               )}
             </Button>
           </div>
-
-          {usingMockData && (
-            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md flex items-center gap-3">
-              <CloudOff className="h-5 w-5 text-amber-500" />
-              <div>
-                <p className="font-medium text-amber-700">Using offline data</p>
-                <p className="text-sm text-amber-600">
-                  Could not connect to the ransomware.live API. Showing mock data instead.
-                </p>
-              </div>
-            </div>
-          )}
 
           {showAdminPanel && (
             <div className="mb-8">
@@ -152,18 +138,8 @@ const RansomwareMonitor = () => {
           <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
             <h3 className="text-xl font-semibold mb-2">About This Data</h3>
             <p className="text-gray-700 mb-4">
-              {usingMockData ? (
-                <>
-                  <Database className="inline-block mr-1 h-4 w-4" />
-                  Currently displaying mock data for demonstration purposes.
-                  In a production environment, this data would be sourced from ransomware.live's API.
-                </>
-              ) : (
-                <>
-                  This data is sourced from ransomware.live, which tracks ransomware groups and their victims.
-                  The information is updated regularly to provide the most current overview of ransomware activity.
-                </>
-              )}
+              This data is sourced from ransomware.live, which tracks ransomware groups and their victims.
+              The information is updated regularly to provide the most current overview of ransomware activity.
             </p>
             <p className="text-gray-700">
               Subscribe to receive email notifications when new victims are added to the database.

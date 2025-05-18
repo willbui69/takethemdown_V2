@@ -15,7 +15,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bug, CloudOff } from "lucide-react";
+import { Bug } from "lucide-react";
 
 export const GroupStatistics = () => {
   const [stats, setStats] = useState<RansomwareStat[]>([]);
@@ -23,7 +23,6 @@ export const GroupStatistics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("active");
-  const [usingMockData, setUsingMockData] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,23 +38,19 @@ export const GroupStatistics = () => {
         
         if (groupsResult.status === 'fulfilled') {
           setGroups(groupsResult.value);
-          if (groupsResult.value.length > 0 && groupsResult.value[0].name === 'LockBit') {
-            setUsingMockData(true);
-          }
         } else {
           console.error("Error fetching groups:", groupsResult.reason);
-          setUsingMockData(true);
+          setError("Failed to fetch group data");
         }
         
         if (statsResult.status === 'fulfilled') {
           setStats(statsResult.value);
         } else {
           console.error("Error fetching stats:", statsResult.reason);
-          setUsingMockData(true);
+          setError((prev) => prev || "Failed to fetch statistics data");
         }
       } catch (err) {
         setError("Failed to fetch ransomware group data");
-        setUsingMockData(true);
         console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
@@ -92,11 +87,6 @@ export const GroupStatistics = () => {
             <CardTitle>Ransomware Group Statistics</CardTitle>
             <CardDescription>
               Victim counts by ransomware group
-              {usingMockData && (
-                <span className="flex items-center mt-1 text-amber-600 text-xs font-medium">
-                  <CloudOff className="h-3 w-3 mr-1" /> Using mock data
-                </span>
-              )}
             </CardDescription>
           </div>
           <Select 
