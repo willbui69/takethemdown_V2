@@ -8,16 +8,18 @@ import { VictimsTable } from "@/components/ransomware/VictimsTable";
 import { GroupStatistics } from "@/components/ransomware/GroupStatistics";
 import { SubscriptionForm } from "@/components/ransomware/SubscriptionForm";
 import { AdminPanel } from "@/components/ransomware/AdminPanel";
-import { fetchAllVictims, fetchRecentVictims } from "@/services/ransomwareAPI";
+import { checkApiAvailability, fetchAllVictims, fetchRecentVictims } from "@/services/ransomwareAPI";
 import { RansomwareVictim } from "@/types/ransomware";
-import { CirclePlus, CircleMinus, Database, Bug } from "lucide-react";
+import { CirclePlus, CircleMinus, Database, Bug, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const RansomwareMonitor = () => {
   const [victims, setVictims] = useState<RansomwareVictim[]>([]);
   const [recentVictims, setRecentVictims] = useState<RansomwareVictim[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGeoBlocked, setIsGeoBlocked] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   useEffect(() => {
@@ -25,6 +27,16 @@ const RansomwareMonitor = () => {
       try {
         setLoading(true);
         setError(null);
+        setIsGeoBlocked(false);
+        
+        // First check API availability
+        const isAvailable = await checkApiAvailability();
+        
+        if (!isAvailable) {
+          setError("The ransomware.live API is currently unavailable.");
+          setLoading(false);
+          return;
+        }
         
         // Using Promise.allSettled to continue even if one promise fails
         const [allVictimsResult, todayVictimsResult] = await Promise.allSettled([
@@ -36,14 +48,26 @@ const RansomwareMonitor = () => {
           setVictims(allVictimsResult.value);
         } else {
           console.error("Error fetching all victims:", allVictimsResult.reason);
-          setError("Failed to load all victims data.");
+          
+          // Check if it's a geographic block
+          if (allVictimsResult.reason instanceof Error && 
+              allVictimsResult.reason.message.includes("Geographic restriction")) {
+            setIsGeoBlocked(true);
+            setError("Your location is restricted from accessing ransomware.live data.");
+          } else {
+            setError("Failed to load all victims data.");
+          }
         }
         
         if (todayVictimsResult.status === 'fulfilled') {
           setRecentVictims(todayVictimsResult.value);
         } else {
           console.error("Error fetching recent victims:", todayVictimsResult.reason);
-          setError((prev) => prev ? prev : "Failed to load recent victims data.");
+          
+          // Only set error if not already set and not a geo-block (which we've already handled)
+          if (!isGeoBlocked && !error) {
+            setError("Failed to load recent victims data.");
+          }
         }
         
       } catch (err) {
@@ -84,6 +108,16 @@ const RansomwareMonitor = () => {
               )}
             </Button>
           </div>
+
+          {isGeoBlocked && (
+            <Alert variant="destructive" className="mb-6">
+              <ShieldAlert className="h-4 w-4" />
+              <AlertTitle>Geographic Restriction</AlertTitle>
+              <AlertDescription>
+                Your location is blocked from accessing the ransomware.live API. This may be due to country-specific restrictions enforced by the API provider.
+              </AlertDescription>
+            </Alert>
+          )}
 
           {showAdminPanel && (
             <div className="mb-8">

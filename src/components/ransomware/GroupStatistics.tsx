@@ -15,13 +15,14 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bug } from "lucide-react";
+import { Bug, ShieldAlert } from "lucide-react";
 
 export const GroupStatistics = () => {
   const [stats, setStats] = useState<RansomwareStat[]>([]);
   const [groups, setGroups] = useState<RansomwareGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGeoBlocked, setIsGeoBlocked] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("active");
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export const GroupStatistics = () => {
       try {
         setLoading(true);
         setError(null);
+        setIsGeoBlocked(false);
         
         // Using Promise.allSettled to continue even if one promise fails
         const [groupsResult, statsResult] = await Promise.allSettled([
@@ -40,14 +42,26 @@ export const GroupStatistics = () => {
           setGroups(groupsResult.value);
         } else {
           console.error("Error fetching groups:", groupsResult.reason);
-          setError("Failed to fetch group data");
+          
+          // Check if it's a geographic block
+          if (groupsResult.reason instanceof Error && 
+              groupsResult.reason.message.includes("Geographic restriction")) {
+            setIsGeoBlocked(true);
+            setError("Your location is restricted from accessing ransomware.live data.");
+          } else {
+            setError("Failed to fetch group data");
+          }
         }
         
         if (statsResult.status === 'fulfilled') {
           setStats(statsResult.value);
         } else {
           console.error("Error fetching stats:", statsResult.reason);
-          setError((prev) => prev || "Failed to fetch statistics data");
+          
+          // Only set error if not already set and not a geo-block (which we've already handled)
+          if (!isGeoBlocked && !error) {
+            setError("Failed to fetch statistics data");
+          }
         }
       } catch (err) {
         setError("Failed to fetch ransomware group data");
@@ -112,8 +126,21 @@ export const GroupStatistics = () => {
           </div>
         ) : error ? (
           <div className="flex justify-center items-center h-80 flex-col gap-2">
-            <Bug className="h-10 w-10 text-amber-500" />
-            <p className="text-amber-500">{error}</p>
+            {isGeoBlocked ? (
+              <>
+                <ShieldAlert className="h-10 w-10 text-red-500" />
+                <p className="text-red-500">{error}</p>
+                <p className="text-gray-500 text-sm text-center max-w-md mt-2">
+                  Your region appears to be blocked from accessing the ransomware.live API.
+                  This may be due to geographic restrictions enforced by the data provider.
+                </p>
+              </>
+            ) : (
+              <>
+                <Bug className="h-10 w-10 text-amber-500" />
+                <p className="text-amber-500">{error}</p>
+              </>
+            )}
           </div>
         ) : combinedData.length === 0 ? (
           <div className="flex justify-center items-center h-80">
