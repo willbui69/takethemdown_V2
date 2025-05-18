@@ -5,7 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useSubscription } from "@/context/SubscriptionContext";
 import { Subscription, FetchHistory } from "@/types/ransomware";
 import { fetchAllVictims } from "@/services/ransomwareAPI";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import { DatabaseBackup, FileSearch, Bug } from "lucide-react";
 
 export const AdminPanel = () => {
   const { subscriptions } = useSubscription();
@@ -18,7 +19,10 @@ export const AdminPanel = () => {
     setFetching(true);
     
     try {
-      toast.info("Fetching latest victim data...");
+      toast.info("Fetching latest victim data...", {
+        description: "This may take a few moments",
+        icon: <FileSearch className="h-5 w-5" />
+      });
       
       // Get previous victim data (in a real app this would be from database)
       const previousVictims = localStorage.getItem("previousVictims");
@@ -57,11 +61,16 @@ export const AdminPanel = () => {
       setFetchHistory(prev => [newHistory, ...prev]);
       
       if (newCount > 0) {
-        toast.success(`Found ${newCount} new victims!`);
+        toast.success(`Found ${newCount} new victims!`, {
+          description: "Check the victims table for details",
+          icon: <DatabaseBackup className="h-5 w-5" />
+        });
         // In a real app, we would send notifications here
         console.log(`Would send notification email about ${newCount} new victims`);
       } else {
-        toast.info("No new victims found");
+        toast.info("No new victims found", {
+          description: "Database is already up to date"
+        });
       }
       
     } catch (error) {
@@ -77,7 +86,10 @@ export const AdminPanel = () => {
       };
       
       setFetchHistory(prev => [errorHistory, ...prev]);
-      toast.error("Failed to fetch victim data");
+      toast.error("Failed to fetch victim data", {
+        description: "Using cached data instead",
+        icon: <Bug className="h-5 w-5" />
+      });
       
     } finally {
       setFetching(false);
@@ -97,7 +109,14 @@ export const AdminPanel = () => {
           disabled={fetching}
           className="mb-6"
         >
-          {fetching ? "Fetching Data..." : "Trigger Data Fetch"}
+          {fetching ? (
+            <>Fetching Data...</>
+          ) : (
+            <>
+              <DatabaseBackup className="h-4 w-4 mr-2" />
+              Trigger Data Fetch
+            </>
+          )}
         </Button>
         
         <h4 className="font-medium mb-2">Fetch History</h4>

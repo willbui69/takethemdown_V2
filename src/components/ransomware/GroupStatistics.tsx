@@ -14,6 +14,8 @@ import {
 } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Bug, CloudOff } from "lucide-react";
 
 export const GroupStatistics = () => {
   const [stats, setStats] = useState<RansomwareStat[]>([]);
@@ -21,6 +23,7 @@ export const GroupStatistics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("active");
+  const [usingMockData, setUsingMockData] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,15 +31,31 @@ export const GroupStatistics = () => {
         setLoading(true);
         setError(null);
         
-        const [groupsData, statsData] = await Promise.all([
+        // Using Promise.allSettled to continue even if one promise fails
+        const [groupsResult, statsResult] = await Promise.allSettled([
           fetchGroups(),
           fetchStats(),
         ]);
         
-        setGroups(groupsData);
-        setStats(statsData);
+        if (groupsResult.status === 'fulfilled') {
+          setGroups(groupsResult.value);
+          if (groupsResult.value.length > 0 && groupsResult.value[0].name === 'LockBit') {
+            setUsingMockData(true);
+          }
+        } else {
+          console.error("Error fetching groups:", groupsResult.reason);
+          setUsingMockData(true);
+        }
+        
+        if (statsResult.status === 'fulfilled') {
+          setStats(statsResult.value);
+        } else {
+          console.error("Error fetching stats:", statsResult.reason);
+          setUsingMockData(true);
+        }
       } catch (err) {
         setError("Failed to fetch ransomware group data");
+        setUsingMockData(true);
         console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
@@ -73,6 +92,11 @@ export const GroupStatistics = () => {
             <CardTitle>Ransomware Group Statistics</CardTitle>
             <CardDescription>
               Victim counts by ransomware group
+              {usingMockData && (
+                <span className="flex items-center mt-1 text-amber-600 text-xs font-medium">
+                  <CloudOff className="h-3 w-3 mr-1" /> Using mock data
+                </span>
+              )}
             </CardDescription>
           </div>
           <Select 
@@ -92,12 +116,18 @@ export const GroupStatistics = () => {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="flex justify-center items-center h-80">
-            <p>Loading statistics...</p>
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-64 w-full" />
           </div>
         ) : error ? (
+          <div className="flex justify-center items-center h-80 flex-col gap-2">
+            <Bug className="h-10 w-10 text-amber-500" />
+            <p className="text-amber-500">{error}</p>
+          </div>
+        ) : combinedData.length === 0 ? (
           <div className="flex justify-center items-center h-80">
-            <p className="text-red-500">{error}</p>
+            <p className="text-gray-500">No data available for the selected filter</p>
           </div>
         ) : (
           <div className="h-80">

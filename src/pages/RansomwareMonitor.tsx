@@ -10,7 +10,8 @@ import { SubscriptionForm } from "@/components/ransomware/SubscriptionForm";
 import { AdminPanel } from "@/components/ransomware/AdminPanel";
 import { fetchAllVictims, fetchRecentVictims } from "@/services/ransomwareAPI";
 import { RansomwareVictim } from "@/types/ransomware";
-import { CirclePlus, CircleMinus } from "lucide-react";
+import { CirclePlus, CircleMinus, Database, Bug, CloudOff } from "lucide-react";
+import { toast } from "sonner";
 
 const RansomwareMonitor = () => {
   const [victims, setVictims] = useState<RansomwareVictim[]>([]);
@@ -18,23 +19,38 @@ const RansomwareMonitor = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [usingMockData, setUsingMockData] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
+        setError(null);
         
-        const [allVictims, todayVictims] = await Promise.all([
+        // Using Promise.allSettled to continue even if one promise fails
+        const [allVictimsResult, todayVictimsResult] = await Promise.allSettled([
           fetchAllVictims(),
           fetchRecentVictims()
         ]);
         
-        setVictims(allVictims);
-        setRecentVictims(todayVictims);
+        if (allVictimsResult.status === 'fulfilled') {
+          setVictims(allVictimsResult.value);
+        } else {
+          console.error("Error fetching all victims:", allVictimsResult.reason);
+          setUsingMockData(true);
+        }
+        
+        if (todayVictimsResult.status === 'fulfilled') {
+          setRecentVictims(todayVictimsResult.value);
+        } else {
+          console.error("Error fetching recent victims:", todayVictimsResult.reason);
+          setUsingMockData(true);
+        }
         
       } catch (err) {
         console.error("Error fetching data:", err);
-        setError("Failed to load ransomware data. Please try again later.");
+        setError("Failed to load ransomware data. Using offline data instead.");
+        setUsingMockData(true);
       } finally {
         setLoading(false);
       }
@@ -71,6 +87,18 @@ const RansomwareMonitor = () => {
             </Button>
           </div>
 
+          {usingMockData && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md flex items-center gap-3">
+              <CloudOff className="h-5 w-5 text-amber-500" />
+              <div>
+                <p className="font-medium text-amber-700">Using offline data</p>
+                <p className="text-sm text-amber-600">
+                  Could not connect to the ransomware.live API. Showing mock data instead.
+                </p>
+              </div>
+            </div>
+          )}
+
           {showAdminPanel && (
             <div className="mb-8">
               <AdminPanel />
@@ -94,7 +122,10 @@ const RansomwareMonitor = () => {
               </TabsList>
               <TabsContent value="all" className="pt-4">
                 {error ? (
-                  <div className="text-center py-8 text-red-500">{error}</div>
+                  <div className="text-center py-8 text-amber-500 flex flex-col items-center gap-2">
+                    <Bug className="h-10 w-10" />
+                    {error}
+                  </div>
                 ) : (
                   <VictimsTable 
                     victims={victims} 
@@ -104,7 +135,10 @@ const RansomwareMonitor = () => {
               </TabsContent>
               <TabsContent value="recent" className="pt-4">
                 {error ? (
-                  <div className="text-center py-8 text-red-500">{error}</div>
+                  <div className="text-center py-8 text-amber-500 flex flex-col items-center gap-2">
+                    <Bug className="h-10 w-10" />
+                    {error}
+                  </div>
                 ) : (
                   <VictimsTable 
                     victims={recentVictims} 
@@ -118,8 +152,18 @@ const RansomwareMonitor = () => {
           <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
             <h3 className="text-xl font-semibold mb-2">About This Data</h3>
             <p className="text-gray-700 mb-4">
-              This data is sourced from ransomware.live, which tracks ransomware groups and their victims.
-              The information is updated regularly to provide the most current overview of ransomware activity.
+              {usingMockData ? (
+                <>
+                  <Database className="inline-block mr-1 h-4 w-4" />
+                  Currently displaying mock data for demonstration purposes.
+                  In a production environment, this data would be sourced from ransomware.live's API.
+                </>
+              ) : (
+                <>
+                  This data is sourced from ransomware.live, which tracks ransomware groups and their victims.
+                  The information is updated regularly to provide the most current overview of ransomware activity.
+                </>
+              )}
             </p>
             <p className="text-gray-700">
               Subscribe to receive email notifications when new victims are added to the database.
