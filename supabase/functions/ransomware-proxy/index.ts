@@ -41,8 +41,9 @@ function isOriginAllowed(origin: string | null): boolean {
   return ALLOWED_ORIGINS.some(allowedOrigin => {
     if (allowedOrigin.includes('*')) {
       // Fix: Properly escape special characters for RegExp
-      const pattern = allowedOrigin.replace(/\./g, '\\.')
-                                    .replace(/\*/g, '.*');
+      const pattern = allowedOrigin
+        .replace(/\./g, '\\.')
+        .replace(/\*/g, '.*');
       return new RegExp(`^${pattern}$`).test(origin);
     }
     return false;
