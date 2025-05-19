@@ -18,9 +18,21 @@ serve(async (req) => {
   }
 
   try {
-    // Get the path from the URL
-    const url = new URL(req.url);
-    const path = url.pathname.replace(/^\/ransomware-proxy/, "");
+    let path = "";
+    
+    // Check if the request has a body and try to extract the path from it
+    if (req.method === "POST") {
+      try {
+        const body = await req.json();
+        path = body.path || "";
+      } catch (e) {
+        console.error("Error parsing request body:", e);
+      }
+    } else {
+      // Get the path from the URL for GET requests
+      const url = new URL(req.url);
+      path = url.pathname.replace(/^\/ransomware-proxy/, "");
+    }
     
     if (!path) {
       return new Response(

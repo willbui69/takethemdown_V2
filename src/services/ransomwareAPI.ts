@@ -12,12 +12,17 @@ const EDGE_FUNCTION_URL = "https://euswzjdcxrnuupcyiddb.supabase.co/functions/v1
 
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
-    const { data, error } = await supabase.functions.invoke('ransomware-proxy', {
-      body: { path: '/groups' }
+    // Call the edge function with the /groups endpoint path
+    const response = await fetch(`${EDGE_FUNCTION_URL}/groups`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE'
+      }
     });
 
-    if (error) {
-      console.error("Error checking API availability via Edge Function:", error);
+    if (!response.ok) {
+      console.error("Edge Function returned status", response.status);
       useMockData = true;
       return false;
     }
