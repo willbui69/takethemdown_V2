@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import RootLayout from "@/components/layout/RootLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,11 +23,30 @@ const RansomwareMonitor = () => {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
+  const processVictimData = (data: any[]): RansomwareVictim[] => {
+    if (!Array.isArray(data)) {
+      console.error("Invalid victim data format:", data);
+      return [];
+    }
+    
+    return data.map(item => ({
+      victim_name: item.victim_name || item.name || "Unknown",
+      group_name: item.group_name || item.group || "Unknown Group",
+      published: item.published || item.date || null,
+      country: item.country || null,
+      industry: item.industry || item.sector || null,
+      url: item.url || item.victim_url || null,
+      ...item // Keep all original properties
+    }));
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
       setIsGeoBlocked(false);
+      
+      console.info("Fetching ransomware data for scheduled 4-hour update...");
       
       // First check API availability through our Edge Function
       const isAvailable = await checkApiAvailability();
@@ -46,14 +66,17 @@ const RansomwareMonitor = () => {
       ]);
       
       if (allVictimsResult.status === 'fulfilled') {
-        setVictims(allVictimsResult.value);
+        const processedData = processVictimData(allVictimsResult.value);
+        setVictims(processedData);
+        console.info(`Fetched ${processedData.length} victims in scheduled update`);
       } else {
         console.error("Error fetching all victims:", allVictimsResult.reason);
         setError("Không thể tải dữ liệu nạn nhân.");
       }
       
       if (todayVictimsResult.status === 'fulfilled') {
-        setRecentVictims(todayVictimsResult.value);
+        const processedData = processVictimData(todayVictimsResult.value);
+        setRecentVictims(processedData);
       } else {
         console.error("Error fetching recent victims:", todayVictimsResult.reason);
         if (!error) {

@@ -4,7 +4,8 @@ import { RansomwareVictim } from "@/types/ransomware";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface VictimsTableProps {
   victims: RansomwareVictim[];
@@ -37,7 +38,18 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     );
   });
   
-  const sortedVictims = [...filteredVictims].sort((a, b) => {
+  // Sanitize data to avoid empty values or undefined fields
+  const sanitizedVictims = filteredVictims.map(victim => ({
+    victim_name: victim.victim_name || "Unknown",
+    group_name: victim.group_name || "Unknown Group",
+    published: victim.published || null,
+    country: victim.country || null,
+    industry: victim.industry || null,
+    url: victim.url || null,
+    ...victim
+  }));
+  
+  const sortedVictims = [...sanitizedVictims].sort((a, b) => {
     const fieldA = a[sortField] || "";
     const fieldB = b[sortField] || "";
     
@@ -46,7 +58,9 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     return 0;
   });
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Không rõ";
+    
     try {
       return new Date(dateString).toLocaleDateString(undefined, {
         year: 'numeric', 
@@ -56,6 +70,21 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     } catch (error) {
       return dateString;
     }
+  };
+
+  const getIndustryColor = (industry: string | null) => {
+    if (!industry) return "gray";
+    
+    const industryLower = industry.toLowerCase();
+    
+    if (industryLower.includes("finance") || industryLower.includes("bank")) return "blue";
+    if (industryLower.includes("health") || industryLower.includes("medical")) return "red";
+    if (industryLower.includes("education") || industryLower.includes("school")) return "yellow";
+    if (industryLower.includes("tech") || industryLower.includes("it")) return "green";
+    if (industryLower.includes("government") || industryLower.includes("public")) return "purple";
+    if (industryLower.includes("manufacturing")) return "orange";
+    
+    return "gray";
   };
 
   return (
@@ -75,6 +104,13 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
           Lọc
         </Button>
       </div>
+
+      {sortedVictims.length === 0 && !loading && (
+        <div className="bg-amber-50 border border-amber-200 rounded-md p-4 flex items-center gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-500" />
+          <p className="text-amber-700">Không có dữ liệu nạn nhân phù hợp với tiêu chí của bạn</p>
+        </div>
+      )}
 
       <div className="rounded-md border overflow-auto">
         <Table>
@@ -157,10 +193,24 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                       victim.victim_name
                     )}
                   </TableCell>
-                  <TableCell>{victim.group_name}</TableCell>
-                  <TableCell>{victim.published ? formatDate(victim.published) : "Không rõ"}</TableCell>
-                  <TableCell>{victim.industry || "Không rõ"}</TableCell>
-                  <TableCell>{victim.country || "Không rõ"}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="font-medium">
+                      {victim.group_name}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{formatDate(victim.published)}</TableCell>
+                  <TableCell>
+                    {victim.industry ? (
+                      <Badge variant="outline" className={`bg-${getIndustryColor(victim.industry)}-50 text-${getIndustryColor(victim.industry)}-700 border-${getIndustryColor(victim.industry)}-200`}>
+                        {victim.industry}
+                      </Badge>
+                    ) : (
+                      <span className="text-gray-500 text-sm">Không rõ</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {victim.country || <span className="text-gray-500 text-sm">Không rõ</span>}
+                  </TableCell>
                 </TableRow>
               ))
             )}
