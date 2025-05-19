@@ -252,12 +252,32 @@ serve(async (req) => {
         if (path === '/countryvictims/VN') {
           console.log("Processing Vietnamese victims specifically");
           
-          // Here we could add any Vietnam-specific processing if needed
-          // For now, we'll just ensure the country code is properly set
-          processedData = data.map(item => ({
-            ...item,
-            country: item.country || "VN" // Ensure country code is set
-          }));
+          // Process Vietnamese victims to ensure proper formatting
+          processedData = data.map(item => {
+            // Extract victim name with priority for website and post_title fields
+            let victimName = "Unknown Organization";
+            
+            if (item.post_title && typeof item.post_title === 'string' && item.post_title.trim() !== '') {
+              victimName = item.post_title;
+            }
+            else if (item.website && typeof item.website === 'string' && item.website.trim() !== '') {
+              victimName = item.website;
+            }
+            // Additional fallbacks
+            else if (item.victim && typeof item.victim === 'string' && item.victim.trim() !== '') {
+              victimName = item.victim;
+            }
+            else if (item.company && typeof item.company === 'string' && item.company.trim() !== '') {
+              victimName = item.company;
+            }
+            
+            return {
+              ...item,
+              victim_name: victimName,
+              country: item.country || "VN", // Ensure country code is set
+              group_name: item.group_name || item.group || "Unknown Group"
+            };
+          });
           
           console.log(`Processed ${processedData.length} Vietnamese victims`);
         }
@@ -266,7 +286,6 @@ serve(async (req) => {
       }
     }
     else if (path === '/recentvictims' || path.startsWith('/groupvictims/') || path.includes('victim')) {
-      // Keep existing victim data processing logic
       // Keep existing victim data processing logic
       processedData = Array.isArray(data) ? data.map(item => {
         // Enhanced victim name extraction with strict validation

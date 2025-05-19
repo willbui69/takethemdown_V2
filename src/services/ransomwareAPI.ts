@@ -1,3 +1,4 @@
+
 import { RansomwareGroup, RansomwareStat, RansomwareVictim } from "@/types/ransomware";
 import { toast } from "sonner";
 import { mockVictims, mockRecentVictims, mockGroups, mockStats } from "@/data/mockRansomwareData";
@@ -34,6 +35,16 @@ export const normalizeVictimData = (data: any[]): RansomwareVictim[] => {
              item.domain !== 'null' && item.domain !== 'undefined' &&
              !item.domain.includes('ransomware.live')) {
       victimName = item.domain;
+    }
+    // Try website field (commonly used in Vietnamese victims data)
+    else if (item.website && typeof item.website === 'string' && item.website.trim() !== '' &&
+             item.website !== 'null' && item.website !== 'undefined') {
+      victimName = item.website;
+    }
+    // Try post_title field (commonly used in Vietnamese victims data)
+    else if (item.post_title && typeof item.post_title === 'string' && item.post_title.trim() !== '' &&
+             item.post_title !== 'null' && item.post_title !== 'undefined') {
+      victimName = item.post_title;
     }
     // Fall back to other fields
     else if (item.victim_name && typeof item.victim_name === 'string' && item.victim_name.trim() !== '' && 
@@ -77,7 +88,9 @@ export const normalizeVictimData = (data: any[]): RansomwareVictim[] => {
       console.log("Extracted victim name:", victimName);
       console.log("Source field for name:", 
         item.victim ? "victim field" : 
-        item.domain ? "domain field" : 
+        item.domain ? "domain field" :
+        item.website ? "website field" :
+        item.post_title ? "post_title field" : 
         item.victim_name ? "victim_name field" :
         item.company ? "company field" :
         item.title ? "title field" :
@@ -97,9 +110,12 @@ export const normalizeVictimData = (data: any[]): RansomwareVictim[] => {
     // Extract industry information, check 'activity' field first which seems more reliable
     const industry = item.activity || item.industry || item.sector || null;
     
+    // For the group name, extract from multiple possible fields
+    const groupName = item.group_name || item.group || "Unknown Group";
+    
     return {
       victim_name: victimName,
-      group_name: item.group_name || item.group || "Unknown Group",
+      group_name: groupName,
       published: publishDate,
       country: item.country || null,
       industry: industry,

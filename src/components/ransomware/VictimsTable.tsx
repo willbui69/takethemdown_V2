@@ -88,15 +88,33 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     return matchesSearch && matchesCountry && matchesIndustry;
   });
   
-  // Enhanced data processing to handle all possible field variations
+  // Process victim data to ensure proper name extraction
   const processedVictims = filteredVictims.map(victim => {
+    // Use the victim_name field if it's already populated correctly
+    if (victim.victim_name && 
+        victim.victim_name !== "Unknown Organization" && 
+        typeof victim.victim_name === 'string' && 
+        victim.victim_name.trim() !== '') {
+      return victim;
+    }
+    
     // Enhanced victim name extraction with strict validation
     let victimName = "Unknown Organization";
     
-    // First try using the 'victim' field, which seems to contain the actual organization name
-    if (victim.victim && typeof victim.victim === 'string' && victim.victim.trim() !== '' && 
-        victim.victim !== 'null' && victim.victim !== 'undefined' && 
-        !victim.victim.includes('ransomware.live')) {
+    // First check website field (commonly used in Vietnamese victims data)
+    if (victim.website && typeof victim.website === 'string' && victim.website.trim() !== '' &&
+         victim.website !== 'null' && victim.website !== 'undefined') {
+      victimName = victim.website;
+    }
+    // Then check post_title field (commonly used in Vietnamese victims data)
+    else if (victim.post_title && typeof victim.post_title === 'string' && victim.post_title.trim() !== '' &&
+             victim.post_title !== 'null' && victim.post_title !== 'undefined') {
+      victimName = victim.post_title;
+    }
+    // Try using the 'victim' field, which seems to contain the actual organization name
+    else if (victim.victim && typeof victim.victim === 'string' && victim.victim.trim() !== '' && 
+             victim.victim !== 'null' && victim.victim !== 'undefined' && 
+             !victim.victim.includes('ransomware.live')) {
       victimName = victim.victim;
     } 
     // Then try domain
@@ -166,7 +184,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   });
   
   // Sort the processed victims
-  const sortedVictims = [...filteredVictims].sort((a, b) => {
+  const sortedVictims = [...processedVictims].sort((a, b) => {
     const fieldA = a[sortField] || "";
     const fieldB = b[sortField] || "";
     
