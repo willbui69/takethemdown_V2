@@ -1,19 +1,17 @@
+
 import { useState } from "react";
 import { RansomwareVictim } from "@/types/ransomware";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Filter, AlertTriangle, Calendar, User, ChevronDown, ChevronUp } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Table, TableBody, TableCell } from "@/components/ui/table";
+import { AlertTriangle } from "lucide-react";
+import { VictimTableHeader } from "./tables/VictimTableHeader";
+import { VictimTableRow } from "./tables/VictimTableRow";
+import { FilterSection } from "./filters/FilterSection";
+import { ExpandControl } from "./tables/ExpandControl";
+import { 
+  formatDate, 
+  getIndustryColor,
+  processVictimData 
+} from "./utils/victimTableUtils";
 
 interface VictimsTableProps {
   victims: RansomwareVictim[];
@@ -28,7 +26,6 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   const [itemsToShow, setItemsToShow] = useState(10);
   const [countryFilter, setCountryFilter] = useState<string>("");
   const [industryFilter, setIndustryFilter] = useState<string>("");
-  const [showFilters, setShowFilters] = useState(false);
   
   const handleSort = (field: keyof RansomwareVictim) => {
     if (sortField === field) {
@@ -88,100 +85,8 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     return matchesSearch && matchesCountry && matchesIndustry;
   });
   
-  // Process victim data to ensure proper name extraction
-  const processedVictims = filteredVictims.map(victim => {
-    // Use the victim_name field if it's already populated correctly
-    if (victim.victim_name && 
-        victim.victim_name !== "Unknown Organization" && 
-        typeof victim.victim_name === 'string' && 
-        victim.victim_name.trim() !== '') {
-      return victim;
-    }
-    
-    // Enhanced victim name extraction with strict validation
-    let victimName = "Unknown Organization";
-    
-    // First check website field (commonly used in Vietnamese victims data)
-    if (victim.website && typeof victim.website === 'string' && victim.website.trim() !== '' &&
-         victim.website !== 'null' && victim.website !== 'undefined') {
-      victimName = victim.website;
-    }
-    // Then check post_title field (commonly used in Vietnamese victims data)
-    else if (victim.post_title && typeof victim.post_title === 'string' && victim.post_title.trim() !== '' &&
-             victim.post_title !== 'null' && victim.post_title !== 'undefined') {
-      victimName = victim.post_title;
-    }
-    // Try using the 'victim' field, which seems to contain the actual organization name
-    else if (victim.victim && typeof victim.victim === 'string' && victim.victim.trim() !== '' && 
-             victim.victim !== 'null' && victim.victim !== 'undefined' && 
-             !victim.victim.includes('ransomware.live')) {
-      victimName = victim.victim;
-    } 
-    // Then try domain
-    else if (victim.domain && typeof victim.domain === 'string' && victim.domain.trim() !== '' && 
-             victim.domain !== 'null' && victim.domain !== 'undefined' &&
-             !victim.domain.includes('ransomware.live')) {
-      victimName = victim.domain;
-    }
-    // Fall back to other fields
-    else if (victim.victim_name && typeof victim.victim_name === 'string' && victim.victim_name.trim() !== '' && 
-             victim.victim_name !== 'null' && victim.victim_name !== 'undefined' &&
-             !victim.victim_name.includes('ransomware.live')) {
-      victimName = victim.victim_name;
-    } 
-    else if (victim.company && typeof victim.company === 'string' && victim.company.trim() !== '' && 
-             victim.company !== 'null' && victim.company !== 'undefined') {
-      victimName = victim.company;
-    } 
-    else if (victim.title && typeof victim.title === 'string' && victim.title.trim() !== '' && 
-             victim.title !== 'null' && victim.title !== 'undefined') {
-      victimName = victim.title;
-    } 
-    else if (victim.name && typeof victim.name === 'string' && victim.name.trim() !== '' && 
-             victim.name !== 'null' && victim.name !== 'undefined') {
-      victimName = victim.name;
-    }
-    else if (victim.url && typeof victim.url === 'string' && victim.url.trim() !== '') {
-      // Try to extract name from URL only if we have no other options
-      try {
-        const urlObj = new URL(victim.url);
-        const hostname = urlObj.hostname.replace('www.', '');
-        // Only use the hostname if it's not ransomware.live
-        if (!hostname.includes('ransomware.live')) {
-          victimName = hostname;
-        }
-      } catch (e) {
-        // If URL parsing fails, use the URL as is or fallback
-        const urlString = victim.url.replace(/^https?:\/\//, '');
-        if (!urlString.includes('ransomware.live')) {
-          victimName = urlString;
-        }
-      }
-    }
-    
-    // Enhanced date extraction
-    const publishDate = 
-      victim.discovered || 
-      victim.discovery_date ||
-      victim.published || 
-      victim.date || 
-      victim.leaked ||
-      null;
-    
-    // Extract industry information, check 'activity' field first which seems more reliable
-    const industry = victim.activity || victim.industry || victim.sector || null;
-    
-    // Ensure we return a properly structured object
-    return {
-      ...victim,
-      victim_name: victimName,
-      group_name: victim.group_name || victim.group || "Unknown Group",
-      published: publishDate,
-      country: victim.country || null,
-      industry: industry,
-      url: victim.url || victim.claim_url || victim.victim_url || null,
-    };
-  });
+  // Process the filtered victims to standardize name extraction
+  const processedVictims = processVictimData(filteredVictims);
   
   // Sort the processed victims
   const sortedVictims = [...processedVictims].sort((a, b) => {
@@ -196,110 +101,19 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   // Get the subset of victims to show
   const visibleVictims = sortedVictims.slice(0, itemsToShow);
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "Không rõ";
-    
-    try {
-      const date = new Date(dateString);
-      // Check if date is valid
-      if (isNaN(date.getTime())) {
-        return dateString; // Return original string if not a valid date
-      }
-      return date.toLocaleDateString(undefined, {
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric'
-      });
-    } catch (error) {
-      console.error("Error formatting date:", dateString, error);
-      return dateString;
-    }
-  };
-
-  const getIndustryColor = (industry: string | null) => {
-    if (!industry) return "gray";
-    
-    const industryLower = industry.toLowerCase();
-    
-    if (industryLower.includes("finance") || industryLower.includes("bank")) return "blue";
-    if (industryLower.includes("health") || industryLower.includes("medical")) return "red";
-    if (industryLower.includes("education") || industryLower.includes("school")) return "yellow";
-    if (industryLower.includes("tech") || industryLower.includes("it")) return "green";
-    if (industryLower.includes("government") || industryLower.includes("public")) return "purple";
-    if (industryLower.includes("manufacturing")) return "orange";
-    
-    return "gray";
-  };
-
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4">
-        {/* Search and filter toggle row */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Tìm kiếm nạn nhân, nhóm, quốc gia..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <Filter className="h-4 w-4" /> 
-            {showFilters ? "Ẩn Bộ Lọc" : "Hiển Thị Bộ Lọc"}
-          </Button>
-        </div>
-
-        {/* Advanced filters section */}
-        {showFilters && (
-          <div className="p-4 border rounded-md bg-gray-50 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="country-filter" className="text-sm font-medium">Quốc Gia</label>
-              <Select value={countryFilter} onValueChange={setCountryFilter}>
-                <SelectTrigger id="country-filter">
-                  <SelectValue placeholder="Tất cả quốc gia" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Tất cả quốc gia</SelectItem>
-                  {countries.map(country => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="industry-filter" className="text-sm font-medium">Ngành</label>
-              <Select value={industryFilter} onValueChange={setIndustryFilter}>
-                <SelectTrigger id="industry-filter">
-                  <SelectValue placeholder="Tất cả ngành" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Tất cả ngành</SelectItem>
-                  {industries.map(industry => (
-                    <SelectItem key={industry} value={industry}>{industry}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-end">
-              <Button 
-                variant="secondary" 
-                onClick={resetFilters}
-                className="w-full"
-              >
-                Xóa Bộ Lọc
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      <FilterSection 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        countryFilter={countryFilter}
+        setCountryFilter={setCountryFilter}
+        industryFilter={industryFilter}
+        setIndustryFilter={setIndustryFilter}
+        countries={countries}
+        industries={industries}
+        resetFilters={resetFilters}
+      />
 
       {sortedVictims.length === 0 && !loading && (
         <div className="bg-amber-50 border border-amber-200 rounded-md p-4 flex items-center gap-3">
@@ -310,145 +124,45 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
 
       <div className="rounded-md border overflow-auto">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => handleSort("victim_name")}
-              >
-                <div className="flex items-center gap-1">
-                  <User className="h-4 w-4" />
-                  Tổ Chức
-                  {sortField === "victim_name" && (
-                    <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
-                  )}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => handleSort("group_name")}
-              >
-                Nhóm
-                {sortField === "group_name" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
-                )}
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => handleSort("published")}
-              >
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  Công Bố
-                  {sortField === "published" && (
-                    <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
-                  )}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => handleSort("industry")}
-              >
-                Ngành
-                {sortField === "industry" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
-                )}
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => handleSort("country")}
-              >
-                Quốc Gia
-                {sortField === "country" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
-                )}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
+          <VictimTableHeader 
+            sortField={sortField}
+            sortDirection={sortDirection}
+            handleSort={handleSort}
+          />
           <TableBody>
             {loading ? (
-              <TableRow>
+              <tr>
                 <TableCell colSpan={5} className="h-24 text-center">
                   Đang tải dữ liệu nạn nhân...
                 </TableCell>
-              </TableRow>
+              </tr>
             ) : sortedVictims.length === 0 ? (
-              <TableRow>
+              <tr>
                 <TableCell colSpan={5} className="h-24 text-center">
                   Không tìm thấy nạn nhân phù hợp với tiêu chí của bạn
                 </TableCell>
-              </TableRow>
+              </tr>
             ) : (
               visibleVictims.map((victim, index) => (
-                <TableRow key={`${victim.group_name}-${victim.victim_name}-${index}`}>
-                  <TableCell className="font-medium">
-                    {victim.url ? (
-                      <a 
-                        href={victim.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-security hover:underline"
-                      >
-                        {victim.victim_name}
-                      </a>
-                    ) : (
-                      victim.victim_name
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="font-medium">
-                      {victim.group_name}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{formatDate(victim.published)}</TableCell>
-                  <TableCell>
-                    {victim.industry ? (
-                      <Badge variant="outline" className={`bg-${getIndustryColor(victim.industry)}-50 text-${getIndustryColor(victim.industry)}-700 border-${getIndustryColor(victim.industry)}-200`}>
-                        {victim.industry}
-                      </Badge>
-                    ) : (
-                      <span className="text-gray-500 text-sm">Không rõ</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {victim.country || <span className="text-gray-500 text-sm">Không rõ</span>}
-                  </TableCell>
-                </TableRow>
+                <VictimTableRow
+                  key={index}
+                  victim={victim}
+                  index={index}
+                  formatDate={formatDate}
+                  getIndustryColor={getIndustryColor}
+                />
               ))
             )}
           </TableBody>
         </Table>
       </div>
       
-      {/* Expandable section control */}
-      {sortedVictims.length > 10 && (
-        <div className="flex justify-center mt-4">
-          <Collapsible 
-            className="w-full" 
-            open={expandedView}
-            onOpenChange={toggleExpandedView}
-          >
-            <CollapsibleTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="w-full flex items-center justify-center gap-2"
-              >
-                {expandedView ? (
-                  <>
-                    <ChevronUp className="h-4 w-4" /> 
-                    Thu gọn danh sách
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="h-4 w-4" /> 
-                    Xem thêm {sortedVictims.length - 10} nạn nhân khác
-                  </>
-                )}
-              </Button>
-            </CollapsibleTrigger>
-          </Collapsible>
-        </div>
-      )}
+      <ExpandControl
+        totalCount={sortedVictims.length}
+        visibleCount={10}
+        expandedView={expandedView}
+        toggleExpandedView={toggleExpandedView}
+      />
 
       {/* Filter summary with count */}
       <div className="text-sm text-gray-500 flex flex-wrap justify-between items-center">
