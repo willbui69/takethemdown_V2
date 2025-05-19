@@ -4,7 +4,7 @@ import { RansomwareVictim } from "@/types/ransomware";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, AlertTriangle } from "lucide-react";
+import { Search, Filter, AlertTriangle, Calendar, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface VictimsTableProps {
@@ -38,18 +38,26 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     );
   });
   
-  // Sanitize data to avoid empty values or undefined fields
-  const sanitizedVictims = filteredVictims.map(victim => ({
-    victim_name: victim.victim_name || "Unknown",
-    group_name: victim.group_name || "Unknown Group",
-    published: victim.published || null,
-    country: victim.country || null,
-    industry: victim.industry || null,
-    url: victim.url || null,
-    ...victim
-  }));
+  // Enhance data processing to better handle missing victim names and dates
+  const processedVictims = filteredVictims.map(victim => {
+    // Extract name from various possible fields
+    const victimName = victim.victim_name || victim.name || victim.company || victim.title || "Unknown";
+    
+    // Extract date from various possible fields
+    const publishDate = victim.published || victim.date || victim.discovery_date || victim.discovered || null;
+    
+    return {
+      ...victim,
+      victim_name: victimName,
+      group_name: victim.group_name || victim.group || "Unknown Group",
+      published: publishDate,
+      country: victim.country || null,
+      industry: victim.industry || victim.sector || null,
+      url: victim.url || victim.victim_url || null,
+    };
+  });
   
-  const sortedVictims = [...sanitizedVictims].sort((a, b) => {
+  const sortedVictims = [...processedVictims].sort((a, b) => {
     const fieldA = a[sortField] || "";
     const fieldB = b[sortField] || "";
     
@@ -62,12 +70,18 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     if (!dateString) return "Không rõ";
     
     try {
-      return new Date(dateString).toLocaleDateString(undefined, {
+      const date = new Date(dateString);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return dateString; // Return original string if not a valid date
+      }
+      return date.toLocaleDateString(undefined, {
         year: 'numeric', 
         month: 'short', 
         day: 'numeric'
       });
     } catch (error) {
+      console.error("Error formatting date:", dateString, error);
       return dateString;
     }
   };
@@ -120,10 +134,13 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                 className="cursor-pointer"
                 onClick={() => handleSort("victim_name")}
               >
-                Tổ Chức
-                {sortField === "victim_name" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
-                )}
+                <div className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  Tổ Chức
+                  {sortField === "victim_name" && (
+                    <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                  )}
+                </div>
               </TableHead>
               <TableHead 
                 className="cursor-pointer"
@@ -138,10 +155,13 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                 className="cursor-pointer"
                 onClick={() => handleSort("published")}
               >
-                Công Bố
-                {sortField === "published" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
-                )}
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  Công Bố
+                  {sortField === "published" && (
+                    <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                  )}
+                </div>
               </TableHead>
               <TableHead 
                 className="cursor-pointer"

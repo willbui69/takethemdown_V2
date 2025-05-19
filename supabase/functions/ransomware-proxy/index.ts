@@ -57,7 +57,25 @@ serve(async (req) => {
     }
 
     const data = await apiRes.json();
-    return new Response(JSON.stringify(data), {
+    
+    // Process and enhance the data before returning it
+    let processedData = data;
+    
+    // Handle specific endpoints to ensure data consistency
+    if (path === '/recentvictims' || path.startsWith('/groupvictims/')) {
+      // Make sure each entry has at least a minimum set of properties
+      processedData = Array.isArray(data) ? data.map(item => {
+        // Ensure required fields exist
+        return {
+          victim_name: item.victim_name || item.name || "",
+          group_name: item.group_name || item.group || "",
+          published: item.published || item.date || item.discovery_date || null,
+          ...item
+        };
+      }) : data;
+    }
+    
+    return new Response(JSON.stringify(processedData), {
       status: apiRes.status,
       headers: corsHeaders
     });

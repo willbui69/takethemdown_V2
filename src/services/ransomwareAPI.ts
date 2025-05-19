@@ -13,6 +13,32 @@ const EDGE_FUNCTION_URL = "https://euswzjdcxrnuupcyiddb.supabase.co/functions/v1
 // Supabase anon key - this is public and safe to include in client-side code
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE";
 
+// Transform and normalize ransomware victim data
+export const normalizeVictimData = (data: any[]): RansomwareVictim[] => {
+  if (!Array.isArray(data)) {
+    console.error("Invalid victim data format:", data);
+    return [];
+  }
+  
+  return data.map(item => {
+    // Extract name from various possible fields
+    const victimName = item.victim_name || item.name || item.company || item.title || "Unknown";
+    
+    // Extract date from various possible fields
+    const publishDate = item.published || item.date || item.discovery_date || item.discovered || null;
+    
+    return {
+      victim_name: victimName,
+      group_name: item.group_name || item.group || "Unknown Group",
+      published: publishDate,
+      country: item.country || null,
+      industry: item.industry || item.sector || null,
+      url: item.url || item.victim_url || null,
+      ...item // Keep all original properties
+    };
+  });
+};
+
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
     console.log("Checking API availability via Edge Function");
@@ -73,7 +99,8 @@ export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
   try {
     // Try to use the new recentvictims endpoint as it might be more reliable
     const data = await callEdgeFunction('/recentvictims');
-    return data;
+    console.log("Fetched victim data:", data?.length || 0, "records");
+    return normalizeVictimData(data);
   } catch (error) {
     console.error("Failed to fetch victims:", error);
     toast.error("Could not fetch victim data", {
@@ -93,7 +120,7 @@ export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVict
   try {
     // Try the new groupvictims endpoint format
     const data = await callEdgeFunction(`/groupvictims/${group}`);
-    return data;
+    return normalizeVictimData(data);
   } catch (error) {
     console.error(`Failed to fetch victims for group ${group}:`, error);
     toast.error("Could not fetch group data", {
@@ -160,7 +187,8 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
   try {
     // Try the recentvictims endpoint (new format)
     const data = await callEdgeFunction('/recentvictims');
-    return data;
+    console.log("Fetched recent victim data:", data?.length || 0, "records");
+    return normalizeVictimData(data);
   } catch (error) {
     console.error("Failed to fetch recent victims:", error);
     toast.error("Could not fetch recent victim data", {

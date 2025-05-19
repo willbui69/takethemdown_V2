@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import RootLayout from "@/components/layout/RootLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -66,17 +65,15 @@ const RansomwareMonitor = () => {
       ]);
       
       if (allVictimsResult.status === 'fulfilled') {
-        const processedData = processVictimData(allVictimsResult.value);
-        setVictims(processedData);
-        console.info(`Fetched ${processedData.length} victims in scheduled update`);
+        setVictims(allVictimsResult.value);
+        console.info(`Fetched ${allVictimsResult.value.length} victims in scheduled update`);
       } else {
         console.error("Error fetching all victims:", allVictimsResult.reason);
         setError("Không thể tải dữ liệu nạn nhân.");
       }
       
       if (todayVictimsResult.status === 'fulfilled') {
-        const processedData = processVictimData(todayVictimsResult.value);
-        setRecentVictims(processedData);
+        setRecentVictims(todayVictimsResult.value);
       } else {
         console.error("Error fetching recent victims:", todayVictimsResult.reason);
         if (!error) {
