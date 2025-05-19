@@ -15,7 +15,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bug, ShieldAlert } from "lucide-react";
+import { Bug, ShieldAlert, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export const GroupStatistics = () => {
   const [groups, setGroups] = useState<RansomwareGroup[]>([]);
@@ -23,6 +24,8 @@ export const GroupStatistics = () => {
   const [error, setError] = useState<string | null>(null);
   const [isGeoBlocked, setIsGeoBlocked] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("active");
+  const [activeCount, setActiveCount] = useState(0);
+  const [inactiveCount, setInactiveCount] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,7 +36,17 @@ export const GroupStatistics = () => {
         
         const fetchedGroups = await fetchGroups();
         setGroups(fetchedGroups);
+        
+        // Calculate active and inactive counts
+        const activeGroups = fetchedGroups.filter(group => group.active);
+        const inactive = fetchedGroups.filter(group => !group.active);
+        
+        setActiveCount(activeGroups.length);
+        setInactiveCount(inactive.length);
+        
         console.log("Fetched groups:", fetchedGroups.length);
+        console.log("Active groups:", activeGroups.length);
+        console.log("Inactive groups:", inactive.length);
         
       } catch (err) {
         setError("Không thể tải dữ liệu nhóm ransomware");
@@ -57,7 +70,7 @@ export const GroupStatistics = () => {
     .sort((a, b) => (b.victim_count || 0) - (a.victim_count || 0))
     .slice(0, 15); // Only show top 15 groups
 
-  console.log("Combined chart data:", chartData);
+  console.log("Filtered chart data:", filter, chartData.length);
 
   return (
     <Card>
@@ -65,8 +78,18 @@ export const GroupStatistics = () => {
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>Thống Kê Nhóm Ransomware</CardTitle>
-            <CardDescription>
+            <CardDescription className="flex items-center gap-2">
               Số lượng nạn nhân theo nhóm ransomware
+              <div className="flex gap-2 items-center mt-1">
+                <Badge variant="outline" className="bg-green-100">
+                  <AlertCircle className="h-3 w-3 mr-1 text-green-600" />
+                  {activeCount} Nhóm Hoạt Động
+                </Badge>
+                <Badge variant="outline" className="bg-gray-100">
+                  <AlertCircle className="h-3 w-3 mr-1 text-gray-600" />
+                  {inactiveCount} Nhóm Không Hoạt Động
+                </Badge>
+              </div>
             </CardDescription>
           </div>
           <Select 
@@ -131,12 +154,31 @@ export const GroupStatistics = () => {
                 <Tooltip 
                   formatter={(value) => [Number(value).toLocaleString(), 'Số Nạn Nhân']}
                   labelFormatter={(label) => `Nhóm: ${label}`}
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      const group = chartData.find(g => g.name === label);
+                      return (
+                        <div className="bg-white p-2 border rounded shadow-sm">
+                          <p className="font-semibold">{label}</p>
+                          <p className="text-sm">{Number(payload[0].value).toLocaleString()} nạn nhân</p>
+                          <p className="text-xs text-gray-600">
+                            Trạng thái: {group?.active ? 'Hoạt Động' : 'Không Hoạt Động'}
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
                 />
-                <Legend />
+                <Legend formatter={(value) => `Số Nạn Nhân`} />
                 <Bar 
                   dataKey="victim_count" 
                   name="Số Nạn Nhân" 
                   fill="#8884d8" 
+                  fillOpacity={0.9}
+                  stroke="#6661b1"
+                  // Change bar color based on active status
+                  isAnimationActive={true}
                 />
               </BarChart>
             </ResponsiveContainer>

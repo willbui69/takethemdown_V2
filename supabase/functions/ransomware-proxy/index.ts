@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const API_BASE_URL = "https://api.ransomware.live/v2";
@@ -153,8 +154,45 @@ serve(async (req) => {
           }
         }
         
+        // Determine if the group is active based on locations data
+        let isActive = false;
+        
+        // First, check if any location is marked as available
+        if (item.locations && Array.isArray(item.locations)) {
+          isActive = item.locations.some(loc => loc.available === true);
+        }
+        
+        // If no locations are marked available, check if there are any recent updates
+        if (!isActive && item.locations && Array.isArray(item.locations) && item.locations.length > 0) {
+          // Check for updates in the last 3 months
+          const threeMonthsAgo = new Date();
+          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+          
+          for (const loc of item.locations) {
+            if (loc.updated) {
+              try {
+                const updatedDate = new Date(loc.updated);
+                if (updatedDate > threeMonthsAgo) {
+                  isActive = true;
+                  break;
+                }
+              } catch (err) {
+                // If date parsing fails, continue checking other locations
+                console.error("Error parsing date:", loc.updated);
+              }
+            }
+          }
+        }
+        
+        // Another check: if the group has "meta" field with "seized" or similar, it's inactive
+        if (item.meta && typeof item.meta === 'string' && 
+            (item.meta.toLowerCase().includes('seized') || 
+             item.meta.toLowerCase().includes('shutdown') ||
+             item.meta.toLowerCase().includes('inactive'))) {
+          isActive = false;
+        }
+        
         // If we still don't have victim count for active groups, use location check
-        const isActive = Boolean(item.locations?.some((loc) => loc.available));
         if (victimCount === 0 && isActive) {
           // Estimate based on number of locations as a heuristic
           const locationCount = item.locations?.length || 0;
