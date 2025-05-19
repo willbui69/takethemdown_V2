@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ShieldAlert, Bug, Code, Signal, Network, Clock, CloudOff } from "lucide-react";
+import { ShieldAlert, Bug, Code, Signal, Network, Clock, CloudOff, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface InfoPanelProps {
@@ -35,6 +35,8 @@ export const InfoPanel = ({ isGeoBlocked, error, debugInfo }: InfoPanelProps) =>
             <Clock className="h-10 w-10" />
           ) : error.includes("offline") || error.includes("không có kết nối") ? (
             <CloudOff className="h-10 w-10" />
+          ) : error.includes("CORS") || error.includes("origin") ? (
+            <Globe className="h-10 w-10" />
           ) : (
             <Bug className="h-10 w-10" />
           )}
@@ -46,6 +48,16 @@ export const InfoPanel = ({ isGeoBlocked, error, debugInfo }: InfoPanelProps) =>
               <AlertTitle>Vấn đề kết nối</AlertTitle>
               <AlertDescription>
                 Không thể kết nối đến Edge Function. Điều này có thể do Edge Function tạm thời không khả dụng, timeout quá ngắn, mạng Internet của bạn bị gián đoạn, hoặc CORS không được cấu hình đúng. Thử làm mới trang sau ít phút.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {(error.includes("CORS") || error.includes("origin")) && (
+            <Alert className="mt-2 bg-amber-50">
+              <Globe className="h-4 w-4" />
+              <AlertTitle>Vấn đề CORS</AlertTitle>
+              <AlertDescription>
+                Trình duyệt của bạn chặn yêu cầu do các giới hạn CORS. Điều này có thể xảy ra khi truy cập từ nguồn gốc không được ủy quyền. Vui lòng thử truy cập từ URL chính thức.
               </AlertDescription>
             </Alert>
           )}

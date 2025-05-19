@@ -13,7 +13,8 @@ export const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-request-signature, x-request-timestamp, origin, cache-control",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Content-Type": "application/json",
-  "Access-Control-Max-Age": "86400" // Cache preflight for 24 hours
+  "Access-Control-Max-Age": "86400", // Cache preflight for 24 hours
+  "Cache-Control": "no-cache, no-store, must-revalidate" // Prevent caching issues
 };
 
 export const ALLOWED = [
@@ -66,9 +67,9 @@ export const validateSignature = (
     return false;
   }
   
-  // Allow a wider 30-minute window for timestamp to account for clock drift and delays
+  // Allow a wider 60-minute window for timestamp to account for clock drift and delays
   const now = getTimestamp();
-  if (Math.abs(now - timestamp) > 1800) { // 30 minutes
+  if (Math.abs(now - timestamp) > 3600) { // 60 minutes
     console.log(`Timestamp too old or in future: ${timestamp}, current: ${now}, diff: ${Math.abs(now - timestamp)}`);
     return false;
   }

@@ -20,8 +20,8 @@ const API_REQUEST_SECRET = "ransomware-monitor-42735919";
 
 // Failover mechanism to handle API availability
 let consecutiveFailures = 0;
-const MAX_FAILURES = 3;
-const API_RETRY_TIMEOUT = 60000; // 1 minute
+const MAX_FAILURES = 5; // Increased from 3 to 5
+const API_RETRY_TIMEOUT = 120000; // 2 minutes (increased from 60 seconds)
 let lastFailureTime = 0;
 
 // Simple signature generation for API requests
@@ -72,9 +72,18 @@ export const callEdgeFunction = async (endpoint: string) => {
   try {
     console.log(`Calling Edge Function with endpoint: ${endpoint}`);
     
-    // Set a longer timeout for the request (30 seconds instead of 15)
+    // Check network connectivity first - expanded check
+    if (!navigator.onLine) {
+      useMockData = true;
+      throw new Error("Không có kết nối Internet. Vui lòng kiểm tra mạng của bạn.");
+    }
+    
+    // Set a longer timeout for the request (45 seconds instead of 30)
     const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 30000); // 30 second timeout
+    const timeoutId = setTimeout(() => {
+      console.warn(`Request timeout for endpoint: ${endpoint}`);
+      abortController.abort();
+    }, 45000);
     
     // Generate request signature
     const timestamp = Math.floor(Date.now() / 1000);
@@ -86,55 +95,64 @@ export const callEdgeFunction = async (endpoint: string) => {
     const edgeFunctionUrl = getEdgeFunctionUrl();
     console.log(`Using Edge Function URL: ${edgeFunctionUrl}`);
     
-    // Check network connectivity first
-    if (!navigator.onLine) {
-      throw new Error("Không có kết nối Internet. Vui lòng kiểm tra mạng của bạn.");
-    }
+    // Add random cache-busting param
+    const cacheBuster = `_cb=${Date.now()}`;
+    const separator = endpoint.includes('?') ? '&' : '?';
+    const urlWithCacheBuster = `${edgeFunctionUrl}${endpoint}${separator}${cacheBuster}`;
     
-    const response = await fetch(`${edgeFunctionUrl}${endpoint}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'X-Request-Timestamp': timestamp.toString(),
-        'X-Request-Signature': signature,
-        'Cache-Control': 'no-cache'
-      },
-      signal: abortController.signal
-    });
-    
-    clearTimeout(timeoutId);
-
-    // Handle rate limiting
-    if (response.status === 429) {
-      console.warn("Rate limit hit on API. Using mock data temporarily.");
-      useMockData = true;
-      throw new Error("Rate limit exceeded. Please try again later.");
-    }
-
-    // Handle unauthorized access
-    if (response.status === 401 || response.status === 403) {
-      console.error("Authorization error with Edge Function:", await response.text());
-      useMockData = true;
-      throw new Error("API access unauthorized. Using mock data instead.");
-    }
-
-    if (!response.ok) {
-      // Track consecutive failures for backoff
-      consecutiveFailures++;
-      lastFailureTime = Date.now();
+    try {
+      const response = await fetch(urlWithCacheBuster, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'X-Request-Timestamp': timestamp.toString(),
+          'X-Request-Signature': signature,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Origin': window.location.origin
+        },
+        signal: abortController.signal
+      });
       
-      const errorText = await response.text();
-      console.error(`Edge Function returned status ${response.status}: ${errorText}`);
-      throw new Error(`API request failed with status: ${response.status}`);
-    }
+      clearTimeout(timeoutId);
+      
+      // Handle rate limiting
+      if (response.status === 429) {
+        console.warn("Rate limit hit on API. Using mock data temporarily.");
+        useMockData = true;
+        throw new Error("Rate limit exceeded. Please try again later.");
+      }
 
-    // Reset failures counter on success
-    consecutiveFailures = 0;
-    useMockData = false;
-    
-    return await response.json();
-  } catch (error) {
+      // Handle unauthorized access
+      if (response.status === 401 || response.status === 403) {
+        console.error("Authorization error with Edge Function:", await response.text());
+        useMockData = true;
+        throw new Error("API access unauthorized. Using mock data instead.");
+      }
+  
+      if (!response.ok) {
+        // Track consecutive failures for backoff
+        consecutiveFailures++;
+        lastFailureTime = Date.now();
+        
+        const errorText = await response.text();
+        console.error(`Edge Function returned status ${response.status}: ${errorText}`);
+        throw new Error(`API request failed with status: ${response.status}`);
+      }
+
+      // Reset failures counter on success
+      consecutiveFailures = 0;
+      useMockData = false;
+      
+      return await response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      // Re-throw the original error
+      throw error;
+    }
+  } catch (error: any) {
     // Handle specific error types
     if (error.name === 'AbortError') {
       console.error(`Edge Function request timeout for endpoint ${endpoint}`);
@@ -151,13 +169,14 @@ export const callEdgeFunction = async (endpoint: string) => {
   }
 };
 
-// Function to check API availability
+// Function to check API availability with more detailed diagnostics
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
     console.log("Checking API availability via Edge Function");
     
     // Check network connectivity first
     if (!navigator.onLine) {
+      console.error("Network offline");
       throw new Error("Không có kết nối Internet. Vui lòng kiểm tra mạng của bạn.");
     }
     
@@ -169,19 +188,25 @@ export const checkApiAvailability = async (): Promise<boolean> => {
     
     // Determine the correct URL for the Edge Function
     const edgeFunctionUrl = getEdgeFunctionUrl();
+    console.log(`Checking API availability at: ${edgeFunctionUrl}`);
+    
+    // Add cache buster to prevent caching
+    const cacheBuster = `_cb=${Date.now()}`;
     
     // Call the edge function with the /groups endpoint path
-    const response = await fetch(`${edgeFunctionUrl}/groups`, {
+    const response = await fetch(`${edgeFunctionUrl}/groups?${cacheBuster}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'X-Request-Timestamp': timestamp.toString(),
         'X-Request-Signature': signature,
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Origin': window.location.origin
       },
-      // Set a longer timeout for the availability check (10 seconds instead of 5)
-      signal: AbortSignal.timeout(10000)
+      // Set a longer timeout for the availability check (15 seconds instead of 10)
+      signal: AbortSignal.timeout(15000)
     });
 
     if (!response.ok) {
@@ -195,7 +220,7 @@ export const checkApiAvailability = async (): Promise<boolean> => {
     useMockData = false;
     consecutiveFailures = 0;
     return true;
-  } catch (err) {
+  } catch (err: any) {
     console.error("Error checking API availability:", err);
     useMockData = true;
     return false;

@@ -44,7 +44,7 @@ function isOriginAllowed(origin: string | null): boolean {
 }
 
 // Simple rate limiting implementation
-const RATE_LIMIT = 20; // requests per window
+const RATE_LIMIT = 30; // Increased from 20 to 30 requests per window
 const RATE_WINDOW = 60000; // 1 minute in ms
 const ipRequests = new Map<string, number[]>();
 
@@ -83,20 +83,19 @@ function checkRateLimit(ip: string): boolean {
 }
 
 serve(async (req) => {
+  // Always get the origin first for better error messages
+  const reqOrigin = req.headers.get("Origin") || "*";
+  
   // Customize CORS headers for the specific request
-  const reqOrigin = req.headers.get("Origin");
   const headers = { 
     ...corsHeaders,
-    ...securityHeaders
+    ...securityHeaders,
+    "Access-Control-Allow-Origin": reqOrigin
   };
 
-  // Set specific origin if provided and allowed
-  if (reqOrigin && isOriginAllowed(reqOrigin)) {
-    headers["Access-Control-Allow-Origin"] = reqOrigin;
-  }
-  
   try {
     console.log(`Request received: ${req.method} ${new URL(req.url).pathname}`);
+    console.log(`From origin: ${reqOrigin}`);
     
     // Always handle CORS preflight
     if (req.method === "OPTIONS") {
@@ -115,12 +114,14 @@ serve(async (req) => {
       if (!isLovablePreview && !isOriginAllowed(origin)) {
         console.warn("Blocked request from unauthorized origin:", origin);
         return new Response(
-          JSON.stringify({ error: "Unauthorized", message: "Origin not allowed" }), 
+          JSON.stringify({ 
+            error: "Unauthorized", 
+            message: "Origin not allowed",
+            details: `The origin '${origin}' is not in the allowed list.`
+          }), 
           { status: 403, headers }
         );
       }
-      
-      // Origin already set in headers above
     }
     
     // Validate request method
@@ -192,9 +193,10 @@ serve(async (req) => {
         headers: { 
           "User-Agent": "RansomwareMonitor/1.0",
           "Accept": "application/json",
-          "X-Client-Source": "ransomware-monitor-app" // Add a source identifier
+          "X-Client-Source": "ransomware-monitor-app", // Add a source identifier
+          "Cache-Control": "no-cache"
         },
-        signal: AbortSignal.timeout(25000) // 25 second timeout (increased from 15)
+        signal: AbortSignal.timeout(35000) // 35 second timeout (increased from 25)
       });
       
       return await handleApiResponse(apiRes, path);
