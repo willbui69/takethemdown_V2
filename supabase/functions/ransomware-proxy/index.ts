@@ -1,20 +1,27 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { API_BASE_URL, corsHeaders, ALLOWED } from "./config.ts";
+import { 
+  API_BASE_URL, 
+  corsHeaders, 
+  ALLOWED, 
+  securityHeaders, 
+  validateSignature, 
+  getTimestamp 
+} from "./config.ts";
 import { handleApiResponse } from "./apiHandlers.ts";
+
+// Origin validation - only allow specific origins (update these to your domains)
+const ALLOWED_ORIGINS = [
+  "https://euswzjdcxrnuupcyiddb.supabase.co",
+  "https://ransomware-monitor.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:5173"
+];
 
 // Simple rate limiting implementation
 const RATE_LIMIT = 10; // requests per window
 const RATE_WINDOW = 60000; // 1 minute in ms
 const ipRequests = new Map<string, number[]>();
-
-// Security headers to add to every response
-const securityHeaders = {
-  "X-Content-Type-Options": "nosniff",
-  "X-Frame-Options": "DENY",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
-};
 
 // Helper function to check rate limits
 function checkRateLimit(ip: string): boolean {
@@ -58,12 +65,38 @@ serve(async (req) => {
     return new Response(null, { headers });
   }
   
+  // Validate request origin
+  const origin = req.headers.get("Origin");
+  if (origin && !ALLOWED_ORIGINS.includes(origin) && !origin.includes("lovableproject.com")) {
+    console.warn("Blocked request from unauthorized origin:", origin);
+    return new Response(
+      JSON.stringify({ error: "Unauthorized", message: "Origin not allowed" }), 
+      { status: 403, headers }
+    );
+  }
+  
   // Validate request method
   if (req.method !== "GET") {
     return new Response(
       JSON.stringify({ error: "Method not allowed", message: "Only GET requests are permitted" }), 
       { status: 405, headers }
     );
+  }
+  
+  // Validate request signature (except for preview environments)
+  if (!origin?.includes("lovableproject.com")) {
+    const requestTimestamp = Number(req.headers.get("x-request-timestamp") || "0");
+    const signature = req.headers.get("x-request-signature");
+    const url = new URL(req.url);
+    const path = url.pathname.replace(/^\/ransomware-proxy/, "");  // Remove function prefix from path
+
+    if (!validateSignature(signature, path, requestTimestamp)) {
+      console.warn("Invalid signature for request to:", path);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized", message: "Invalid request signature" }), 
+        { status: 401, headers }
+      );
+    }
   }
   
   // Get client IP for rate limiting
@@ -97,8 +130,10 @@ serve(async (req) => {
     const apiRes = await fetch(target, { 
       headers: { 
         "User-Agent": "RansomwareMonitor/1.0",
-        "Accept": "application/json"
-      } 
+        "Accept": "application/json",
+        "X-Client-Source": "ransomware-monitor-app" // Add a source identifier
+      },
+      signal: AbortSignal.timeout(15000) // 15 second timeout
     });
     
     return await handleApiResponse(apiRes, path);

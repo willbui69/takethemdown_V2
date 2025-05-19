@@ -10,11 +10,34 @@ export const EDGE_FUNCTION_URL = "https://euswzjdcxrnuupcyiddb.supabase.co/funct
 // Supabase anon key - this is public and safe to include in client-side code
 export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE";
 
+// Request signing configuration - same secret as in the Edge Function
+// In a real-world scenario, this would be stored server-side only, but we're
+// demonstrating the concept here. This is better than no signature at all.
+const API_REQUEST_SECRET = "ransomware-monitor-42735919";
+
 // Failover mechanism to handle API availability
 let consecutiveFailures = 0;
 const MAX_FAILURES = 3;
 const API_RETRY_TIMEOUT = 60000; // 1 minute
 let lastFailureTime = 0;
+
+// Simple signature generation for API requests
+// Uses the same algorithm as the Edge Function
+function generateSignature(path: string, timestamp: number): string {
+  const message = `${path}:${timestamp}:${API_REQUEST_SECRET}`;
+  return hashMessage(message);
+}
+
+// Simple hash function - must match the one in the Edge Function
+function hashMessage(message: string): string {
+  let hash = 0;
+  for (let i = 0; i < message.length; i++) {
+    const char = message.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash.toString(36);
+}
 
 // Helper function to call the Edge Function with retry mechanism and timeout
 export const callEdgeFunction = async (endpoint: string) => {
@@ -33,11 +56,17 @@ export const callEdgeFunction = async (endpoint: string) => {
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
     
+    // Generate request signature
+    const timestamp = Math.floor(Date.now() / 1000);
+    const signature = generateSignature(endpoint, timestamp);
+    
     const response = await fetch(`${EDGE_FUNCTION_URL}${endpoint}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'X-Request-Timestamp': timestamp.toString(),
+        'X-Request-Signature': signature
       },
       signal: abortController.signal
     });
@@ -49,6 +78,13 @@ export const callEdgeFunction = async (endpoint: string) => {
       console.warn("Rate limit hit on API. Using mock data temporarily.");
       useMockData = true;
       throw new Error("Rate limit exceeded. Please try again later.");
+    }
+
+    // Handle unauthorized access
+    if (response.status === 401 || response.status === 403) {
+      console.error("Authorization error with Edge Function");
+      useMockData = true;
+      throw new Error("API access unauthorized. Using mock data instead.");
     }
 
     if (!response.ok) {
@@ -85,12 +121,19 @@ export const callEdgeFunction = async (endpoint: string) => {
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
     console.log("Checking API availability via Edge Function");
+    
+    // Generate signature for availability check
+    const timestamp = Math.floor(Date.now() / 1000);
+    const signature = generateSignature("/groups", timestamp);
+    
     // Call the edge function with the /groups endpoint path
     const response = await fetch(`${EDGE_FUNCTION_URL}/groups`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'X-Request-Timestamp': timestamp.toString(),
+        'X-Request-Signature': signature
       },
       // Set a short timeout for the availability check
       signal: AbortSignal.timeout(5000)
