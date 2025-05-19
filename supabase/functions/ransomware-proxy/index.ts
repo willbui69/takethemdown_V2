@@ -40,11 +40,13 @@ function isOriginAllowed(origin: string | null): boolean {
   // Then check for wildcard matches
   return ALLOWED_ORIGINS.some(allowedOrigin => {
     if (allowedOrigin.includes('*')) {
-      // Fix: Properly escape special characters for RegExp
-      const pattern = allowedOrigin
-        .replace(/\./g, '\\.')
-        .replace(/\*/g, '.*');
-      return new RegExp(`^${pattern}$`).test(origin);
+      // Fix: Completely rewritten pattern creation to avoid syntax errors
+      const patternString = allowedOrigin
+        .replace(/\./g, '\\.')  // Escape dots
+        .replace(/\*/g, '.*');  // Replace * with .*
+      
+      const pattern = new RegExp(`^${patternString}$`);
+      return pattern.test(origin);
     }
     return false;
   });
