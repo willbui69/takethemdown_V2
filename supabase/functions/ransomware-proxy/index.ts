@@ -1,57 +1,40 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { 
-  API_BASE_URL, 
-  corsHeaders, 
-  ALLOWED, 
-  securityHeaders, 
-  validateSignature, 
-  getTimestamp 
-} from "./config.ts";
+import { corsHeaders } from "./config.ts";
 import { handleApiResponse } from "./apiHandlers.ts";
 
-// Origin validation - much more permissive list
-const ALLOWED_ORIGINS = [
-  "https://euswzjdcxrnuupcyiddb.supabase.co",
-  "https://ransomware-monitor.vercel.app",
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://localhost:54321",
-  "https://lovableproject.com",
-  "https://*.lovableproject.com",
-  "*" // Allow all origins (for debugging)
+// Define the base API URL
+const API_BASE_URL = "https://api.ransomware.live/v2";
+
+// Define allowed API endpoints (using regex patterns)
+const ALLOWED = [
+  /^\/info$/,
+  /^\/recentvictims$/,
+  /^\/groups$/,
+  /^\/group\/[^/]+$/,
+  /^\/allcyberattacks$/,
+  /^\/recentcyberattacks$/,
+  /^\/groupvictims\/[^/]+$/,
+  /^\/searchvictims\/[^/]+$/,
+  /^\/countrycyberattacks\/[A-Za-z]{2}$/,
+  /^\/countryvictims\/[A-Za-z]{2}$/,
+  /^\/victims\/\d{4}\/\d{2}$/,
+  /^\/sectorvictims\/[^/]+$/,
+  /^\/sectorvictims\/[^/]+\/[A-Za-z]{2}$/,
+  /^\/certs\/[A-Za-z]{2}$/,
+  /^\/yara\/[^/]+$/
 ];
 
-// Check if origin is allowed with wildcard support
-function isOriginAllowed(origin: string | null): boolean {
-  // For simplicity in debugging, allow all origins
-  return true;
-  
-  /* Disabled for now to prevent CORS issues
-  if (!origin) return false;
-  
-  // For debugging: allow all origins temporarily
-  if (ALLOWED_ORIGINS.includes("*")) return true;
-  
-  // First check exact matches
-  if (ALLOWED_ORIGINS.includes(origin)) return true;
-  
-  // Then check for wildcard matches
-  return ALLOWED_ORIGINS.some(allowedOrigin => {
-    if (allowedOrigin.includes('*')) {
-      const escapedOrigin = allowedOrigin.replace(/\./g, '\\.');
-      const pattern = escapedOrigin.replace(/\*/g, '.*');
-      const regex = new RegExp(`^${pattern}$`);
-      return regex.test(origin);
-    }
-    return false;
-  });
-  */
-}
+// Add security headers to responses
+const securityHeaders = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Content-Security-Policy": "default-src 'self'; script-src 'self'; object-src 'none'"
+};
 
 // Simple rate limiting implementation
-const RATE_LIMIT = 30; // Increased from 20 to 30 requests per window
+const RATE_LIMIT = 30; // requests per minute
 const RATE_WINDOW = 60000; // 1 minute in ms
 const ipRequests = new Map<string, number[]>();
 
@@ -90,52 +73,16 @@ function checkRateLimit(ip: string): boolean {
 }
 
 serve(async (req) => {
-  // Always get the origin first for better error messages
-  const reqOrigin = req.headers.get("Origin") || "*";
-  
-  // Customize CORS headers for the specific request
-  const headers = { 
-    ...corsHeaders,
-    ...securityHeaders,
-    "Access-Control-Allow-Origin": "*" // Allow all origins for now to debug
-  };
+  const headers = { ...corsHeaders, ...securityHeaders };
 
   try {
-    console.log(`Request received: ${req.method} ${new URL(req.url).pathname}`);
-    console.log(`From origin: ${reqOrigin}`);
-    
-    // Always handle CORS preflight
+    // Handle CORS preflight
     if (req.method === "OPTIONS") {
-      console.log("Handling CORS preflight request");
       return new Response(null, { headers });
-    }
-    
-    // Validate request origin
-    const origin = req.headers.get("Origin");
-    let isLovablePreview = false;
-    
-    // If origin is provided, validate it (but always allow Lovable previews)
-    if (origin) {
-      isLovablePreview = origin.includes("lovableproject.com");
-      
-      /* Disabled origin checks for now to prevent CORS issues
-      if (!isLovablePreview && !isOriginAllowed(origin)) {
-        console.warn("Blocked request from unauthorized origin:", origin);
-        return new Response(
-          JSON.stringify({ 
-            error: "Unauthorized", 
-            message: "Origin not allowed",
-            details: `The origin '${origin}' is not in the allowed list.`
-          }), 
-          { status: 403, headers }
-        );
-      }
-      */
     }
     
     // Validate request method
     if (req.method !== "GET") {
-      console.warn(`Method not allowed: ${req.method}`);
       return new Response(
         JSON.stringify({ error: "Method not allowed", message: "Only GET requests are permitted" }), 
         { status: 405, headers }
@@ -149,30 +96,15 @@ serve(async (req) => {
 
     console.log(`Processing request for path: ${path}`);
     
-    // Validate request signature (except for preview environments)
-    if (!isLovablePreview) {
-      const requestTimestamp = Number(req.headers.get("x-request-timestamp") || "0");
-      const signature = req.headers.get("x-request-signature");
-
-      console.log(`Validating signature: ${signature}, timestamp: ${requestTimestamp}, path: ${path}`);
-
-      if (!validateSignature(signature, path, requestTimestamp)) {
-        console.warn(`Invalid signature for request to: ${path}`);
-        return new Response(
-          JSON.stringify({ 
-            error: "Unauthorized", 
-            message: "Invalid request signature",
-            details: "Signature validation failed. Check client implementation."
-          }), 
-          { status: 401, headers }
-        );
-      }
-      
-      console.log("Signature validation passed");
-    } else {
-      console.log("Skipping signature validation for Lovable preview");
+    // Validate requested path against allowed patterns
+    if (!ALLOWED.some(rx => rx.test(path))) {
+      console.error(`Blocked unauthorized path: ${path}`);
+      return new Response(
+        JSON.stringify({ error: "Not found", message: "The requested resource does not exist" }), 
+        { status: 404, headers }
+      );
     }
-    
+
     // Get client IP for rate limiting
     const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
 
@@ -185,15 +117,6 @@ serve(async (req) => {
       );
     }
 
-    // Validate requested path against allowed patterns
-    if (!ALLOWED.some(rx => rx.test(path))) {
-      console.error(`Blocked unauthorized path: ${path}, from IP: ${clientIP}`);
-      return new Response(
-        JSON.stringify({ error: "Not found", message: "The requested resource does not exist" }), 
-        { status: 404, headers }
-      );
-    }
-
     const target = `${API_BASE_URL}${path}${query}`;
     console.log(`Proxy → ${target}`);
 
@@ -202,10 +125,9 @@ serve(async (req) => {
         headers: { 
           "User-Agent": "RansomwareMonitor/1.0",
           "Accept": "application/json",
-          "X-Client-Source": "ransomware-monitor-app", // Add a source identifier
           "Cache-Control": "no-cache"
         },
-        signal: AbortSignal.timeout(45000) // 45 second timeout (increased from 35)
+        signal: AbortSignal.timeout(30000) // 30 second timeout
       });
       
       return await handleApiResponse(apiRes, path);
@@ -214,21 +136,15 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: "Internal server error", 
-          message: "An error occurred processing your request",
-          details: err.message
+          message: "An error occurred processing your request"
         }), 
         { status: 500, headers }
       );
     }
   } catch (err) {
-    // Catch any unexpected errors in the request handling
     console.error("Unexpected error in edge function:", err);
     return new Response(
-      JSON.stringify({ 
-        error: "Server error", 
-        message: "An unexpected error occurred",
-        details: err.message 
-      }), 
+      JSON.stringify({ error: "Server error", message: "An unexpected error occurred" }), 
       { status: 500, headers }
     );
   }
