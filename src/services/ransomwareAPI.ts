@@ -1,4 +1,3 @@
-
 import { RansomwareGroup, RansomwareStat, RansomwareVictim } from "@/types/ransomware";
 import { toast } from "sonner";
 import { mockVictims, mockRecentVictims, mockGroups, mockStats } from "@/data/mockRansomwareData";
@@ -21,50 +20,90 @@ export const normalizeVictimData = (data: any[]): RansomwareVictim[] => {
   }
   
   return data.map(item => {
-    // Enhanced victim name extraction with debugging
+    // Enhanced victim name extraction with strict validation
     let victimName = "Unknown Organization";
     
-    if (item.victim_name && item.victim_name !== "null" && item.victim_name !== "undefined") {
+    // First try using the 'victim' field, which seems to contain the actual organization name
+    if (item.victim && typeof item.victim === 'string' && item.victim.trim() !== '' && 
+        item.victim !== 'null' && item.victim !== 'undefined' && 
+        !item.victim.includes('ransomware.live')) {
+      victimName = item.victim;
+    } 
+    // Then try domain
+    else if (item.domain && typeof item.domain === 'string' && item.domain.trim() !== '' && 
+             item.domain !== 'null' && item.domain !== 'undefined' &&
+             !item.domain.includes('ransomware.live')) {
+      victimName = item.domain;
+    }
+    // Fall back to other fields
+    else if (item.victim_name && typeof item.victim_name === 'string' && item.victim_name.trim() !== '' && 
+             item.victim_name !== 'null' && item.victim_name !== 'undefined' &&
+             !item.victim_name.includes('ransomware.live')) {
       victimName = item.victim_name;
-    } else if (item.name && item.name !== "null" && item.name !== "undefined") {
-      victimName = item.name;
-    } else if (item.company && item.company !== "null" && item.company !== "undefined") {
+    } 
+    else if (item.company && typeof item.company === 'string' && item.company.trim() !== '' && 
+             item.company !== 'null' && item.company !== 'undefined') {
       victimName = item.company;
-    } else if (item.title && item.title !== "null" && item.title !== "undefined") {
+    } 
+    else if (item.title && typeof item.title === 'string' && item.title.trim() !== '' && 
+             item.title !== 'null' && item.title !== 'undefined') {
       victimName = item.title;
-    } else if (item.url) {
-      // Try to extract name from URL
+    } 
+    else if (item.name && typeof item.name === 'string' && item.name.trim() !== '' && 
+             item.name !== 'null' && item.name !== 'undefined') {
+      victimName = item.name;
+    }
+    else if (item.url && typeof item.url === 'string' && item.url.trim() !== '') {
+      // Try to extract name from URL only if we have no other options
       try {
         const urlObj = new URL(item.url);
-        victimName = urlObj.hostname.replace('www.', '');
+        const hostname = urlObj.hostname.replace('www.', '');
+        // Only use the hostname if it's not ransomware.live
+        if (!hostname.includes('ransomware.live')) {
+          victimName = hostname;
+        }
       } catch (e) {
         // If URL parsing fails, use the URL as is or fallback
-        victimName = typeof item.url === 'string' ? item.url.replace(/^https?:\/\//, '') : "Unknown Organization";
+        const urlString = item.url.replace(/^https?:\/\//, '');
+        if (!urlString.includes('ransomware.live')) {
+          victimName = urlString;
+        }
       }
     }
     
-    // Log the first few items to help with debugging
+    // Log the data extraction process for the first few items to help with debugging
     if (data.indexOf(item) < 2) {
       console.log("Raw item data:", item);
       console.log("Extracted victim name:", victimName);
+      console.log("Source field for name:", 
+        item.victim ? "victim field" : 
+        item.domain ? "domain field" : 
+        item.victim_name ? "victim_name field" :
+        item.company ? "company field" :
+        item.title ? "title field" :
+        item.name ? "name field" :
+        item.url ? "url field" : "fallback value");
     }
     
-    // Enhanced date extraction
+    // Enhanced date extraction - prioritizing discovered/discovery_date fields
     const publishDate = 
+      item.discovered || 
+      item.discovery_date ||
       item.published || 
       item.date || 
-      item.discovery_date || 
-      item.discovered || 
       item.leaked ||
       null;
+    
+    // Extract industry information, check 'activity' field first which seems more reliable
+    const industry = item.activity || item.industry || item.sector || null;
     
     return {
       victim_name: victimName,
       group_name: item.group_name || item.group || "Unknown Group",
       published: publishDate,
       country: item.country || null,
-      industry: item.industry || item.sector || null,
-      url: item.url || item.victim_url || null,
+      industry: industry,
+      url: item.url || item.claim_url || item.victim_url || null,
       ...item // Keep all original properties
     };
   });

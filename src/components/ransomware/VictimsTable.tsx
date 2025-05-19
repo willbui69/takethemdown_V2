@@ -41,36 +41,68 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   
   // Enhanced data processing to handle all possible field variations
   const processedVictims = filteredVictims.map(victim => {
-    // Enhanced victim name extraction
+    // Enhanced victim name extraction with strict validation
     let victimName = "Unknown Organization";
     
-    if (victim.victim_name && victim.victim_name !== "null" && victim.victim_name !== "undefined") {
+    // First try using the 'victim' field, which seems to contain the actual organization name
+    if (victim.victim && typeof victim.victim === 'string' && victim.victim.trim() !== '' && 
+        victim.victim !== 'null' && victim.victim !== 'undefined' && 
+        !victim.victim.includes('ransomware.live')) {
+      victimName = victim.victim;
+    } 
+    // Then try domain
+    else if (victim.domain && typeof victim.domain === 'string' && victim.domain.trim() !== '' && 
+             victim.domain !== 'null' && victim.domain !== 'undefined' &&
+             !victim.domain.includes('ransomware.live')) {
+      victimName = victim.domain;
+    }
+    // Fall back to other fields
+    else if (victim.victim_name && typeof victim.victim_name === 'string' && victim.victim_name.trim() !== '' && 
+             victim.victim_name !== 'null' && victim.victim_name !== 'undefined' &&
+             !victim.victim_name.includes('ransomware.live')) {
       victimName = victim.victim_name;
-    } else if (victim.name && victim.name !== "null" && victim.name !== "undefined") {
-      victimName = victim.name;
-    } else if (victim.company && victim.company !== "null" && victim.company !== "undefined") {
+    } 
+    else if (victim.company && typeof victim.company === 'string' && victim.company.trim() !== '' && 
+             victim.company !== 'null' && victim.company !== 'undefined') {
       victimName = victim.company;
-    } else if (victim.title && victim.title !== "null" && victim.title !== "undefined") {
+    } 
+    else if (victim.title && typeof victim.title === 'string' && victim.title.trim() !== '' && 
+             victim.title !== 'null' && victim.title !== 'undefined') {
       victimName = victim.title;
-    } else if (victim.url) {
-      // Try to extract name from URL
+    } 
+    else if (victim.name && typeof victim.name === 'string' && victim.name.trim() !== '' && 
+             victim.name !== 'null' && victim.name !== 'undefined') {
+      victimName = victim.name;
+    }
+    else if (victim.url && typeof victim.url === 'string' && victim.url.trim() !== '') {
+      // Try to extract name from URL only if we have no other options
       try {
         const urlObj = new URL(victim.url);
-        victimName = urlObj.hostname.replace('www.', '');
+        const hostname = urlObj.hostname.replace('www.', '');
+        // Only use the hostname if it's not ransomware.live
+        if (!hostname.includes('ransomware.live')) {
+          victimName = hostname;
+        }
       } catch (e) {
         // If URL parsing fails, use the URL as is or fallback
-        victimName = typeof victim.url === 'string' ? victim.url.replace(/^https?:\/\//, '') : "Unknown Organization";
+        const urlString = victim.url.replace(/^https?:\/\//, '');
+        if (!urlString.includes('ransomware.live')) {
+          victimName = urlString;
+        }
       }
     }
     
     // Enhanced date extraction
     const publishDate = 
+      victim.discovered || 
+      victim.discovery_date ||
       victim.published || 
       victim.date || 
-      victim.discovery_date || 
-      victim.discovered || 
       victim.leaked ||
       null;
+    
+    // Extract industry information, check 'activity' field first which seems more reliable
+    const industry = victim.activity || victim.industry || victim.sector || null;
     
     // Ensure we return a properly structured object
     return {
@@ -79,8 +111,8 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
       group_name: victim.group_name || victim.group || "Unknown Group",
       published: publishDate,
       country: victim.country || null,
-      industry: victim.industry || victim.sector || null,
-      url: victim.url || victim.victim_url || null,
+      industry: industry,
+      url: victim.url || victim.claim_url || victim.victim_url || null,
     };
   });
   
