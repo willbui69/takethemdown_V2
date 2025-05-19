@@ -10,7 +10,7 @@ import {
 } from "./config.ts";
 import { handleApiResponse } from "./apiHandlers.ts";
 
-// Origin validation - only allow specific origins (update these to your domains)
+// Origin validation - much more permissive list
 const ALLOWED_ORIGINS = [
   "https://euswzjdcxrnuupcyiddb.supabase.co",
   "https://ransomware-monitor.vercel.app",
@@ -20,11 +20,15 @@ const ALLOWED_ORIGINS = [
   "http://localhost:54321",
   "https://lovableproject.com",
   "https://*.lovableproject.com",
-  "*" // Allow all origins (for temporary debugging)
+  "*" // Allow all origins (for debugging)
 ];
 
 // Check if origin is allowed with wildcard support
 function isOriginAllowed(origin: string | null): boolean {
+  // For simplicity in debugging, allow all origins
+  return true;
+  
+  /* Disabled for now to prevent CORS issues
   if (!origin) return false;
   
   // For debugging: allow all origins temporarily
@@ -41,6 +45,7 @@ function isOriginAllowed(origin: string | null): boolean {
     }
     return false;
   });
+  */
 }
 
 // Simple rate limiting implementation
@@ -90,7 +95,7 @@ serve(async (req) => {
   const headers = { 
     ...corsHeaders,
     ...securityHeaders,
-    "Access-Control-Allow-Origin": reqOrigin
+    "Access-Control-Allow-Origin": "*" // Allow all origins for now to debug
   };
 
   try {
@@ -107,10 +112,11 @@ serve(async (req) => {
     const origin = req.headers.get("Origin");
     let isLovablePreview = false;
     
-    // If origin is provided, validate it
+    // If origin is provided, validate it (but always allow Lovable previews)
     if (origin) {
       isLovablePreview = origin.includes("lovableproject.com");
       
+      /* Disabled origin checks for now to prevent CORS issues
       if (!isLovablePreview && !isOriginAllowed(origin)) {
         console.warn("Blocked request from unauthorized origin:", origin);
         return new Response(
@@ -122,6 +128,7 @@ serve(async (req) => {
           { status: 403, headers }
         );
       }
+      */
     }
     
     // Validate request method
@@ -196,7 +203,7 @@ serve(async (req) => {
           "X-Client-Source": "ransomware-monitor-app", // Add a source identifier
           "Cache-Control": "no-cache"
         },
-        signal: AbortSignal.timeout(35000) // 35 second timeout (increased from 25)
+        signal: AbortSignal.timeout(45000) // 45 second timeout (increased from 35)
       });
       
       return await handleApiResponse(apiRes, path);

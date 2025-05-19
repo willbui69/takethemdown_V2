@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ShieldAlert, Bug, Code, Signal, Network, Clock, CloudOff, Globe } from "lucide-react";
+import { ShieldAlert, Bug, Code, Signal, Network, Clock, CloudOff, Globe, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface InfoPanelProps {
@@ -38,7 +38,7 @@ export const InfoPanel = ({ isGeoBlocked, error, debugInfo }: InfoPanelProps) =>
           ) : error.includes("CORS") || error.includes("origin") ? (
             <Globe className="h-10 w-10" />
           ) : (
-            <Bug className="h-10 w-10" />
+            <AlertCircle className="h-10 w-10" />
           )}
           {error}
           
@@ -46,8 +46,15 @@ export const InfoPanel = ({ isGeoBlocked, error, debugInfo }: InfoPanelProps) =>
             <Alert className="mt-2 bg-amber-50">
               <Signal className="h-4 w-4" />
               <AlertTitle>Vấn đề kết nối</AlertTitle>
-              <AlertDescription>
-                Không thể kết nối đến Edge Function. Điều này có thể do Edge Function tạm thời không khả dụng, timeout quá ngắn, mạng Internet của bạn bị gián đoạn, hoặc CORS không được cấu hình đúng. Thử làm mới trang sau ít phút.
+              <AlertDescription className="space-y-2">
+                <p>Không thể kết nối đến Edge Function. Nguyên nhân có thể bao gồm:</p>
+                <ul className="list-disc pl-5 text-left">
+                  <li>Edge Function tạm thời không khả dụng</li>
+                  <li>Kết nối internet không ổn định</li>
+                  <li>Tường lửa hoặc proxy đang chặn kết nối</li>
+                  <li>Có sự cố với API gốc ransomware.live</li>
+                </ul>
+                <p className="mt-2">Đang hiển thị dữ liệu mẫu thay thế. Thử làm mới trang sau vài phút.</p>
               </AlertDescription>
             </Alert>
           )}
