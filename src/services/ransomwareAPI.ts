@@ -1,4 +1,3 @@
-
 import { RansomwareGroup, RansomwareStat, RansomwareVictim } from "@/types/ransomware";
 import { toast } from "sonner";
 import { mockVictims, mockRecentVictims, mockGroups, mockStats } from "@/data/mockRansomwareData";
@@ -12,6 +11,7 @@ const EDGE_FUNCTION_URL = "https://euswzjdcxrnuupcyiddb.supabase.co/functions/v1
 
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
+    console.log("Checking API availability via Edge Function");
     // Call the edge function with the /groups endpoint path
     const response = await fetch(`${EDGE_FUNCTION_URL}/groups`, {
       method: 'GET',
@@ -40,6 +40,7 @@ export const checkApiAvailability = async (): Promise<boolean> => {
 // Helper function to call the Edge Function
 const callEdgeFunction = async (endpoint: string) => {
   try {
+    console.log(`Calling Edge Function with endpoint: ${endpoint}`);
     const response = await fetch(`${EDGE_FUNCTION_URL}${endpoint}`, {
       method: 'GET',
       headers: {
