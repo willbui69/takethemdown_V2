@@ -2,36 +2,36 @@
 import { RansomwareGroup, RansomwareStat, RansomwareVictim } from "@/types/ransomware";
 import { toast } from "sonner";
 
-// The API base URL for ransomware.live
-const API_BASE_URL = "https://api.ransomware.live";
-// Use a CORS proxy to avoid CORS issues when accessing the API
-const CORS_PROXY = "https://corsproxy.io/?";
+// The API base URL for ransomware.live v2
+const API_BASE_URL = "https://api.ransomware.live/v2";
+const CORS_PROXY    = "https://corsproxy.io/?";
 
-// Function to check if the API is available
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
-    // Use the CORS proxy for the API check
-    const response = await fetch(`${CORS_PROXY}${encodeURIComponent(`${API_BASE_URL}/api/groups.json`)}`, {
-      method: 'HEAD',
-      // Use a short timeout to quickly determine API availability
-      signal: AbortSignal.timeout(5000)
+    // Hit the /groups endpoint with GET
+    const url = `${CORS_PROXY}${API_BASE_URL}/groups`;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch(url, {
+      method: "GET",
+      signal: controller.signal
     });
-    
-    // If we get a 403 with country blocked message, consider it a special case
+    clearTimeout(id);
+
     if (response.status === 403) {
+      // (Unlikely for the API, but you can still handle it)
       const data = await response.json().catch(() => null);
       if (data?.error?.message?.includes("Country blocked")) {
-        console.error("API access blocked: Your country is blocked from accessing ransomware.live data");
         toast.error("Geographic restriction", {
           description: "Your location is blocked from accessing ransomware.live data"
         });
         return false;
       }
     }
-    
-    const isAvailable = response.ok;
-    console.log(`Ransomware.live API ${isAvailable ? 'is' : 'is not'} available`);
-    return isAvailable;
+
+    console.log(`Ransomware.live API is ${response.ok ? "available" : "not available"}`);
+    return response.ok;
   } catch (error) {
     console.error("Error checking API availability:", error);
     return false;
@@ -45,7 +45,7 @@ const getApiUrl = (endpoint: string): string => {
 
 export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
   try {
-    const response = await fetch(getApiUrl('/api/victims.json'));
+    const response = await fetch(getApiUrl('/victims'));
     
     // Handle country blocking specific error
     if (response.status === 403) {
@@ -73,7 +73,7 @@ export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
 
 export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVictim[]> => {
   try {
-    const response = await fetch(getApiUrl(`/api/victims/${group}.json`));
+    const response = await fetch(getApiUrl(`/victims/${group}`));
     
     // Handle country blocking specific error
     if (response.status === 403) {
@@ -101,7 +101,7 @@ export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVict
 
 export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
   try {
-    const response = await fetch(getApiUrl('/api/groups.json'));
+    const response = await fetch(getApiUrl('/groups'));
     
     // Handle country blocking specific error
     if (response.status === 403) {
@@ -129,7 +129,7 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
 
 export const fetchStats = async (): Promise<RansomwareStat[]> => {
   try {
-    const response = await fetch(getApiUrl('/api/stats.json'));
+    const response = await fetch(getApiUrl('/stats'));
     
     // Handle country blocking specific error
     if (response.status === 403) {
@@ -157,7 +157,7 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
 
 export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
   try {
-    const response = await fetch(getApiUrl('/api/today.json'));
+    const response = await fetch(getApiUrl('/today'));
     
     // Handle country blocking specific error
     if (response.status === 403) {
