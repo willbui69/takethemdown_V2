@@ -8,15 +8,16 @@ import { VictimsTable } from "@/components/ransomware/VictimsTable";
 import { GroupStatistics } from "@/components/ransomware/GroupStatistics";
 import { SubscriptionForm } from "@/components/ransomware/SubscriptionForm";
 import { AdminPanel } from "@/components/ransomware/AdminPanel";
-import { checkApiAvailability, fetchAllVictims, fetchRecentVictims } from "@/services/ransomwareAPI";
+import { checkApiAvailability, fetchAllVictims, fetchRecentVictims, fetchVietnameseVictims } from "@/services/ransomwareAPI";
 import { RansomwareVictim } from "@/types/ransomware";
-import { CirclePlus, CircleMinus, Database, Bug, ShieldAlert, RefreshCw } from "lucide-react";
+import { CirclePlus, CircleMinus, Database, Bug, ShieldAlert, RefreshCw, Flag } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const RansomwareMonitor = () => {
   const [victims, setVictims] = useState<RansomwareVictim[]>([]);
   const [recentVictims, setRecentVictims] = useState<RansomwareVictim[]>([]);
+  const [vietnameseVictims, setVietnameseVictims] = useState<RansomwareVictim[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isGeoBlocked, setIsGeoBlocked] = useState(false);
@@ -78,9 +79,10 @@ const RansomwareMonitor = () => {
       }
       
       // Using Promise.allSettled to continue even if one promise fails
-      const [allVictimsResult, todayVictimsResult] = await Promise.allSettled([
+      const [allVictimsResult, todayVictimsResult, vietnamVictimsResult] = await Promise.allSettled([
         fetchAllVictims(),
-        fetchRecentVictims()
+        fetchRecentVictims(),
+        fetchVietnameseVictims()
       ]);
       
       if (allVictimsResult.status === 'fulfilled') {
@@ -100,6 +102,16 @@ const RansomwareMonitor = () => {
         console.error("Error fetching recent victims:", todayVictimsResult.reason);
         if (!error) {
           setError("Không thể tải dữ liệu nạn nhân gần đây.");
+        }
+      }
+      
+      if (vietnamVictimsResult.status === 'fulfilled') {
+        setVietnameseVictims(vietnamVictimsResult.value);
+        console.info(`Fetched ${vietnamVictimsResult.value.length} Vietnamese victims`);
+      } else {
+        console.error("Error fetching Vietnamese victims:", vietnamVictimsResult.reason);
+        if (!error) {
+          setError("Không thể tải dữ liệu nạn nhân Việt Nam.");
         }
       }
       
@@ -200,6 +212,9 @@ const RansomwareMonitor = () => {
               <TabsList>
                 <TabsTrigger value="all">Tất Cả Nạn Nhân</TabsTrigger>
                 <TabsTrigger value="recent">Gần Đây (24h)</TabsTrigger>
+                <TabsTrigger value="vietnam" className="flex items-center gap-1">
+                  <Flag className="h-4 w-4" /> Việt Nam
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="all" className="pt-4">
                 {error ? (
@@ -223,6 +238,19 @@ const RansomwareMonitor = () => {
                 ) : (
                   <VictimsTable 
                     victims={recentVictims} 
+                    loading={loading} 
+                  />
+                )}
+              </TabsContent>
+              <TabsContent value="vietnam" className="pt-4">
+                {error ? (
+                  <div className="text-center py-8 text-amber-500 flex flex-col items-center gap-2">
+                    <Bug className="h-10 w-10" />
+                    {error}
+                  </div>
+                ) : (
+                  <VictimsTable 
+                    victims={vietnameseVictims} 
                     loading={loading} 
                   />
                 )}

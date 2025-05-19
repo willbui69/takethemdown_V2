@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const API_BASE_URL = "https://api.ransomware.live/v2";
@@ -236,9 +235,127 @@ serve(async (req) => {
         );
       }
     }
+    else if (path.startsWith('/countryvictims/')) {
+      // Special handling for country-specific victims
+      console.log("Processing country victims data for path:", path);
+      
+      // Ensure data is an array and process it
+      if (Array.isArray(data)) {
+        console.log(`Received ${data.length} country-specific victims`);
+        
+        // Sample a few records
+        if (data.length > 0) {
+          console.log("Sample country victim data:", data[0]);
+        }
+        
+        // For Vietnamese victims specifically, we might want to add extra processing
+        if (path === '/countryvictims/VN') {
+          console.log("Processing Vietnamese victims specifically");
+          
+          // Here we could add any Vietnam-specific processing if needed
+          // For now, we'll just ensure the country code is properly set
+          processedData = data.map(item => ({
+            ...item,
+            country: item.country || "VN" // Ensure country code is set
+          }));
+          
+          console.log(`Processed ${processedData.length} Vietnamese victims`);
+        }
+      } else {
+        console.error("Invalid country victims data format, not an array:", typeof data);
+      }
+    }
     else if (path === '/recentvictims' || path.startsWith('/groupvictims/') || path.includes('victim')) {
       // Keep existing victim data processing logic
-      // ... keep existing code (victim data processing)
+      // Keep existing victim data processing logic
+      processedData = Array.isArray(data) ? data.map(item => {
+        // Enhanced victim name extraction with strict validation
+        let victimName = "Unknown Organization";
+        
+        // First try using the 'victim' field, which seems to contain the actual organization name
+        if (item.victim && typeof item.victim === 'string' && item.victim.trim() !== '' && 
+            item.victim !== 'null' && item.victim !== 'undefined' && 
+            !item.victim.includes('ransomware.live')) {
+          victimName = item.victim;
+        } 
+        // Then try domain
+        else if (item.domain && typeof item.domain === 'string' && item.domain.trim() !== '' && 
+                 item.domain !== 'null' && item.domain !== 'undefined' &&
+                 !item.domain.includes('ransomware.live')) {
+          victimName = item.domain;
+        }
+        // Fall back to other fields
+        else if (item.victim_name && typeof item.victim_name === 'string' && item.victim_name.trim() !== '' && 
+                 item.victim_name !== 'null' && item.victim_name !== 'undefined' &&
+                 !item.victim_name.includes('ransomware.live')) {
+          victimName = item.victim_name;
+        } 
+        else if (item.company && typeof item.company === 'string' && item.company.trim() !== '' && 
+                 item.company !== 'null' && item.company !== 'undefined') {
+          victimName = item.company;
+        } 
+        else if (item.title && typeof item.title === 'string' && item.title.trim() !== '' && 
+                 item.title !== 'null' && item.title !== 'undefined') {
+          victimName = item.title;
+        } 
+        else if (item.name && typeof item.name === 'string' && item.name.trim() !== '' && 
+                 item.name !== 'null' && item.name !== 'undefined') {
+          victimName = item.name;
+        }
+        else if (item.url && typeof item.url === 'string' && item.url.trim() !== '') {
+          // Try to extract name from URL only if we have no other options
+          try {
+            const urlObj = new URL(item.url);
+            const hostname = urlObj.hostname.replace('www.', '');
+            // Only use the hostname if it's not ransomware.live
+            if (!hostname.includes('ransomware.live')) {
+              victimName = hostname;
+            }
+          } catch (e) {
+            // If URL parsing fails, use the URL as is or fallback
+            const urlString = item.url.replace(/^https?:\/\//, '');
+            if (!urlString.includes('ransomware.live')) {
+              victimName = urlString;
+            }
+          }
+        }
+        
+        // Log the data extraction process for the first few items to help with debugging
+        if (data.indexOf(item) < 2) {
+          console.log("Raw item data:", item);
+          console.log("Extracted victim name:", victimName);
+          console.log("Source field for name:", 
+            item.victim ? "victim field" : 
+            item.domain ? "domain field" : 
+            item.victim_name ? "victim_name field" :
+            item.company ? "company field" :
+            item.title ? "title field" :
+            item.name ? "name field" :
+            item.url ? "url field" : "fallback value");
+        }
+        
+        // Enhanced date extraction - prioritizing discovered/discovery_date fields
+        const publishDate = 
+          item.discovered || 
+          item.discovery_date ||
+          item.published || 
+          item.date || 
+          item.leaked ||
+          null;
+        
+        // Extract industry information, check 'activity' field first which seems more reliable
+        const industry = item.activity || item.industry || item.sector || null;
+        
+        return {
+          victim_name: victimName,
+          group_name: item.group_name || item.group || "Unknown Group",
+          published: publishDate,
+          country: item.country || null,
+          industry: industry,
+          url: item.url || item.claim_url || item.victim_url || null,
+          ...item // Keep all original properties
+        };
+      }) : data;
     }
     
     return new Response(JSON.stringify(processedData), {

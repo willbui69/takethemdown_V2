@@ -292,3 +292,32 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
     return mockRecentVictims;
   }
 };
+
+// New function to fetch Vietnamese victims
+export const fetchVietnameseVictims = async (): Promise<RansomwareVictim[]> => {
+  if (useMockData) {
+    console.log("Using mock data for Vietnamese victims");
+    // Filter mock data to only return Vietnamese victims
+    return mockVictims.filter(v => v.country === "VN");
+  }
+  
+  try {
+    console.log("Fetching Vietnamese victims data");
+    const data = await callEdgeFunction('/countryvictims/VN');
+    console.log("Fetched Vietnamese victims data:", data?.length || 0, "records");
+    
+    // Log a sample of the raw data
+    if (Array.isArray(data) && data.length > 0) {
+      console.log("Sample Vietnamese victim data:", data[0]);
+    }
+    
+    return normalizeVictimData(data);
+  } catch (error) {
+    console.error("Failed to fetch Vietnamese victims:", error);
+    toast.error("Không thể tải dữ liệu nạn nhân Việt Nam", {
+      description: "Đang sử dụng dữ liệu mẫu thay thế"
+    });
+    useMockData = true;
+    return mockVictims.filter(v => v.country === "VN");
+  }
+};
