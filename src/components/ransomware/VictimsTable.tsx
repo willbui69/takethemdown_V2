@@ -4,8 +4,10 @@ import { RansomwareVictim } from "@/types/ransomware";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, AlertTriangle, Calendar, User } from "lucide-react";
+import { Search, Filter, AlertTriangle, Calendar, User, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface VictimsTableProps {
   victims: RansomwareVictim[];
@@ -16,6 +18,8 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<keyof RansomwareVictim>("published");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [expandedView, setExpandedView] = useState(false);
+  const [itemsToShow, setItemsToShow] = useState(10);
   
   const handleSort = (field: keyof RansomwareVictim) => {
     if (sortField === field) {
@@ -24,6 +28,16 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
       setSortField(field);
       setSortDirection("asc");
     }
+  };
+  
+  // Toggle expanded view
+  const toggleExpandedView = () => {
+    if (expandedView) {
+      setItemsToShow(10); // Collapse to default
+    } else {
+      setItemsToShow(victims.length); // Show all
+    }
+    setExpandedView(!expandedView);
   };
   
   // Filter victims based on search query
@@ -117,7 +131,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   });
   
   // Sort the processed victims
-  const sortedVictims = [...processedVictims].sort((a, b) => {
+  const sortedVictims = [...filteredVictims].sort((a, b) => {
     const fieldA = a[sortField] || "";
     const fieldB = b[sortField] || "";
     
@@ -125,6 +139,9 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     if (fieldA > fieldB) return sortDirection === "asc" ? 1 : -1;
     return 0;
   });
+
+  // Get the subset of victims to show
+  const visibleVictims = sortedVictims.slice(0, itemsToShow);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Không rõ";
@@ -257,7 +274,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                 </TableCell>
               </TableRow>
             ) : (
-              sortedVictims.map((victim, index) => (
+              visibleVictims.map((victim, index) => (
                 <TableRow key={`${victim.group_name}-${victim.victim_name}-${index}`}>
                   <TableCell className="font-medium">
                     {victim.url ? (
@@ -297,8 +314,39 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
           </TableBody>
         </Table>
       </div>
+      
+      {/* Expandable section control */}
+      {sortedVictims.length > 10 && (
+        <div className="flex justify-center mt-4">
+          <Collapsible 
+            className="w-full" 
+            open={expandedView}
+            onOpenChange={toggleExpandedView}
+          >
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="w-full flex items-center justify-center gap-2"
+              >
+                {expandedView ? (
+                  <>
+                    <ChevronUp className="h-4 w-4" /> 
+                    Thu gọn danh sách
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4" /> 
+                    Xem thêm {sortedVictims.length - 10} nạn nhân khác
+                  </>
+                )}
+              </Button>
+            </CollapsibleTrigger>
+          </Collapsible>
+        </div>
+      )}
+      
       <div className="text-sm text-gray-500 text-right">
-        Hiển thị {sortedVictims.length} trong số {victims.length} nạn nhân
+        Hiển thị {visibleVictims.length} trong số {sortedVictims.length} nạn nhân
       </div>
     </div>
   );
