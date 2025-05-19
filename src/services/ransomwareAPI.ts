@@ -57,19 +57,7 @@ const callEdgeFunction = async (endpoint: string) => {
       throw new Error(`Edge Function returned status ${response.status}`);
     }
 
-    const text = await response.text();
-    
-    // Check if we received HTML
-    if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
-      throw new Error("API returned HTML instead of JSON");
-    }
-    
-    try {
-      return JSON.parse(text);
-    } catch (e) {
-      console.error("Failed to parse JSON from API response:", e);
-      throw new Error("Failed to parse API response");
-    }
+    return await response.json();
   } catch (error) {
     console.error(`Error calling Edge Function with endpoint ${endpoint}:`, error);
     throw error;
@@ -83,7 +71,8 @@ export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
   }
   
   try {
-    const data = await callEdgeFunction('/victims');
+    // Try to use the new recentvictims endpoint as it might be more reliable
+    const data = await callEdgeFunction('/recentvictims');
     return data;
   } catch (error) {
     console.error("Failed to fetch victims:", error);
@@ -102,7 +91,8 @@ export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVict
   }
   
   try {
-    const data = await callEdgeFunction(`/victims/${group}`);
+    // Try the new groupvictims endpoint format
+    const data = await callEdgeFunction(`/groupvictims/${group}`);
     return data;
   } catch (error) {
     console.error(`Failed to fetch victims for group ${group}:`, error);
@@ -140,8 +130,17 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
   }
   
   try {
-    const data = await callEdgeFunction('/stats');
-    return data;
+    // Since the /stats endpoint might not be available in the new API format,
+    // let's derive stats from the groups data
+    const groups = await callEdgeFunction('/groups');
+    
+    // Convert the groups data to stats format
+    const derivedStats: RansomwareStat[] = groups.map((group: any) => ({
+      group: group.name,
+      count: group.victim_count || 0
+    }));
+    
+    return derivedStats;
   } catch (error) {
     console.error("Failed to fetch stats:", error);
     toast.error("Could not fetch statistics data", {
@@ -159,7 +158,8 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
   }
   
   try {
-    const data = await callEdgeFunction('/today');
+    // Try the recentvictims endpoint (new format)
+    const data = await callEdgeFunction('/recentvictims');
     return data;
   } catch (error) {
     console.error("Failed to fetch recent victims:", error);
