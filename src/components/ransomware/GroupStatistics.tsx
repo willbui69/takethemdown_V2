@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from "react";
 import { RansomwareGroup, RansomwareStat } from "@/types/ransomware";
-import { fetchGroups } from "@/services/ransomwareAPI";
+import { fetchGroups, fetchStats } from "@/services/ransomwareAPI";
 import {
   BarChart,
   Bar,
@@ -15,17 +14,15 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bug, ShieldAlert, AlertCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Bug, ShieldAlert } from "lucide-react";
 
 export const GroupStatistics = () => {
+  const [stats, setStats] = useState<RansomwareStat[]>([]);
   const [groups, setGroups] = useState<RansomwareGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isGeoBlocked, setIsGeoBlocked] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("active");
-  const [activeCount, setActiveCount] = useState(0);
-  const [inactiveCount, setInactiveCount] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,20 +31,29 @@ export const GroupStatistics = () => {
         setError(null);
         setIsGeoBlocked(false);
         
-        const fetchedGroups = await fetchGroups();
-        setGroups(fetchedGroups);
+        // Using Promise.allSettled to continue even if one promise fails
+        const [groupsResult, statsResult] = await Promise.allSettled([
+          fetchGroups(),
+          fetchStats(),
+        ]);
         
-        // Calculate active and inactive counts
-        const activeGroups = fetchedGroups.filter(group => group.active);
-        const inactive = fetchedGroups.filter(group => !group.active);
+        if (groupsResult.status === 'fulfilled') {
+          setGroups(groupsResult.value);
+        } else {
+          console.error("Error fetching groups:", groupsResult.reason);
+          setError("Không thể tải dữ liệu nhóm");
+        }
         
-        setActiveCount(activeGroups.length);
-        setInactiveCount(inactive.length);
-        
-        console.log("Fetched groups:", fetchedGroups.length);
-        console.log("Active groups:", activeGroups.length);
-        console.log("Inactive groups:", inactive.length);
-        
+        if (statsResult.status === 'fulfilled') {
+          setStats(statsResult.value);
+        } else {
+          console.error("Error fetching stats:", statsResult.reason);
+          
+          // Only set error if not already set
+          if (!error) {
+            setError("Không thể tải dữ liệu thống kê");
+          }
+        }
       } catch (err) {
         setError("Không thể tải dữ liệu nhóm ransomware");
         console.error("Error fetching data:", err);
@@ -59,18 +65,24 @@ export const GroupStatistics = () => {
     fetchData();
   }, []);
 
-  // Prepare data for chart display with filtering
-  const chartData = groups
-    .filter(group => {
+  // Combine group and stats data
+  const combinedData = stats
+    .map(stat => {
+      const group = groups.find(g => g.name === stat.group);
+      return {
+        name: stat.group,
+        victims: stat.count,
+        active: group?.active ?? false,
+      };
+    })
+    .filter(item => {
       if (filter === "all") return true;
-      if (filter === "active") return group.active;
-      if (filter === "inactive") return !group.active;
+      if (filter === "active") return item.active;
+      if (filter === "inactive") return !item.active;
       return true;
     })
-    .sort((a, b) => (b.victim_count || 0) - (a.victim_count || 0))
+    .sort((a, b) => b.victims - a.victims)
     .slice(0, 15); // Only show top 15 groups
-
-  console.log("Filtered chart data:", filter, chartData.length);
 
   return (
     <Card>
@@ -78,18 +90,8 @@ export const GroupStatistics = () => {
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>Thống Kê Nhóm Ransomware</CardTitle>
-            <CardDescription className="flex items-center gap-2">
+            <CardDescription>
               Số lượng nạn nhân theo nhóm ransomware
-              <div className="flex gap-2 items-center mt-1">
-                <Badge variant="outline" className="bg-green-100">
-                  <AlertCircle className="h-3 w-3 mr-1 text-green-600" />
-                  {activeCount} Nhóm Hoạt Động
-                </Badge>
-                <Badge variant="outline" className="bg-gray-100">
-                  <AlertCircle className="h-3 w-3 mr-1 text-gray-600" />
-                  {inactiveCount} Nhóm Không Hoạt Động
-                </Badge>
-              </div>
             </CardDescription>
           </div>
           <Select 
@@ -131,7 +133,7 @@ export const GroupStatistics = () => {
               </>
             )}
           </div>
-        ) : chartData.length === 0 ? (
+        ) : combinedData.length === 0 ? (
           <div className="flex justify-center items-center h-80">
             <p className="text-gray-500">Không có dữ liệu cho bộ lọc đã chọn</p>
           </div>
@@ -139,7 +141,7 @@ export const GroupStatistics = () => {
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={chartData}
+                data={combinedData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -148,37 +150,14 @@ export const GroupStatistics = () => {
                   angle={-45} 
                   textAnchor="end"
                   height={80}
-                  tick={{ fontSize: 12 }}
                 />
                 <YAxis />
-                <Tooltip 
-                  formatter={(value) => [Number(value).toLocaleString(), 'Số Nạn Nhân']}
-                  labelFormatter={(label) => `Nhóm: ${label}`}
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      const group = chartData.find(g => g.name === label);
-                      return (
-                        <div className="bg-white p-2 border rounded shadow-sm">
-                          <p className="font-semibold">{label}</p>
-                          <p className="text-sm">{Number(payload[0].value).toLocaleString()} nạn nhân</p>
-                          <p className="text-xs text-gray-600">
-                            Trạng thái: {group?.active ? 'Hoạt Động' : 'Không Hoạt Động'}
-                          </p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Legend formatter={(value) => `Số Nạn Nhân`} />
+                <Tooltip />
+                <Legend />
                 <Bar 
-                  dataKey="victim_count" 
+                  dataKey="victims" 
                   name="Số Nạn Nhân" 
                   fill="#8884d8" 
-                  fillOpacity={0.9}
-                  stroke="#6661b1"
-                  // Change bar color based on active status
-                  isAnimationActive={true}
                 />
               </BarChart>
             </ResponsiveContainer>

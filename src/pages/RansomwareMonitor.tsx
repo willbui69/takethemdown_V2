@@ -1,131 +1,86 @@
 
 import { useEffect, useState } from "react";
 import RootLayout from "@/components/layout/RootLayout";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SubscriptionProvider } from "@/context/SubscriptionContext";
-import { RansomwareVictim } from "@/types/ransomware";
-import { checkApiAvailability, fetchAllVictims, fetchRecentVictims, fetchVietnameseVictims } from "@/services/ransomwareAPI";
-import { toast } from "sonner";
-import { filterRecent24Hours } from "@/components/ransomware/utils/dataUtils";
-import { RansomwareHeader } from "@/components/ransomware/RansomwareHeader";
-import { InfoPanel } from "@/components/ransomware/InfoPanel";
-import { VictimTabs } from "@/components/ransomware/VictimTabs";
-import { DataAboutSection } from "@/components/ransomware/DataAboutSection";
+import { Button } from "@/components/ui/button";
+import { VictimsTable } from "@/components/ransomware/VictimsTable";
 import { GroupStatistics } from "@/components/ransomware/GroupStatistics";
 import { SubscriptionForm } from "@/components/ransomware/SubscriptionForm";
-import { EDGE_FUNCTION_URL } from "@/services/api/ransomwareConfig";
+import { AdminPanel } from "@/components/ransomware/AdminPanel";
+import { checkApiAvailability, fetchAllVictims, fetchRecentVictims } from "@/services/ransomwareAPI";
+import { RansomwareVictim } from "@/types/ransomware";
+import { CirclePlus, CircleMinus, Database, Bug, ShieldAlert, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const RansomwareMonitor = () => {
   const [victims, setVictims] = useState<RansomwareVictim[]>([]);
   const [recentVictims, setRecentVictims] = useState<RansomwareVictim[]>([]);
-  const [vietnameseVictims, setVietnameseVictims] = useState<RansomwareVictim[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isGeoBlocked, setIsGeoBlocked] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string | null>(null);
+
+  const processVictimData = (data: any[]): RansomwareVictim[] => {
+    if (!Array.isArray(data)) {
+      console.error("Invalid victim data format:", data);
+      return [];
+    }
+    
+    return data.map(item => ({
+      victim_name: item.victim_name || item.name || "Unknown",
+      group_name: item.group_name || item.group || "Unknown Group",
+      published: item.published || item.date || null,
+      country: item.country || null,
+      industry: item.industry || item.sector || null,
+      url: item.url || item.victim_url || null,
+      ...item // Keep all original properties
+    }));
+  };
 
   const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
       setIsGeoBlocked(false);
-      setDebugInfo(null);
       
       console.info("Fetching ransomware data for scheduled 4-hour update...");
       
-      // Collect system information for debugging
-      const systemInfo = {
-        userAgent: navigator.userAgent,
-        connectionType: (navigator as any).connection?.effectiveType || 'unknown',
-        onLine: navigator.onLine,
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        apiEndpoint: EDGE_FUNCTION_URL
-      };
-      
-      setDebugInfo(`System Info:\n${JSON.stringify(systemInfo, null, 2)}\n\nConnection Status: ${navigator.onLine ? 'Online' : 'Offline'}`);
-      
       // First check API availability through our Edge Function
-      let isAvailable;
-      try {
-        isAvailable = await checkApiAvailability();
-        if (!isAvailable) {
-          setDebugInfo(prev => `${prev}\n\nAPI availability check failed - using mock data`);
-          setError("API hiện không khả dụng. Đang sử dụng dữ liệu mẫu.");
-          toast.warning("API không khả dụng", {
-            description: "Đang sử dụng dữ liệu mẫu thay thế."
-          });
-        } else {
-          setDebugInfo(prev => `${prev}\n\nAPI availability check passed`);
-        }
-      } catch (err) {
-        console.error("Error during API availability check:", err);
-        setDebugInfo(prev => `${prev}\n\nAPI availability error: ${err.message}`);
-        isAvailable = false;
-        setError(`Không thể kiểm tra API: ${err.message}. Đang sử dụng dữ liệu mẫu.`);
-        toast.warning("Lỗi kiểm tra API", {
+      const isAvailable = await checkApiAvailability();
+      
+      if (!isAvailable) {
+        setError("API hiện không khả dụng. Đang sử dụng dữ liệu mẫu.");
+        toast.warning("API không khả dụng", {
           description: "Đang sử dụng dữ liệu mẫu thay thế."
         });
+        setLoading(false);
       }
       
       // Using Promise.allSettled to continue even if one promise fails
-      const [allVictimsResult, todayVictimsResult, vietnamVictimsResult] = await Promise.allSettled([
+      const [allVictimsResult, todayVictimsResult] = await Promise.allSettled([
         fetchAllVictims(),
-        fetchRecentVictims(),
-        fetchVietnameseVictims()
+        fetchRecentVictims()
       ]);
       
-      // Process results with better error handling
       if (allVictimsResult.status === 'fulfilled') {
-        setVictims(allVictimsResult.value);
-        console.info(`Fetched ${allVictimsResult.value.length} victims in scheduled update`);
-        setDebugInfo(prev => `${prev}\n\nSuccessfully fetched ${allVictimsResult.value.length} victims`);
+        const processedData = processVictimData(allVictimsResult.value);
+        setVictims(processedData);
+        console.info(`Fetched ${processedData.length} victims in scheduled update`);
       } else {
         console.error("Error fetching all victims:", allVictimsResult.reason);
-        
-        // Append to debug info
-        setDebugInfo(prev => `${prev || ""}\n\nAll victims fetch error: ${allVictimsResult.reason?.message || "Unknown error"}`);
-        
-        setError(`Không thể tải dữ liệu nạn nhân: ${allVictimsResult.reason?.message || "Lỗi không xác định"}`);
-        toast.error("Lỗi tải dữ liệu", {
-          description: "Không thể tải dữ liệu nạn nhân tổng hợp."
-        });
+        setError("Không thể tải dữ liệu nạn nhân.");
       }
       
       if (todayVictimsResult.status === 'fulfilled') {
-        // Apply the 24-hour filter to recent victims
-        const recent24HourVictims = filterRecent24Hours(todayVictimsResult.value);
-        console.info(`Filtered ${recent24HourVictims.length} victims within the last 24 hours`);
-        setRecentVictims(recent24HourVictims);
-        setDebugInfo(prev => `${prev}\n\nSuccessfully fetched ${recent24HourVictims.length} recent victims`);
+        const processedData = processVictimData(todayVictimsResult.value);
+        setRecentVictims(processedData);
       } else {
         console.error("Error fetching recent victims:", todayVictimsResult.reason);
-        
-        // Append to debug info
-        setDebugInfo(prev => `${prev || ""}\n\nRecent victims fetch error: ${todayVictimsResult.reason?.message || "Unknown error"}`);
-        
         if (!error) {
-          setError(`Không thể tải dữ liệu nạn nhân gần đây: ${todayVictimsResult.reason?.message || "Lỗi không xác định"}`);
-          toast.error("Lỗi tải dữ liệu", {
-            description: "Không thể tải dữ liệu nạn nhân gần đây."
-          });
-        }
-      }
-      
-      if (vietnamVictimsResult.status === 'fulfilled') {
-        setVietnameseVictims(vietnamVictimsResult.value);
-        console.info(`Fetched ${vietnamVictimsResult.value.length} Vietnamese victims`);
-        setDebugInfo(prev => `${prev}\n\nSuccessfully fetched ${vietnamVictimsResult.value.length} Vietnamese victims`);
-      } else {
-        console.error("Error fetching Vietnamese victims:", vietnamVictimsResult.reason);
-        
-        // Append to debug info
-        setDebugInfo(prev => `${prev || ""}\n\nVietnamese victims fetch error: ${vietnamVictimsResult.reason?.message || "Unknown error"}`);
-        
-        if (!error) {
-          setError(`Không thể tải dữ liệu nạn nhân Việt Nam: ${vietnamVictimsResult.reason?.message || "Lỗi không xác định"}`);
-          toast.error("Lỗi tải dữ liệu", {
-            description: "Không thể tải dữ liệu nạn nhân Việt Nam."
-          });
+          setError("Không thể tải dữ liệu nạn nhân gần đây.");
         }
       }
       
@@ -133,11 +88,7 @@ const RansomwareMonitor = () => {
       
     } catch (err) {
       console.error("Error fetching data:", err);
-      setDebugInfo(`General fetch error: ${err.message}`);
-      setError(`Không thể tải dữ liệu ransomware: ${err.message}. Vui lòng thử lại sau.`);
-      toast.error("Lỗi", {
-        description: "Đã xảy ra lỗi khi tải dữ liệu. Sử dụng dữ liệu mẫu."
-      });
+      setError("Không thể tải dữ liệu ransomware. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
@@ -160,17 +111,61 @@ const RansomwareMonitor = () => {
     <RootLayout>
       <SubscriptionProvider>
         <div className="container mx-auto px-4 py-8">
-          <RansomwareHeader 
-            lastUpdated={lastUpdated}
-            loading={loading}
-            onRefresh={loadData}
-          />
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-security">Giám Sát Ransomware</h1>
+              <p className="text-gray-600">
+                Theo dõi dữ liệu nạn nhân ransomware và nhận thông báo về nạn nhân mới
+                {lastUpdated && (
+                  <span className="text-sm text-gray-500 ml-2">
+                    Cập nhật lần cuối: {lastUpdated.toLocaleString()}
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={loadData}
+                disabled={loading}
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                Làm Mới Dữ Liệu
+              </Button>
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => setShowAdminPanel(!showAdminPanel)}
+              >
+                {showAdminPanel ? (
+                  <>
+                    <CircleMinus className="h-4 w-4" /> Ẩn Bảng Quản Trị
+                  </>
+                ) : (
+                  <>
+                    <CirclePlus className="h-4 w-4" /> Hiển Thị Bảng Quản Trị
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
 
-          <InfoPanel 
-            isGeoBlocked={isGeoBlocked} 
-            error={error} 
-            debugInfo={debugInfo}
-          />
+          {isGeoBlocked && (
+            <Alert variant="destructive" className="mb-6">
+              <ShieldAlert className="h-4 w-4" />
+              <AlertTitle>Giới Hạn Địa Lý</AlertTitle>
+              <AlertDescription>
+                Vị trí của bạn bị chặn truy cập vào API ransomware.live. Điều này có thể do các giới hạn cụ thể theo quốc gia được áp dụng bởi nhà cung cấp API.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {showAdminPanel && (
+            <div className="mb-8">
+              <AdminPanel />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="md:col-span-2">
@@ -181,15 +176,52 @@ const RansomwareMonitor = () => {
             </div>
           </div>
 
-          <VictimTabs
-            victims={victims}
-            recentVictims={recentVictims}
-            vietnameseVictims={vietnameseVictims}
-            loading={loading}
-            error={error}
-          />
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <Tabs defaultValue="all">
+              <TabsList>
+                <TabsTrigger value="all">Tất Cả Nạn Nhân</TabsTrigger>
+                <TabsTrigger value="recent">Gần Đây (24h)</TabsTrigger>
+              </TabsList>
+              <TabsContent value="all" className="pt-4">
+                {error ? (
+                  <div className="text-center py-8 text-amber-500 flex flex-col items-center gap-2">
+                    <Bug className="h-10 w-10" />
+                    {error}
+                  </div>
+                ) : (
+                  <VictimsTable 
+                    victims={victims} 
+                    loading={loading} 
+                  />
+                )}
+              </TabsContent>
+              <TabsContent value="recent" className="pt-4">
+                {error ? (
+                  <div className="text-center py-8 text-amber-500 flex flex-col items-center gap-2">
+                    <Bug className="h-10 w-10" />
+                    {error}
+                  </div>
+                ) : (
+                  <VictimsTable 
+                    victims={recentVictims} 
+                    loading={loading} 
+                  />
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
 
-          <DataAboutSection />
+          <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+            <h3 className="text-xl font-semibold mb-2">Về Dữ Liệu Này</h3>
+            <p className="text-gray-700 mb-4">
+              Dữ liệu này được lấy từ ransomware.live, trang theo dõi các nhóm ransomware và nạn nhân của họ.
+              Thông tin được cập nhật tự động mỗi 4 giờ để cung cấp tổng quan mới nhất về hoạt động ransomware.
+            </p>
+            <p className="text-gray-700">
+              Đăng ký để nhận thông báo qua email khi có nạn nhân mới được thêm vào cơ sở dữ liệu. 
+              Bạn có thể chọn nhận thông báo về nạn nhân từ tất cả các quốc gia hoặc chỉ chọn các quốc gia quan tâm.
+            </p>
+          </div>
         </div>
       </SubscriptionProvider>
     </RootLayout>

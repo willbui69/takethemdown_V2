@@ -1,37 +1,23 @@
 
 import { useState } from "react";
 import { RansomwareVictim } from "@/types/ransomware";
-import { Table, TableBody, TableCell } from "@/components/ui/table";
-import { AlertTriangle } from "lucide-react";
-import { VictimTableHeader } from "./tables/VictimTableHeader";
-import { VictimTableRow } from "./tables/VictimTableRow";
-import { FilterSection } from "./filters/FilterSection";
-import { ExpandControl } from "./tables/ExpandControl";
-import { 
-  formatDate, 
-  getIndustryColor,
-  processVictimData 
-} from "./utils/victimTableUtils";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, Filter, AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface VictimsTableProps {
   victims: RansomwareVictim[];
   loading: boolean;
 }
 
-// Define a type for valid sort fields to prevent type errors
-type SortableField = 'victim_name' | 'group_name' | 'published' | 'country' | 'industry';
-
 export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<SortableField>("published");
+  const [sortField, setSortField] = useState<keyof RansomwareVictim>("published");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-  const [expandedView, setExpandedView] = useState(false);
-  const [itemsToShow, setItemsToShow] = useState(10);
-  const [countryFilter, setCountryFilter] = useState<string>("");
-  const [industryFilter, setIndustryFilter] = useState<string>("");
   
-  // Updated to use SortableField type
-  const handleSort = (field: SortableField) => {
+  const handleSort = (field: keyof RansomwareVictim) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -40,60 +26,30 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     }
   };
   
-  // Toggle expanded view
-  const toggleExpandedView = () => {
-    if (expandedView) {
-      setItemsToShow(10); // Collapse to default
-    } else {
-      setItemsToShow(victims.length); // Show all
-    }
-    setExpandedView(!expandedView);
-  };
-  
-  // Extract unique countries and industries for filter dropdowns
-  const countries = Array.from(new Set(victims
-    .map(victim => victim.country)
-    .filter(country => country !== null && country !== undefined && country !== "")))
-    .sort() as string[];
-    
-  const industries = Array.from(new Set(victims
-    .map(victim => victim.industry)
-    .filter(industry => industry !== null && industry !== undefined && industry !== "")))
-    .sort() as string[];
-  
-  // Reset all filters
-  const resetFilters = () => {
-    setSearchQuery("");
-    setCountryFilter("");
-    setIndustryFilter("");
-  };
-  
-  // Filter victims based on all criteria
   const filteredVictims = victims.filter(victim => {
-    // Text search across multiple fields
-    const matchesSearch = !searchQuery ? true : (
-      (victim.victim_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (victim.group_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (victim.country?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (victim.industry?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+    if (!searchQuery) return true;
+    
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      (victim.victim_name?.toLowerCase() || "").includes(searchLower) ||
+      (victim.group_name?.toLowerCase() || "").includes(searchLower) ||
+      (victim.country?.toLowerCase() || "").includes(searchLower) ||
+      (victim.industry?.toLowerCase() || "").includes(searchLower)
     );
-    
-    // Country filter
-    const matchesCountry = !countryFilter ? true : 
-      victim.country?.toLowerCase() === countryFilter.toLowerCase();
-    
-    // Industry filter
-    const matchesIndustry = !industryFilter ? true :
-      victim.industry?.toLowerCase() === industryFilter.toLowerCase();
-    
-    return matchesSearch && matchesCountry && matchesIndustry;
   });
   
-  // Process the filtered victims to standardize name extraction
-  const processedVictims = processVictimData(filteredVictims);
+  // Sanitize data to avoid empty values or undefined fields
+  const sanitizedVictims = filteredVictims.map(victim => ({
+    victim_name: victim.victim_name || "Unknown",
+    group_name: victim.group_name || "Unknown Group",
+    published: victim.published || null,
+    country: victim.country || null,
+    industry: victim.industry || null,
+    url: victim.url || null,
+    ...victim
+  }));
   
-  // Sort the processed victims
-  const sortedVictims = [...processedVictims].sort((a, b) => {
+  const sortedVictims = [...sanitizedVictims].sort((a, b) => {
     const fieldA = a[sortField] || "";
     const fieldB = b[sortField] || "";
     
@@ -102,22 +58,52 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     return 0;
   });
 
-  // Get the subset of victims to show
-  const visibleVictims = sortedVictims.slice(0, itemsToShow);
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Không rõ";
+    
+    try {
+      return new Date(dateString).toLocaleDateString(undefined, {
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric'
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  const getIndustryColor = (industry: string | null) => {
+    if (!industry) return "gray";
+    
+    const industryLower = industry.toLowerCase();
+    
+    if (industryLower.includes("finance") || industryLower.includes("bank")) return "blue";
+    if (industryLower.includes("health") || industryLower.includes("medical")) return "red";
+    if (industryLower.includes("education") || industryLower.includes("school")) return "yellow";
+    if (industryLower.includes("tech") || industryLower.includes("it")) return "green";
+    if (industryLower.includes("government") || industryLower.includes("public")) return "purple";
+    if (industryLower.includes("manufacturing")) return "orange";
+    
+    return "gray";
+  };
 
   return (
     <div className="space-y-4">
-      <FilterSection 
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        countryFilter={countryFilter}
-        setCountryFilter={setCountryFilter}
-        industryFilter={industryFilter}
-        setIndustryFilter={setIndustryFilter}
-        countries={countries}
-        industries={industries}
-        resetFilters={resetFilters}
-      />
+      <div className="flex flex-col sm:flex-row gap-4 items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Tìm kiếm nạn nhân, nhóm, quốc gia..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <Button variant="outline" className="flex items-center gap-2">
+          <Filter className="h-4 w-4" /> 
+          Lọc
+        </Button>
+      </div>
 
       {sortedVictims.length === 0 && !loading && (
         <div className="bg-amber-50 border border-amber-200 rounded-md p-4 flex items-center gap-3">
@@ -128,61 +114,111 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
 
       <div className="rounded-md border overflow-auto">
         <Table>
-          <VictimTableHeader 
-            sortField={sortField}
-            sortDirection={sortDirection}
-            handleSort={handleSort}
-          />
+          <TableHeader>
+            <TableRow>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort("victim_name")}
+              >
+                Tổ Chức
+                {sortField === "victim_name" && (
+                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                )}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort("group_name")}
+              >
+                Nhóm
+                {sortField === "group_name" && (
+                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                )}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort("published")}
+              >
+                Công Bố
+                {sortField === "published" && (
+                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                )}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort("industry")}
+              >
+                Ngành
+                {sortField === "industry" && (
+                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                )}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort("country")}
+              >
+                Quốc Gia
+                {sortField === "country" && (
+                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                )}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
           <TableBody>
             {loading ? (
-              <tr>
+              <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
                   Đang tải dữ liệu nạn nhân...
                 </TableCell>
-              </tr>
+              </TableRow>
             ) : sortedVictims.length === 0 ? (
-              <tr>
+              <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
                   Không tìm thấy nạn nhân phù hợp với tiêu chí của bạn
                 </TableCell>
-              </tr>
+              </TableRow>
             ) : (
-              visibleVictims.map((victim, index) => (
-                <VictimTableRow
-                  key={index}
-                  victim={victim}
-                  index={index}
-                  formatDate={formatDate}
-                  getIndustryColor={getIndustryColor}
-                />
+              sortedVictims.map((victim, index) => (
+                <TableRow key={`${victim.group_name}-${victim.victim_name}-${index}`}>
+                  <TableCell className="font-medium">
+                    {victim.url ? (
+                      <a 
+                        href={victim.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-security hover:underline"
+                      >
+                        {victim.victim_name}
+                      </a>
+                    ) : (
+                      victim.victim_name
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="font-medium">
+                      {victim.group_name}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{formatDate(victim.published)}</TableCell>
+                  <TableCell>
+                    {victim.industry ? (
+                      <Badge variant="outline" className={`bg-${getIndustryColor(victim.industry)}-50 text-${getIndustryColor(victim.industry)}-700 border-${getIndustryColor(victim.industry)}-200`}>
+                        {victim.industry}
+                      </Badge>
+                    ) : (
+                      <span className="text-gray-500 text-sm">Không rõ</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {victim.country || <span className="text-gray-500 text-sm">Không rõ</span>}
+                  </TableCell>
+                </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </div>
-      
-      <ExpandControl
-        totalCount={sortedVictims.length}
-        visibleCount={10}
-        expandedView={expandedView}
-        toggleExpandedView={toggleExpandedView}
-      />
-
-      {/* Filter summary with count */}
-      <div className="text-sm text-gray-500 flex flex-wrap justify-between items-center">
-        <div>
-          {(searchQuery || countryFilter || industryFilter) && (
-            <span className="text-security">
-              Đang lọc: 
-              {searchQuery && <span className="ml-1">"{searchQuery}"</span>}
-              {countryFilter && <span className="ml-1">Quốc Gia: {countryFilter}</span>}
-              {industryFilter && <span className="ml-1">Ngành: {industryFilter}</span>}
-            </span>
-          )}
-        </div>
-        <div>
-          Hiển thị {visibleVictims.length} trong số {sortedVictims.length} nạn nhân
-        </div>
+      <div className="text-sm text-gray-500 text-right">
+        Hiển thị {sortedVictims.length} trong số {victims.length} nạn nhân
       </div>
     </div>
   );
