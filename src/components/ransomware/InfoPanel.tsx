@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ShieldAlert, Bug, Code, Signal, Network } from "lucide-react";
+import { ShieldAlert, Bug, Code, Signal, Network, Clock, CloudOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface InfoPanelProps {
@@ -29,19 +29,23 @@ export const InfoPanel = ({ isGeoBlocked, error, debugInfo }: InfoPanelProps) =>
       
       {error && (
         <div className="text-center py-4 text-amber-500 flex flex-col items-center gap-2">
-          {error.includes("Failed to fetch") || error.includes("không khả dụng") ? (
+          {error.includes("Failed to fetch") || error.includes("không khả dụng") || error.includes("timeout") ? (
             <Network className="h-10 w-10" />
+          ) : error.includes("timed out") ? (
+            <Clock className="h-10 w-10" />
+          ) : error.includes("offline") || error.includes("không có kết nối") ? (
+            <CloudOff className="h-10 w-10" />
           ) : (
             <Bug className="h-10 w-10" />
           )}
           {error}
           
-          {error.includes("Failed to fetch") && (
+          {(error.includes("Failed to fetch") || error.includes("timeout") || error.includes("timed out")) && (
             <Alert className="mt-2 bg-amber-50">
               <Signal className="h-4 w-4" />
               <AlertTitle>Vấn đề kết nối</AlertTitle>
               <AlertDescription>
-                Không thể kết nối đến Edge Function. Điều này có thể do Edge Function không hoạt động, kết nối mạng của bạn bị gián đoạn, hoặc CORS không được cấu hình đúng.
+                Không thể kết nối đến Edge Function. Điều này có thể do Edge Function tạm thời không khả dụng, timeout quá ngắn, mạng Internet của bạn bị gián đoạn, hoặc CORS không được cấu hình đúng. Thử làm mới trang sau ít phút.
               </AlertDescription>
             </Alert>
           )}

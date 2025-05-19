@@ -9,10 +9,11 @@ export const API_BASE_URL = "https://api.ransomware.live/v2";
 export const API_REQUEST_SECRET = "ransomware-monitor-42735919";
 
 export const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-request-signature, x-request-timestamp",
+  "Access-Control-Allow-Origin": "*", // Default value, will be overridden per-request
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-request-signature, x-request-timestamp, origin, cache-control",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Content-Type": "application/json",
+  "Access-Control-Max-Age": "86400" // Cache preflight for 24 hours
 };
 
 export const ALLOWED = [
@@ -65,9 +66,9 @@ export const validateSignature = (
     return false;
   }
   
-  // Allow a wider 15-minute window for timestamp to account for clock drift and delays
+  // Allow a wider 30-minute window for timestamp to account for clock drift and delays
   const now = getTimestamp();
-  if (Math.abs(now - timestamp) > 900) {
+  if (Math.abs(now - timestamp) > 1800) { // 30 minutes
     console.log(`Timestamp too old or in future: ${timestamp}, current: ${now}, diff: ${Math.abs(now - timestamp)}`);
     return false;
   }

@@ -19,12 +19,16 @@ const ALLOWED_ORIGINS = [
   "http://localhost:5174",
   "http://localhost:54321",
   "https://lovableproject.com",
-  "https://*.lovableproject.com"
+  "https://*.lovableproject.com",
+  "*" // Allow all origins (for temporary debugging)
 ];
 
 // Check if origin is allowed with wildcard support
 function isOriginAllowed(origin: string | null): boolean {
   if (!origin) return false;
+  
+  // For debugging: allow all origins temporarily
+  if (ALLOWED_ORIGINS.includes("*")) return true;
   
   // First check exact matches
   if (ALLOWED_ORIGINS.includes(origin)) return true;
@@ -79,7 +83,17 @@ function checkRateLimit(ip: string): boolean {
 }
 
 serve(async (req) => {
-  const headers = { ...corsHeaders, ...securityHeaders };
+  // Customize CORS headers for the specific request
+  const reqOrigin = req.headers.get("Origin");
+  const headers = { 
+    ...corsHeaders,
+    ...securityHeaders
+  };
+
+  // Set specific origin if provided and allowed
+  if (reqOrigin && isOriginAllowed(reqOrigin)) {
+    headers["Access-Control-Allow-Origin"] = reqOrigin;
+  }
   
   try {
     console.log(`Request received: ${req.method} ${new URL(req.url).pathname}`);
@@ -106,8 +120,7 @@ serve(async (req) => {
         );
       }
       
-      // Set the actual origin in CORS headers for non-preflight requests
-      headers["Access-Control-Allow-Origin"] = origin;
+      // Origin already set in headers above
     }
     
     // Validate request method
@@ -181,7 +194,7 @@ serve(async (req) => {
           "Accept": "application/json",
           "X-Client-Source": "ransomware-monitor-app" // Add a source identifier
         },
-        signal: AbortSignal.timeout(15000) // 15 second timeout
+        signal: AbortSignal.timeout(25000) // 25 second timeout (increased from 15)
       });
       
       return await handleApiResponse(apiRes, path);

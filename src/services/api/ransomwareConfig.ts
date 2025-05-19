@@ -72,9 +72,9 @@ export const callEdgeFunction = async (endpoint: string) => {
   try {
     console.log(`Calling Edge Function with endpoint: ${endpoint}`);
     
-    // Set a timeout for the request
+    // Set a longer timeout for the request (30 seconds instead of 15)
     const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 15000); // 15 second timeout
+    const timeoutId = setTimeout(() => abortController.abort(), 30000); // 30 second timeout
     
     // Generate request signature
     const timestamp = Math.floor(Date.now() / 1000);
@@ -86,13 +86,19 @@ export const callEdgeFunction = async (endpoint: string) => {
     const edgeFunctionUrl = getEdgeFunctionUrl();
     console.log(`Using Edge Function URL: ${edgeFunctionUrl}`);
     
+    // Check network connectivity first
+    if (!navigator.onLine) {
+      throw new Error("Không có kết nối Internet. Vui lòng kiểm tra mạng của bạn.");
+    }
+    
     const response = await fetch(`${edgeFunctionUrl}${endpoint}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'X-Request-Timestamp': timestamp.toString(),
-        'X-Request-Signature': signature
+        'X-Request-Signature': signature,
+        'Cache-Control': 'no-cache'
       },
       signal: abortController.signal
     });
@@ -129,9 +135,10 @@ export const callEdgeFunction = async (endpoint: string) => {
     
     return await response.json();
   } catch (error) {
+    // Handle specific error types
     if (error.name === 'AbortError') {
       console.error(`Edge Function request timeout for endpoint ${endpoint}`);
-      throw new Error("Request timeout. Please try again later.");
+      throw new Error("Request timed out. API không phản hồi trong thời gian chờ.");
     }
     
     console.error(`Error calling Edge Function with endpoint ${endpoint}:`, error);
@@ -149,6 +156,11 @@ export const checkApiAvailability = async (): Promise<boolean> => {
   try {
     console.log("Checking API availability via Edge Function");
     
+    // Check network connectivity first
+    if (!navigator.onLine) {
+      throw new Error("Không có kết nối Internet. Vui lòng kiểm tra mạng của bạn.");
+    }
+    
     // Generate signature for availability check
     const timestamp = Math.floor(Date.now() / 1000);
     const signature = generateSignature("/groups", timestamp);
@@ -165,10 +177,11 @@ export const checkApiAvailability = async (): Promise<boolean> => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'X-Request-Timestamp': timestamp.toString(),
-        'X-Request-Signature': signature
+        'X-Request-Signature': signature,
+        'Cache-Control': 'no-cache'
       },
-      // Set a short timeout for the availability check
-      signal: AbortSignal.timeout(5000)
+      // Set a longer timeout for the availability check (10 seconds instead of 5)
+      signal: AbortSignal.timeout(10000)
     });
 
     if (!response.ok) {
