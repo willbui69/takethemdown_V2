@@ -18,16 +18,20 @@ interface VictimsTableProps {
   loading: boolean;
 }
 
+// Define a type for valid sort fields to prevent type errors
+type SortableField = 'victim_name' | 'group_name' | 'published' | 'country' | 'industry';
+
 export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<keyof RansomwareVictim>("published");
+  const [sortField, setSortField] = useState<SortableField>("published");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [expandedView, setExpandedView] = useState(false);
   const [itemsToShow, setItemsToShow] = useState(10);
   const [countryFilter, setCountryFilter] = useState<string>("");
   const [industryFilter, setIndustryFilter] = useState<string>("");
   
-  const handleSort = (field: keyof RansomwareVictim) => {
+  // Updated to use SortableField type
+  const handleSort = (field: SortableField) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {

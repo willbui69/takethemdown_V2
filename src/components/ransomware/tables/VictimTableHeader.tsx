@@ -2,10 +2,13 @@
 import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { User, Calendar } from "lucide-react";
 
+// Define the same type as in VictimsTable
+type SortableField = 'victim_name' | 'group_name' | 'published' | 'country' | 'industry';
+
 interface VictimTableHeaderProps {
-  sortField: string;
+  sortField: SortableField;
   sortDirection: 'asc' | 'desc';
-  handleSort: (field: string) => void;
+  handleSort: (field: SortableField) => void;
 }
 
 export const VictimTableHeader = ({ 
