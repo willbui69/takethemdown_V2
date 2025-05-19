@@ -57,7 +57,19 @@ const callEdgeFunction = async (endpoint: string) => {
       throw new Error(`Edge Function returned status ${response.status}`);
     }
 
-    return await response.json();
+    const text = await response.text();
+    
+    // Check if we received HTML
+    if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+      throw new Error("API returned HTML instead of JSON");
+    }
+    
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      console.error("Failed to parse JSON from API response:", e);
+      throw new Error("Failed to parse API response");
+    }
   } catch (error) {
     console.error(`Error calling Edge Function with endpoint ${endpoint}:`, error);
     throw error;

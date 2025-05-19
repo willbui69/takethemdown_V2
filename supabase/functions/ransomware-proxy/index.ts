@@ -1,101 +1,70 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// Ransomware API endpoints
 const API_BASE_URL = "https://api.ransomware.live/v2";
-
-// CORS headers for browser access
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin":  "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Content-Type": "application/json",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Content-Type":                "application/json",
 };
 
+// Only allow these endpoints:
+const ALLOWED = [
+  /^\/info$/,
+  /^\/groups$/,
+  /^\/group\/[^/]+$/,
+  /^\/recentvictims$/,
+  /^\/victims$/,
+  /^\/victims\/[^/]+$/,
+  /^\/today$/,
+  /^\/stats$/
+];
+
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // 1) CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    // Check authorization
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
-      console.error("Missing authorization header in request");
-      return new Response(
-        JSON.stringify({ code: 401, message: "Missing authorization header" }),
-        { status: 401, headers: corsHeaders }
-      );
-    }
-    
-    let path = "";
-    
-    // Check if the request has a body and try to extract the path from it
-    if (req.method === "POST") {
-      try {
-        const body = await req.json();
-        path = body.path || "";
-        console.log("POST request received with path:", path);
-      } catch (e) {
-        console.error("Error parsing request body:", e);
-      }
-    } else {
-      // Get the path from the URL for GET requests
-      const url = new URL(req.url);
-      path = url.pathname.replace(/^\/ransomware-proxy/, "");
-      console.log("GET request received. Original URL:", req.url);
-      console.log("Extracted path after replacement:", path);
-    }
-    
-    if (!path) {
-      console.error("No path provided in request");
-      return new Response(
-        JSON.stringify({ error: "Endpoint path required" }),
-        { status: 400, headers: corsHeaders }
-      );
-    }
+  // 2) Only GET for now
+  if (req.method !== "GET") {
+    return new Response(
+      JSON.stringify({ error: "Only GET is supported" }),
+      { status: 405, headers: corsHeaders }
+    );
+  }
 
-    const fullApiUrl = `${API_BASE_URL}${path}`;
-    console.log(`Proxying request to: ${fullApiUrl}`);
-    
-    // Forward the request to Ransomware.live API
-    const apiResponse = await fetch(fullApiUrl, {
+  const url = new URL(req.url);
+  const path = url.pathname.replace(/^\/ransomware-proxy/, "");      // e.g. "/groups"
+  const query = url.search;       // e.g. "?limit=10"
+
+  // 3) Reject anything not in our whitelist
+  if (!ALLOWED.some((rx) => rx.test(path))) {
+    console.error(`Rejected non-whitelisted path: ${path}`);
+    return new Response(
+      JSON.stringify({ error: "Endpoint not allowed" }),
+      { status: 404, headers: corsHeaders }
+    );
+  }
+
+  const targetUrl = `${API_BASE_URL}${path}${query}`;
+  console.log(`Proxying → ${targetUrl}`);
+
+  try {
+    const apiRes = await fetch(targetUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": "RansomwareMonitor/1.0",
-        "Accept": "application/json",
+        "Accept": "application/json"
       },
     });
 
-    console.log(`API response status: ${apiResponse.status}`);
-
-    if (!apiResponse.ok) {
-      let errorData;
-      try {
-        errorData = await apiResponse.json();
-        console.error("API error response data:", JSON.stringify(errorData));
-      } catch (e) {
-        errorData = { error: `API returned status ${apiResponse.status}` };
-        console.error(`Failed to parse error response: ${e.message}`);
-      }
-      
-      return new Response(
-        JSON.stringify(errorData),
-        { status: apiResponse.status, headers: corsHeaders }
-      );
-    }
-
-    // Check content type to diagnose potential issues
-    const contentType = apiResponse.headers.get("content-type");
-    console.log(`API response content type: ${contentType}`);
+    const body = await apiRes.text(); // in case it's not JSON
     
-    // Get the response text first to diagnose potential issues
-    const responseText = await apiResponse.text();
-    const firstChars = responseText.substring(0, 100).replace(/\n/g, '\\n');
-    console.log(`Response text starts with: ${firstChars}...`);
-    
-    if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+    // Check if we received HTML instead of JSON and log for debugging
+    if (body.trim().startsWith('<!DOCTYPE') || body.trim().startsWith('<html')) {
       console.error("API returned HTML content instead of JSON");
       return new Response(
         JSON.stringify({ 
@@ -106,36 +75,19 @@ serve(async (req) => {
       );
     }
     
-    // Try to parse the response as JSON
-    try {
-      const data = JSON.parse(responseText);
-      console.log(`Data parsed successfully. First few items:`, 
-        Array.isArray(data) ? data.slice(0, 2) : "Non-array data returned");
-      
-      // Return the data
-      return new Response(
-        JSON.stringify(data),
-        { headers: corsHeaders }
-      );
-    } catch (e) {
-      console.error("Error parsing API response:", e);
-      console.error("Response was not valid JSON. First 200 characters:", responseText.substring(0, 200));
-      
-      return new Response(
-        JSON.stringify({ 
-          error: "Failed to parse API response",
-          details: e.message,
-          firstChars: firstChars 
-        }),
-        { status: 500, headers: corsHeaders }
-      );
-    }
-  } catch (error) {
-    console.error("Error in ransomware-proxy function:", error);
+    // Log response details for debugging
+    console.log(`Response status: ${apiRes.status}, content-type: ${apiRes.headers.get('content-type')}`);
     
+    return new Response(body, {
+      status: apiRes.status,
+      headers: corsHeaders
+    });
+
+  } catch (err) {
+    console.error("Proxy error:", err);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: err.message }),
       { status: 500, headers: corsHeaders }
-      );
-    }
+    );
+  }
 });
