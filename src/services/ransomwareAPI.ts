@@ -211,6 +211,18 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
   try {
     const data = await callEdgeFunction('/groups');
     console.log("Fetched groups data:", data?.length || 0, "records");
+    
+    // Log a few samples to verify the data
+    if (Array.isArray(data) && data.length > 0) {
+      console.log("Sample group data:", 
+        data.slice(0, 3).map(g => ({
+          name: g.name,
+          victim_count: g.victim_count,
+          active: g.active
+        }))
+      );
+    }
+    
     return data;
   } catch (error) {
     console.error("Failed to fetch groups:", error);
@@ -244,16 +256,8 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
     const derivedStats: RansomwareStat[] = groups
       .filter(group => group && typeof group === 'object')
       .map((group: any) => {
-        let count = 0;
-        
-        // Try to extract victim count from various potential properties
-        if (group.victim_count !== undefined && !isNaN(Number(group.victim_count))) {
-          count = Number(group.victim_count);
-        } else if (group.victimCount !== undefined && !isNaN(Number(group.victimCount))) {
-          count = Number(group.victimCount);
-        } else if (group.count !== undefined && !isNaN(Number(group.count))) {
-          count = Number(group.count);
-        }
+        // Directly use the victim_count that should now be properly extracted by the Edge Function
+        const count = typeof group.victim_count === 'number' ? group.victim_count : 0;
         
         // Provide debug info for the first few groups
         if (groups.indexOf(group) < 3) {
@@ -261,7 +265,6 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
             name: group.name,
             count: count,
             raw_victim_count: group.victim_count,
-            raw_count: group.count,
           });
         }
         

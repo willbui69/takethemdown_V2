@@ -41,6 +41,19 @@ export const GroupStatistics = () => {
         if (groupsResult.status === 'fulfilled') {
           setGroups(groupsResult.value);
           console.log("Fetched groups:", groupsResult.value.length);
+          
+          // Also use the groups data to derive stats, since the groups contain victim counts
+          const groupStats: RansomwareStat[] = groupsResult.value
+            .filter(group => group && typeof group === 'object')
+            .map((group) => {
+              return {
+                group: group.name || "Unknown",
+                count: typeof group.victim_count === 'number' ? group.victim_count : 0
+              };
+            });
+          
+          setStats(groupStats);
+          console.log("Derived stats from groups:", groupStats.length);
         } else {
           console.error("Error fetching groups:", groupsResult.reason);
           setError("Không thể tải dữ liệu nhóm");
@@ -51,12 +64,16 @@ export const GroupStatistics = () => {
             stat && typeof stat.count === 'number' && !isNaN(stat.count) && stat.group
           );
           console.log("Filtered valid stats:", validStats.length, "from", statsResult.value.length);
-          setStats(validStats);
+          
+          // Only set stats from the API if we don't have group-derived stats yet
+          if (groupsResult.status !== 'fulfilled') {
+            setStats(validStats);
+          }
         } else {
           console.error("Error fetching stats:", statsResult.reason);
           
-          // Only set error if not already set
-          if (!error) {
+          // Only set error if not already set and we don't have group-derived stats
+          if (!error && groupsResult.status !== 'fulfilled') {
             setError("Không thể tải dữ liệu thống kê");
           }
         }
