@@ -26,12 +26,14 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   };
   
   const filteredVictims = victims.filter(victim => {
+    if (!searchQuery) return true;
+    
     const searchLower = searchQuery.toLowerCase();
     return (
-      victim.victim_name.toLowerCase().includes(searchLower) ||
-      victim.group_name.toLowerCase().includes(searchLower) ||
-      (victim.country && victim.country.toLowerCase().includes(searchLower)) ||
-      (victim.industry && victim.industry.toLowerCase().includes(searchLower))
+      (victim.victim_name?.toLowerCase() || "").includes(searchLower) ||
+      (victim.group_name?.toLowerCase() || "").includes(searchLower) ||
+      (victim.country?.toLowerCase() || "").includes(searchLower) ||
+      (victim.industry?.toLowerCase() || "").includes(searchLower)
     );
   });
   
@@ -156,7 +158,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                     )}
                   </TableCell>
                   <TableCell>{victim.group_name}</TableCell>
-                  <TableCell>{formatDate(victim.published)}</TableCell>
+                  <TableCell>{victim.published ? formatDate(victim.published) : "Không rõ"}</TableCell>
                   <TableCell>{victim.industry || "Không rõ"}</TableCell>
                   <TableCell>{victim.country || "Không rõ"}</TableCell>
                 </TableRow>
