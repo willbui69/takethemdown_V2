@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { RansomwareGroup, RansomwareStat } from "@/types/ransomware";
-import { fetchGroups, fetchStats } from "@/services/ransomwareAPI";
+import { fetchGroups } from "@/services/ransomwareAPI";
 import {
   BarChart,
   Bar,
@@ -18,7 +18,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Bug, ShieldAlert } from "lucide-react";
 
 export const GroupStatistics = () => {
-  const [stats, setStats] = useState<RansomwareStat[]>([]);
   const [groups, setGroups] = useState<RansomwareGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,51 +31,10 @@ export const GroupStatistics = () => {
         setError(null);
         setIsGeoBlocked(false);
         
-        // Using Promise.allSettled to continue even if one promise fails
-        const [groupsResult, statsResult] = await Promise.allSettled([
-          fetchGroups(),
-          fetchStats(),
-        ]);
+        const fetchedGroups = await fetchGroups();
+        setGroups(fetchedGroups);
+        console.log("Fetched groups:", fetchedGroups.length);
         
-        if (groupsResult.status === 'fulfilled') {
-          setGroups(groupsResult.value);
-          console.log("Fetched groups:", groupsResult.value.length);
-          
-          // Also use the groups data to derive stats, since the groups contain victim counts
-          const groupStats: RansomwareStat[] = groupsResult.value
-            .filter(group => group && typeof group === 'object')
-            .map((group) => {
-              return {
-                group: group.name || "Unknown",
-                count: typeof group.victim_count === 'number' ? group.victim_count : 0
-              };
-            });
-          
-          setStats(groupStats);
-          console.log("Derived stats from groups:", groupStats.length);
-        } else {
-          console.error("Error fetching groups:", groupsResult.reason);
-          setError("Không thể tải dữ liệu nhóm");
-        }
-        
-        if (statsResult.status === 'fulfilled') {
-          const validStats = statsResult.value.filter(stat => 
-            stat && typeof stat.count === 'number' && !isNaN(stat.count) && stat.group
-          );
-          console.log("Filtered valid stats:", validStats.length, "from", statsResult.value.length);
-          
-          // Only set stats from the API if we don't have group-derived stats yet
-          if (groupsResult.status !== 'fulfilled') {
-            setStats(validStats);
-          }
-        } else {
-          console.error("Error fetching stats:", statsResult.reason);
-          
-          // Only set error if not already set and we don't have group-derived stats
-          if (!error && groupsResult.status !== 'fulfilled') {
-            setError("Không thể tải dữ liệu thống kê");
-          }
-        }
       } catch (err) {
         setError("Không thể tải dữ liệu nhóm ransomware");
         console.error("Error fetching data:", err);
@@ -88,31 +46,18 @@ export const GroupStatistics = () => {
     fetchData();
   }, []);
 
-  // Combine group and stats data with proper validation
-  const combinedData = stats
-    .map(stat => {
-      const group = groups.find(g => g.name === stat.group);
-      // Ensure count is a valid number
-      const victimCount = typeof stat.count === 'number' && !isNaN(stat.count) 
-        ? stat.count 
-        : 0;
-      
-      return {
-        name: stat.group || "Unknown",
-        victims: victimCount,
-        active: group?.active ?? false,
-      };
-    })
-    .filter(item => {
+  // Prepare data for chart display with filtering
+  const chartData = groups
+    .filter(group => {
       if (filter === "all") return true;
-      if (filter === "active") return item.active;
-      if (filter === "inactive") return !item.active;
+      if (filter === "active") return group.active;
+      if (filter === "inactive") return !group.active;
       return true;
     })
-    .sort((a, b) => b.victims - a.victims)
+    .sort((a, b) => (b.victim_count || 0) - (a.victim_count || 0))
     .slice(0, 15); // Only show top 15 groups
 
-  console.log("Combined chart data:", combinedData);
+  console.log("Combined chart data:", chartData);
 
   return (
     <Card>
@@ -163,7 +108,7 @@ export const GroupStatistics = () => {
               </>
             )}
           </div>
-        ) : combinedData.length === 0 ? (
+        ) : chartData.length === 0 ? (
           <div className="flex justify-center items-center h-80">
             <p className="text-gray-500">Không có dữ liệu cho bộ lọc đã chọn</p>
           </div>
@@ -171,7 +116,7 @@ export const GroupStatistics = () => {
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={combinedData}
+                data={chartData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -189,7 +134,7 @@ export const GroupStatistics = () => {
                 />
                 <Legend />
                 <Bar 
-                  dataKey="victims" 
+                  dataKey="victim_count" 
                   name="Số Nạn Nhân" 
                   fill="#8884d8" 
                 />

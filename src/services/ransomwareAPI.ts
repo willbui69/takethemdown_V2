@@ -1,4 +1,3 @@
-
 import { RansomwareGroup, RansomwareStat, RansomwareVictim } from "@/types/ransomware";
 import { toast } from "sonner";
 import { mockVictims, mockRecentVictims, mockGroups, mockStats } from "@/data/mockRansomwareData";
@@ -212,10 +211,9 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
     const data = await callEdgeFunction('/groups');
     console.log("Fetched groups data:", data?.length || 0, "records");
     
-    // Log a few samples to verify the data
     if (Array.isArray(data) && data.length > 0) {
       console.log("Sample group data:", 
-        data.slice(0, 3).map(g => ({
+        data.slice(0, 5).map(g => ({
           name: g.name,
           victim_count: g.victim_count,
           active: g.active
@@ -235,42 +233,24 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
 };
 
 export const fetchStats = async (): Promise<RansomwareStat[]> => {
-  if (useMockData) {
-    console.log("Using mock stats data");
-    return mockStats;
-  }
-  
+  // Since we now get victim counts directly from groups, we can derive stats from there
   try {
-    // Since the /stats endpoint might not be available in the new API format,
-    // let's derive stats from the groups data
-    const groups = await callEdgeFunction('/groups');
+    const groups = await fetchGroups();
     
     if (!Array.isArray(groups)) {
-      console.error("Invalid groups data format:", groups);
+      console.error("Invalid groups data format");
       throw new Error("Invalid groups data format");
     }
     
     console.log("Deriving stats from", groups.length, "groups");
     
-    // Convert the groups data to stats format with validation
+    // Convert the groups data to stats format
     const derivedStats: RansomwareStat[] = groups
       .filter(group => group && typeof group === 'object')
-      .map((group: any) => {
-        // Directly use the victim_count that should now be properly extracted by the Edge Function
-        const count = typeof group.victim_count === 'number' ? group.victim_count : 0;
-        
-        // Provide debug info for the first few groups
-        if (groups.indexOf(group) < 3) {
-          console.log("Group stats extraction:", {
-            name: group.name,
-            count: count,
-            raw_victim_count: group.victim_count,
-          });
-        }
-        
+      .map((group: RansomwareGroup) => {
         return {
           group: group.name || "Unknown Group",
-          count: count
+          count: typeof group.victim_count === 'number' ? group.victim_count : 0
         };
       });
     
