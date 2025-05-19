@@ -4,23 +4,22 @@ import { toast } from "sonner";
 
 // The API base URL for ransomware.live v2
 const API_BASE_URL = "https://api.ransomware.live/v2";
-const CORS_PROXY    = "https://corsproxy.io/?";
+const CORS_PROXY   = "https://corsproxy.io/?";
 
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
-    // Hit the /groups endpoint with GET
     const url = `${CORS_PROXY}${API_BASE_URL}/groups`;
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 5000);
+    const timeoutId  = setTimeout(() => controller.abort(), 5000);
 
     const response = await fetch(url, {
-      method: "GET",
+      method: 'GET',
       signal: controller.signal
     });
-    clearTimeout(id);
+    clearTimeout(timeoutId);
 
     if (response.status === 403) {
-      // (Unlikely for the API, but you can still handle it)
+      // this will now catch the JSON error body correctly
       const data = await response.json().catch(() => null);
       if (data?.error?.message?.includes("Country blocked")) {
         toast.error("Geographic restriction", {
@@ -32,15 +31,15 @@ export const checkApiAvailability = async (): Promise<boolean> => {
 
     console.log(`Ransomware.live API is ${response.ok ? "available" : "not available"}`);
     return response.ok;
-  } catch (error) {
-    console.error("Error checking API availability:", error);
+  } catch (err) {
+    console.error("Error checking API availability:", err);
     return false;
   }
 };
 
-// Helper function to build API URLs with CORS proxy
+// Helper function to build API URLs with CORS proxy - fixed to NOT use encodeURIComponent
 const getApiUrl = (endpoint: string): string => {
-  return `${CORS_PROXY}${encodeURIComponent(`${API_BASE_URL}${endpoint}`)}`;
+  return `${CORS_PROXY}${API_BASE_URL}${endpoint}`;
 };
 
 export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
