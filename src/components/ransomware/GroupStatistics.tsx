@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { RansomwareGroup, RansomwareStat } from "@/types/ransomware";
 import { fetchGroups, fetchStats } from "@/services/ransomwareAPI";
@@ -39,13 +40,18 @@ export const GroupStatistics = () => {
         
         if (groupsResult.status === 'fulfilled') {
           setGroups(groupsResult.value);
+          console.log("Fetched groups:", groupsResult.value.length);
         } else {
           console.error("Error fetching groups:", groupsResult.reason);
           setError("Không thể tải dữ liệu nhóm");
         }
         
         if (statsResult.status === 'fulfilled') {
-          setStats(statsResult.value);
+          const validStats = statsResult.value.filter(stat => 
+            stat && typeof stat.count === 'number' && !isNaN(stat.count) && stat.group
+          );
+          console.log("Filtered valid stats:", validStats.length, "from", statsResult.value.length);
+          setStats(validStats);
         } else {
           console.error("Error fetching stats:", statsResult.reason);
           
@@ -65,13 +71,18 @@ export const GroupStatistics = () => {
     fetchData();
   }, []);
 
-  // Combine group and stats data
+  // Combine group and stats data with proper validation
   const combinedData = stats
     .map(stat => {
       const group = groups.find(g => g.name === stat.group);
+      // Ensure count is a valid number
+      const victimCount = typeof stat.count === 'number' && !isNaN(stat.count) 
+        ? stat.count 
+        : 0;
+      
       return {
-        name: stat.group,
-        victims: stat.count,
+        name: stat.group || "Unknown",
+        victims: victimCount,
         active: group?.active ?? false,
       };
     })
@@ -83,6 +94,8 @@ export const GroupStatistics = () => {
     })
     .sort((a, b) => b.victims - a.victims)
     .slice(0, 15); // Only show top 15 groups
+
+  console.log("Combined chart data:", combinedData);
 
   return (
     <Card>
@@ -150,9 +163,13 @@ export const GroupStatistics = () => {
                   angle={-45} 
                   textAnchor="end"
                   height={80}
+                  tick={{ fontSize: 12 }}
                 />
                 <YAxis />
-                <Tooltip />
+                <Tooltip 
+                  formatter={(value) => [Number(value).toLocaleString(), 'Số Nạn Nhân']}
+                  labelFormatter={(label) => `Nhóm: ${label}`}
+                />
                 <Legend />
                 <Bar 
                   dataKey="victims" 

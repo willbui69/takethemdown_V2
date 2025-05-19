@@ -1,3 +1,4 @@
+
 import { RansomwareGroup, RansomwareStat, RansomwareVictim } from "@/types/ransomware";
 import { toast } from "sonner";
 import { mockVictims, mockRecentVictims, mockGroups, mockStats } from "@/data/mockRansomwareData";
@@ -209,6 +210,7 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
   
   try {
     const data = await callEdgeFunction('/groups');
+    console.log("Fetched groups data:", data?.length || 0, "records");
     return data;
   } catch (error) {
     console.error("Failed to fetch groups:", error);
@@ -231,12 +233,45 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
     // let's derive stats from the groups data
     const groups = await callEdgeFunction('/groups');
     
-    // Convert the groups data to stats format
-    const derivedStats: RansomwareStat[] = groups.map((group: any) => ({
-      group: group.name,
-      count: group.victim_count || 0
-    }));
+    if (!Array.isArray(groups)) {
+      console.error("Invalid groups data format:", groups);
+      throw new Error("Invalid groups data format");
+    }
     
+    console.log("Deriving stats from", groups.length, "groups");
+    
+    // Convert the groups data to stats format with validation
+    const derivedStats: RansomwareStat[] = groups
+      .filter(group => group && typeof group === 'object')
+      .map((group: any) => {
+        let count = 0;
+        
+        // Try to extract victim count from various potential properties
+        if (group.victim_count !== undefined && !isNaN(Number(group.victim_count))) {
+          count = Number(group.victim_count);
+        } else if (group.victimCount !== undefined && !isNaN(Number(group.victimCount))) {
+          count = Number(group.victimCount);
+        } else if (group.count !== undefined && !isNaN(Number(group.count))) {
+          count = Number(group.count);
+        }
+        
+        // Provide debug info for the first few groups
+        if (groups.indexOf(group) < 3) {
+          console.log("Group stats extraction:", {
+            name: group.name,
+            count: count,
+            raw_victim_count: group.victim_count,
+            raw_count: group.count,
+          });
+        }
+        
+        return {
+          group: group.name || "Unknown Group",
+          count: count
+        };
+      });
+    
+    console.log("Derived stats:", derivedStats.length, "records");
     return derivedStats;
   } catch (error) {
     console.error("Failed to fetch stats:", error);

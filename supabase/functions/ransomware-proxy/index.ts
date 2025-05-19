@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const API_BASE_URL = "https://api.ransomware.live/v2";
@@ -60,7 +61,44 @@ serve(async (req) => {
     // Process and enhance the data before returning it
     let processedData = data;
     
-    if (path === '/recentvictims' || path.startsWith('/groupvictims/') || path.includes('victim')) {
+    if (path === '/groups') {
+      // Process groups data to ensure it's properly formatted with victim counts
+      processedData = Array.isArray(data) ? data.map(item => {
+        // Extract the victim count from potential locations
+        let victimCount = 0;
+        if (item.locations && Array.isArray(item.locations)) {
+          // Sum across all locations if each has its own count
+          item.locations.forEach((loc: any) => {
+            if (loc.victim_count && !isNaN(Number(loc.victim_count))) {
+              victimCount += Number(loc.victim_count);
+            }
+          });
+        }
+        
+        // Look for other potential victim count locations
+        if (!victimCount && item.victim_count && !isNaN(Number(item.victim_count))) {
+          victimCount = Number(item.victim_count);
+        }
+        
+        // For debugging purposes, log details about a few items
+        if (data.indexOf(item) < 2) {
+          console.log("Group data processing:", {
+            name: item.name,
+            derived_count: victimCount,
+            active: Boolean(item.locations?.some((loc: any) => loc.available)),
+          });
+        }
+        
+        return {
+          ...item,
+          victim_count: victimCount,
+          active: Boolean(item.locations?.some((loc: any) => loc.available)),
+        };
+      }) : data;
+      
+      console.log("Processed groups data:", processedData?.length || 0, "records");
+    }
+    else if (path === '/recentvictims' || path.startsWith('/groupvictims/') || path.includes('victim')) {
       // Process the data to ensure proper formatting and 24-hour filtering
       processedData = Array.isArray(data) ? data.map(item => {
         // Extract victim name properly from the correct fields
