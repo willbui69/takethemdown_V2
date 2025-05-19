@@ -10,11 +10,20 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Mail, ExternalLink } from 'lucide-react';
+import { Mail, ExternalLink, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
+// Enhanced email validation with common security checks
+const emailSchema = z.string()
+  .email({ message: 'Vui lòng nhập địa chỉ email hợp lệ' })
+  .refine(email => email.length <= 255, { message: 'Email quá dài' })
+  .refine(email => {
+    // Prevent common script injection patterns
+    return !/[<>]|\s*javascript\s*:/i.test(email) && !/^\s|\s$/.test(email);
+  }, { message: 'Địa chỉ email chứa ký tự không hợp lệ' });
+
 const formSchema = z.object({
-  email: z.string().email({ message: 'Vui lòng nhập địa chỉ email hợp lệ' }),
+  email: emailSchema,
   notificationType: z.enum(['all', 'selected']),
   selectedCountries: z.array(z.string()).optional(),
 });
@@ -33,6 +42,8 @@ export const SubscriptionForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState<string>('');
   const [verificationLink, setVerificationLink] = useState<string | undefined>();
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [submitAttempts, setSubmitAttempts] = useState(0);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -44,26 +55,64 @@ export const SubscriptionForm = () => {
   });
 
   const notificationType = form.watch('notificationType');
+  
+  // Anti-spam protection
+  useEffect(() => {
+    if (submitAttempts > 5) {
+      const timeout = setTimeout(() => {
+        setSubmissionError(null);
+        setSubmitAttempts(0);
+      }, 60000); // Reset after 1 minute
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [submitAttempts]);
 
   const onSubmit = async (values: FormValues) => {
-    setSubmittedEmail(values.email);
-    await addSubscription(
-      values.email, 
-      values.notificationType === 'all' ? null : values.selectedCountries
-    );
-    setSubmitted(true);
-    form.reset();
-    
-    // Give the subscription system time to update
-    setTimeout(() => {
-      const link = getVerificationLink(values.email);
-      setVerificationLink(link);
-    }, 100);
+    try {
+      setSubmissionError(null);
+      
+      // Anti-spam check
+      if (submitAttempts > 5) {
+        setSubmissionError("Quá nhiều yêu cầu. Vui lòng thử lại sau.");
+        return;
+      }
+      
+      setSubmitAttempts(prev => prev + 1);
+      
+      // Sanitize input
+      const sanitizedEmail = values.email.trim().toLowerCase();
+      setSubmittedEmail(sanitizedEmail);
+      
+      await addSubscription(
+        sanitizedEmail, 
+        values.notificationType === 'all' ? null : values.selectedCountries
+      );
+      
+      setSubmitted(true);
+      form.reset();
+      
+      // Give the subscription system time to update
+      setTimeout(() => {
+        const link = getVerificationLink(sanitizedEmail);
+        setVerificationLink(link);
+      }, 100);
+    } catch (error) {
+      console.error("Subscription error:", error);
+      setSubmissionError("Không thể hoàn thành đăng ký. Vui lòng thử lại sau.");
+    }
   };
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold mb-4">Đăng Ký Thông Báo Ransomware</h3>
+      <h3 className="text-xl font-semibold mb-4">Đăng Ký Thông Báo Mã độc tống tiền</h3>
+      
+      {submissionError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{submissionError}</AlertDescription>
+        </Alert>
+      )}
       
       {submitted ? (
         <div className="text-center py-4">
@@ -110,6 +159,7 @@ export const SubscriptionForm = () => {
                         placeholder="example@example.com" 
                         type="email" 
                         className="pl-10"
+                        autoComplete="email"
                         {...field} 
                       />
                     </div>
@@ -193,7 +243,11 @@ export const SubscriptionForm = () => {
               />
             )}
             
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loading || submitAttempts > 5}
+            >
               {loading ? 'Đang đăng ký...' : 'Đăng Ký Nhận Thông Báo'}
             </Button>
             <p className="text-sm text-gray-500 mt-2">
