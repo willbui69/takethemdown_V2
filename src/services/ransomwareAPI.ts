@@ -64,6 +64,43 @@ const callEdgeFunction = async (endpoint: string) => {
   }
 };
 
+// Function to normalize victim data from different API sources
+const normalizeVictimData = (data: any[]): RansomwareVictim[] => {
+  if (!Array.isArray(data)) {
+    console.error("Invalid victim data format:", data);
+    return [];
+  }
+
+  return data.map(item => {
+    // Try to extract data from different possible field names
+    const victimName = item.victim_name || item.name || item.victim || "Unknown";
+    const groupName = item.group_name || item.group || "Unknown Group";
+    const published = item.published || item.date || item.discovery_date || null;
+    const country = item.country || item.location || null;
+    const industry = item.industry || item.sector || item.business_sector || null;
+    const url = item.url || item.victim_url || item.link || null;
+
+    // console.log for debugging
+    console.log("Processing victim:", { 
+      victimName, 
+      groupName, 
+      published, 
+      country, 
+      industry
+    });
+
+    return {
+      victim_name: victimName,
+      group_name: groupName,
+      published: published,
+      country: country,
+      industry: industry,
+      url: url,
+      ...item // Keep all original properties
+    };
+  });
+};
+
 export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
   if (useMockData) {
     console.log("Using mock victim data");
@@ -73,7 +110,7 @@ export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
   try {
     // Try to use the new recentvictims endpoint as it might be more reliable
     const data = await callEdgeFunction('/recentvictims');
-    return data;
+    return normalizeVictimData(data);
   } catch (error) {
     console.error("Failed to fetch victims:", error);
     toast.error("Could not fetch victim data", {
@@ -93,7 +130,7 @@ export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVict
   try {
     // Try the new groupvictims endpoint format
     const data = await callEdgeFunction(`/groupvictims/${group}`);
-    return data;
+    return normalizeVictimData(data);
   } catch (error) {
     console.error(`Failed to fetch victims for group ${group}:`, error);
     toast.error("Could not fetch group data", {
@@ -160,7 +197,7 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
   try {
     // Try the recentvictims endpoint (new format)
     const data = await callEdgeFunction('/recentvictims');
-    return data;
+    return normalizeVictimData(data);
   } catch (error) {
     console.error("Failed to fetch recent victims:", error);
     toast.error("Could not fetch recent victim data", {

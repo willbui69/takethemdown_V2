@@ -57,6 +57,19 @@ serve(async (req) => {
     }
 
     const data = await apiRes.json();
+    
+    // Add some debugging logs
+    console.log(`Response from ${path} endpoint:`, { 
+      status: apiRes.status, 
+      dataType: typeof data, 
+      isArray: Array.isArray(data),
+      sampleSize: Array.isArray(data) ? data.length : "N/A"
+    });
+    
+    if (Array.isArray(data) && data.length > 0) {
+      console.log("Sample data item:", data[0]);
+    }
+
     return new Response(JSON.stringify(data), {
       status: apiRes.status,
       headers: corsHeaders

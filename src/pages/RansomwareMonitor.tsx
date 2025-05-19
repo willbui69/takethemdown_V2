@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import RootLayout from "@/components/layout/RootLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,30 +22,13 @@ const RansomwareMonitor = () => {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const processVictimData = (data: any[]): RansomwareVictim[] => {
-    if (!Array.isArray(data)) {
-      console.error("Invalid victim data format:", data);
-      return [];
-    }
-    
-    return data.map(item => ({
-      victim_name: item.victim_name || item.name || "Unknown",
-      group_name: item.group_name || item.group || "Unknown Group",
-      published: item.published || item.date || null,
-      country: item.country || null,
-      industry: item.industry || item.sector || null,
-      url: item.url || item.victim_url || null,
-      ...item // Keep all original properties
-    }));
-  };
-
   const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
       setIsGeoBlocked(false);
       
-      console.info("Fetching ransomware data for scheduled 4-hour update...");
+      console.info("Fetching ransomware data...");
       
       // First check API availability through our Edge Function
       const isAvailable = await checkApiAvailability();
@@ -56,7 +38,6 @@ const RansomwareMonitor = () => {
         toast.warning("API không khả dụng", {
           description: "Đang sử dụng dữ liệu mẫu thay thế."
         });
-        setLoading(false);
       }
       
       // Using Promise.allSettled to continue even if one promise fails
@@ -66,16 +47,18 @@ const RansomwareMonitor = () => {
       ]);
       
       if (allVictimsResult.status === 'fulfilled') {
-        const processedData = processVictimData(allVictimsResult.value);
+        const processedData = allVictimsResult.value;
+        console.log("Received victim data:", processedData.slice(0, 2)); // Log first few items for debugging
         setVictims(processedData);
-        console.info(`Fetched ${processedData.length} victims in scheduled update`);
+        console.info(`Fetched ${processedData.length} victims`);
       } else {
         console.error("Error fetching all victims:", allVictimsResult.reason);
         setError("Không thể tải dữ liệu nạn nhân.");
       }
       
       if (todayVictimsResult.status === 'fulfilled') {
-        const processedData = processVictimData(todayVictimsResult.value);
+        const processedData = todayVictimsResult.value;
+        console.log("Received recent victim data:", processedData.slice(0, 2)); // Log first few items for debugging
         setRecentVictims(processedData);
       } else {
         console.error("Error fetching recent victims:", todayVictimsResult.reason);

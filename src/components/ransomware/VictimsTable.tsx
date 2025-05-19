@@ -38,10 +38,9 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     );
   });
   
-  // Sanitize data to avoid empty values or undefined fields
   const sanitizedVictims = filteredVictims.map(victim => ({
-    victim_name: victim.victim_name || "Unknown",
-    group_name: victim.group_name || "Unknown Group",
+    victim_name: victim.victim_name && victim.victim_name !== "Unknown" ? victim.victim_name : "Unknown",
+    group_name: victim.group_name && victim.group_name !== "Unknown Group" ? victim.group_name : "Unknown Group",
     published: victim.published || null,
     country: victim.country || null,
     industry: victim.industry || null,
@@ -49,9 +48,22 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     ...victim
   }));
   
+  console.log("Sanitized victims sample:", sanitizedVictims.slice(0, 2));
+  
   const sortedVictims = [...sanitizedVictims].sort((a, b) => {
-    const fieldA = a[sortField] || "";
-    const fieldB = b[sortField] || "";
+    // Handle null or undefined values for sorting
+    let fieldA = a[sortField];
+    let fieldB = b[sortField];
+    
+    // For date fields
+    if (sortField === "published") {
+      fieldA = fieldA ? new Date(fieldA).getTime() : 0;
+      fieldB = fieldB ? new Date(fieldB).getTime() : 0;
+    } else {
+      // For string fields
+      fieldA = fieldA || "";
+      fieldB = fieldB || "";
+    }
     
     if (fieldA < fieldB) return sortDirection === "asc" ? -1 : 1;
     if (fieldA > fieldB) return sortDirection === "asc" ? 1 : -1;
@@ -62,13 +74,19 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     if (!dateString) return "Không rõ";
     
     try {
-      return new Date(dateString).toLocaleDateString(undefined, {
+      const date = new Date(dateString);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return "Không rõ";
+      }
+      return date.toLocaleDateString(undefined, {
         year: 'numeric', 
         month: 'short', 
         day: 'numeric'
       });
     } catch (error) {
-      return dateString;
+      console.error("Error formatting date:", dateString, error);
+      return "Không rõ";
     }
   };
 
