@@ -61,18 +61,40 @@ serve(async (req) => {
     // Process and enhance the data before returning it
     let processedData = data;
     
-    // Handle specific endpoints to ensure data consistency
-    if (path === '/recentvictims' || path.startsWith('/groupvictims/')) {
+    if (path === '/recentvictims' || path.startsWith('/groupvictims/') || path.includes('victim')) {
       // Make sure each entry has at least a minimum set of properties
       processedData = Array.isArray(data) ? data.map(item => {
-        // Ensure required fields exist
+        // Extract victim name from multiple possible fields
+        const victimName = 
+          item.victim_name || 
+          item.name || 
+          item.title || 
+          item.company ||
+          (typeof item.url === 'string' && item.url.replace(/^https?:\/\//, '').split('/')[0]) ||
+          "Unknown Organization";
+        
+        // Extract publish date from multiple possible fields
+        const published = 
+          item.published || 
+          item.date || 
+          item.discovery_date || 
+          item.leaked || 
+          item.discovered || 
+          null;
+        
         return {
-          victim_name: item.victim_name || item.name || "",
-          group_name: item.group_name || item.group || "",
-          published: item.published || item.date || item.discovery_date || null,
-          ...item
+          victim_name: victimName,
+          group_name: item.group_name || item.group || "Unknown Group",
+          published: published,
+          country: item.country || null,
+          industry: item.industry || item.sector || null,
+          url: item.url || item.victim_url || null,
+          ...item // Keep all original properties
         };
       }) : data;
+      
+      // Additional logging to help debug
+      console.log("Processed victim data:", JSON.stringify(processedData.slice(0, 2)));
     }
     
     return new Response(JSON.stringify(processedData), {

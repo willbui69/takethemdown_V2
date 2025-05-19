@@ -26,6 +26,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     }
   };
   
+  // Filter victims based on search query
   const filteredVictims = victims.filter(victim => {
     if (!searchQuery) return true;
     
@@ -38,14 +39,40 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     );
   });
   
-  // Enhance data processing to better handle missing victim names and dates
+  // Enhanced data processing to handle all possible field variations
   const processedVictims = filteredVictims.map(victim => {
-    // Extract name from various possible fields
-    const victimName = victim.victim_name || victim.name || victim.company || victim.title || "Unknown";
+    // Enhanced victim name extraction
+    let victimName = "Unknown Organization";
     
-    // Extract date from various possible fields
-    const publishDate = victim.published || victim.date || victim.discovery_date || victim.discovered || null;
+    if (victim.victim_name && victim.victim_name !== "null" && victim.victim_name !== "undefined") {
+      victimName = victim.victim_name;
+    } else if (victim.name && victim.name !== "null" && victim.name !== "undefined") {
+      victimName = victim.name;
+    } else if (victim.company && victim.company !== "null" && victim.company !== "undefined") {
+      victimName = victim.company;
+    } else if (victim.title && victim.title !== "null" && victim.title !== "undefined") {
+      victimName = victim.title;
+    } else if (victim.url) {
+      // Try to extract name from URL
+      try {
+        const urlObj = new URL(victim.url);
+        victimName = urlObj.hostname.replace('www.', '');
+      } catch (e) {
+        // If URL parsing fails, use the URL as is or fallback
+        victimName = typeof victim.url === 'string' ? victim.url.replace(/^https?:\/\//, '') : "Unknown Organization";
+      }
+    }
     
+    // Enhanced date extraction
+    const publishDate = 
+      victim.published || 
+      victim.date || 
+      victim.discovery_date || 
+      victim.discovered || 
+      victim.leaked ||
+      null;
+    
+    // Ensure we return a properly structured object
     return {
       ...victim,
       victim_name: victimName,
@@ -57,6 +84,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     };
   });
   
+  // Sort the processed victims
   const sortedVictims = [...processedVictims].sort((a, b) => {
     const fieldA = a[sortField] || "";
     const fieldB = b[sortField] || "";

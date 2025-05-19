@@ -21,11 +21,42 @@ export const normalizeVictimData = (data: any[]): RansomwareVictim[] => {
   }
   
   return data.map(item => {
-    // Extract name from various possible fields
-    const victimName = item.victim_name || item.name || item.company || item.title || "Unknown";
+    // Enhanced victim name extraction with debugging
+    let victimName = "Unknown Organization";
     
-    // Extract date from various possible fields
-    const publishDate = item.published || item.date || item.discovery_date || item.discovered || null;
+    if (item.victim_name && item.victim_name !== "null" && item.victim_name !== "undefined") {
+      victimName = item.victim_name;
+    } else if (item.name && item.name !== "null" && item.name !== "undefined") {
+      victimName = item.name;
+    } else if (item.company && item.company !== "null" && item.company !== "undefined") {
+      victimName = item.company;
+    } else if (item.title && item.title !== "null" && item.title !== "undefined") {
+      victimName = item.title;
+    } else if (item.url) {
+      // Try to extract name from URL
+      try {
+        const urlObj = new URL(item.url);
+        victimName = urlObj.hostname.replace('www.', '');
+      } catch (e) {
+        // If URL parsing fails, use the URL as is or fallback
+        victimName = typeof item.url === 'string' ? item.url.replace(/^https?:\/\//, '') : "Unknown Organization";
+      }
+    }
+    
+    // Log the first few items to help with debugging
+    if (data.indexOf(item) < 2) {
+      console.log("Raw item data:", item);
+      console.log("Extracted victim name:", victimName);
+    }
+    
+    // Enhanced date extraction
+    const publishDate = 
+      item.published || 
+      item.date || 
+      item.discovery_date || 
+      item.discovered || 
+      item.leaked ||
+      null;
     
     return {
       victim_name: victimName,
@@ -188,6 +219,12 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
     // Try the recentvictims endpoint (new format)
     const data = await callEdgeFunction('/recentvictims');
     console.log("Fetched recent victim data:", data?.length || 0, "records");
+    
+    // Log a sample of the raw data
+    if (Array.isArray(data) && data.length > 0) {
+      console.log("Sample recent victim data:", data[0]);
+    }
+    
     return normalizeVictimData(data);
   } catch (error) {
     console.error("Failed to fetch recent victims:", error);
