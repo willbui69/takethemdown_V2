@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { RansomwareVictim } from "@/types/ransomware";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,6 +7,13 @@ import { Search, Filter, AlertTriangle, Calendar, User, ChevronDown, ChevronUp }
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface VictimsTableProps {
   victims: RansomwareVictim[];
@@ -20,6 +26,9 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [expandedView, setExpandedView] = useState(false);
   const [itemsToShow, setItemsToShow] = useState(10);
+  const [countryFilter, setCountryFilter] = useState<string>("");
+  const [industryFilter, setIndustryFilter] = useState<string>("");
+  const [showFilters, setShowFilters] = useState(false);
   
   const handleSort = (field: keyof RansomwareVictim) => {
     if (sortField === field) {
@@ -40,17 +49,43 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     setExpandedView(!expandedView);
   };
   
-  // Filter victims based on search query
-  const filteredVictims = victims.filter(victim => {
-    if (!searchQuery) return true;
+  // Extract unique countries and industries for filter dropdowns
+  const countries = Array.from(new Set(victims
+    .map(victim => victim.country)
+    .filter(country => country !== null && country !== undefined && country !== "")))
+    .sort() as string[];
     
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      (victim.victim_name?.toLowerCase() || "").includes(searchLower) ||
-      (victim.group_name?.toLowerCase() || "").includes(searchLower) ||
-      (victim.country?.toLowerCase() || "").includes(searchLower) ||
-      (victim.industry?.toLowerCase() || "").includes(searchLower)
+  const industries = Array.from(new Set(victims
+    .map(victim => victim.industry)
+    .filter(industry => industry !== null && industry !== undefined && industry !== "")))
+    .sort() as string[];
+  
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchQuery("");
+    setCountryFilter("");
+    setIndustryFilter("");
+  };
+  
+  // Filter victims based on all criteria
+  const filteredVictims = victims.filter(victim => {
+    // Text search across multiple fields
+    const matchesSearch = !searchQuery ? true : (
+      (victim.victim_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (victim.group_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (victim.country?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (victim.industry?.toLowerCase() || "").includes(searchQuery.toLowerCase())
     );
+    
+    // Country filter
+    const matchesCountry = !countryFilter ? true : 
+      victim.country?.toLowerCase() === countryFilter.toLowerCase();
+    
+    // Industry filter
+    const matchesIndustry = !industryFilter ? true :
+      victim.industry?.toLowerCase() === industryFilter.toLowerCase();
+    
+    return matchesSearch && matchesCountry && matchesIndustry;
   });
   
   // Enhanced data processing to handle all possible field variations
@@ -180,20 +215,72 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Tìm kiếm nạn nhân, nhóm, quốc gia..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      <div className="flex flex-col gap-4">
+        {/* Search and filter toggle row */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Tìm kiếm nạn nhân, nhóm, quốc gia..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4" /> 
+            {showFilters ? "Ẩn Bộ Lọc" : "Hiển Thị Bộ Lọc"}
+          </Button>
         </div>
-        <Button variant="outline" className="flex items-center gap-2">
-          <Filter className="h-4 w-4" /> 
-          Lọc
-        </Button>
+
+        {/* Advanced filters section */}
+        {showFilters && (
+          <div className="p-4 border rounded-md bg-gray-50 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="country-filter" className="text-sm font-medium">Quốc Gia</label>
+              <Select value={countryFilter} onValueChange={setCountryFilter}>
+                <SelectTrigger id="country-filter">
+                  <SelectValue placeholder="Tất cả quốc gia" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Tất cả quốc gia</SelectItem>
+                  {countries.map(country => (
+                    <SelectItem key={country} value={country}>{country}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="industry-filter" className="text-sm font-medium">Ngành</label>
+              <Select value={industryFilter} onValueChange={setIndustryFilter}>
+                <SelectTrigger id="industry-filter">
+                  <SelectValue placeholder="Tất cả ngành" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Tất cả ngành</SelectItem>
+                  {industries.map(industry => (
+                    <SelectItem key={industry} value={industry}>{industry}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex items-end">
+              <Button 
+                variant="secondary" 
+                onClick={resetFilters}
+                className="w-full"
+              >
+                Xóa Bộ Lọc
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {sortedVictims.length === 0 && !loading && (
@@ -344,9 +431,22 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
           </Collapsible>
         </div>
       )}
-      
-      <div className="text-sm text-gray-500 text-right">
-        Hiển thị {visibleVictims.length} trong số {sortedVictims.length} nạn nhân
+
+      {/* Filter summary with count */}
+      <div className="text-sm text-gray-500 flex flex-wrap justify-between items-center">
+        <div>
+          {(searchQuery || countryFilter || industryFilter) && (
+            <span className="text-security">
+              Đang lọc: 
+              {searchQuery && <span className="ml-1">"{searchQuery}"</span>}
+              {countryFilter && <span className="ml-1">Quốc Gia: {countryFilter}</span>}
+              {industryFilter && <span className="ml-1">Ngành: {industryFilter}</span>}
+            </span>
+          )}
+        </div>
+        <div>
+          Hiển thị {visibleVictims.length} trong số {sortedVictims.length} nạn nhân
+        </div>
       </div>
     </div>
   );
