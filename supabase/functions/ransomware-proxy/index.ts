@@ -61,7 +61,7 @@ serve(async (req) => {
     let processedData = data;
     
     if (path === '/recentvictims' || path.startsWith('/groupvictims/') || path.includes('victim')) {
-      // Make sure each entry has at least a minimum set of properties
+      // Process the data to ensure proper formatting and 24-hour filtering
       processedData = Array.isArray(data) ? data.map(item => {
         // Extract victim name properly from the correct fields
         let victimName = null;

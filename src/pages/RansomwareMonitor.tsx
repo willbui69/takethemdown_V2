@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import RootLayout from "@/components/layout/RootLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -39,6 +40,24 @@ const RansomwareMonitor = () => {
     }));
   };
 
+  // Filter victims to only include those within the last 24 hours
+  const filterRecent24Hours = (victims: RansomwareVictim[]): RansomwareVictim[] => {
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+    return victims.filter(victim => {
+      if (!victim.published) return false;
+      
+      try {
+        const publishDate = new Date(victim.published);
+        return publishDate >= twentyFourHoursAgo && publishDate <= now;
+      } catch (err) {
+        console.error("Invalid date format for victim:", victim.victim_name, victim.published);
+        return false;
+      }
+    });
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -73,7 +92,10 @@ const RansomwareMonitor = () => {
       }
       
       if (todayVictimsResult.status === 'fulfilled') {
-        setRecentVictims(todayVictimsResult.value);
+        // Apply the 24-hour filter to recent victims
+        const recent24HourVictims = filterRecent24Hours(todayVictimsResult.value);
+        console.info(`Filtered ${recent24HourVictims.length} victims within the last 24 hours`);
+        setRecentVictims(recent24HourVictims);
       } else {
         console.error("Error fetching recent victims:", todayVictimsResult.reason);
         if (!error) {
