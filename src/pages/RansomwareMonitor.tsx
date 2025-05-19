@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { filterRecent24Hours } from "@/components/ransomware/utils/dataUtils";
 import { RansomwareHeader } from "@/components/ransomware/RansomwareHeader";
 import { InfoPanel } from "@/components/ransomware/InfoPanel";
-import { AdminPanel } from "@/components/ransomware/AdminPanel";
 import { VictimTabs } from "@/components/ransomware/VictimTabs";
 import { DataAboutSection } from "@/components/ransomware/DataAboutSection";
 import { GroupStatistics } from "@/components/ransomware/GroupStatistics";
@@ -21,7 +20,6 @@ const RansomwareMonitor = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isGeoBlocked, setIsGeoBlocked] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const loadData = async () => {
@@ -110,18 +108,10 @@ const RansomwareMonitor = () => {
           <RansomwareHeader 
             lastUpdated={lastUpdated}
             loading={loading}
-            showAdminPanel={showAdminPanel}
             onRefresh={loadData}
-            onToggleAdmin={() => setShowAdminPanel(!showAdminPanel)}
           />
 
           <InfoPanel isGeoBlocked={isGeoBlocked} error={null} />
-
-          {showAdminPanel && (
-            <div className="mb-8">
-              <AdminPanel />
-            </div>
-          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="md:col-span-2">

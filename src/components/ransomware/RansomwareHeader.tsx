@@ -1,21 +1,17 @@
 
 import { Button } from "@/components/ui/button";
-import { CirclePlus, CircleMinus, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 interface RansomwareHeaderProps {
   lastUpdated: Date | null;
   loading: boolean;
-  showAdminPanel: boolean;
   onRefresh: () => void;
-  onToggleAdmin: () => void;
 }
 
 export const RansomwareHeader = ({
   lastUpdated,
   loading,
-  showAdminPanel,
-  onRefresh,
-  onToggleAdmin
+  onRefresh
 }: RansomwareHeaderProps) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -39,21 +35,6 @@ export const RansomwareHeader = ({
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           Làm Mới Dữ Liệu
-        </Button>
-        <Button
-          variant="outline"
-          className="flex items-center gap-2"
-          onClick={onToggleAdmin}
-        >
-          {showAdminPanel ? (
-            <>
-              <CircleMinus className="h-4 w-4" /> Ẩn Bảng Quản Trị
-            </>
-          ) : (
-            <>
-              <CirclePlus className="h-4 w-4" /> Hiển Thị Bảng Quản Trị
-            </>
-          )}
         </Button>
       </div>
     </div>
