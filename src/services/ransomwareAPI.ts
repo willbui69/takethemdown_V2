@@ -1,183 +1,150 @@
 
 import { RansomwareGroup, RansomwareStat, RansomwareVictim } from "@/types/ransomware";
 import { toast } from "sonner";
+import { mockVictims, mockRecentVictims, mockGroups, mockStats } from "@/data/mockRansomwareData";
+import { supabase } from "@/integrations/supabase/client";
 
-// The API base URL for ransomware.live v2
-const API_BASE_URL = "https://api.ransomware.live/v2";
-const CORS_PROXY   = "https://corsproxy.io/?";
+// Flag to track if we're falling back to mock data
+let useMockData = false;
+
+// Base URL for the Edge Function
+const EDGE_FUNCTION_URL = "https://euswzjdcxrnuupcyiddb.supabase.co/functions/v1/ransomware-proxy";
 
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
-    const url = `${CORS_PROXY}${API_BASE_URL}/groups`;
-    const controller = new AbortController();
-    const timeoutId  = setTimeout(() => controller.abort(), 5000);
-
-    const response = await fetch(url, {
-      method: 'GET',
-      signal: controller.signal
+    const { data, error } = await supabase.functions.invoke('ransomware-proxy', {
+      body: { path: '/groups' }
     });
-    clearTimeout(timeoutId);
 
-    if (response.status === 403) {
-      // this will now catch the JSON error body correctly
-      const data = await response.json().catch(() => null);
-      if (data?.error?.message?.includes("Country blocked")) {
-        toast.error("Geographic restriction", {
-          description: "Your location is blocked from accessing ransomware.live data"
-        });
-        return false;
-      }
+    if (error) {
+      console.error("Error checking API availability via Edge Function:", error);
+      useMockData = true;
+      return false;
     }
 
-    console.log(`Ransomware.live API is ${response.ok ? "available" : "not available"}`);
-    return response.ok;
+    console.log("Edge Function is available");
+    useMockData = false;
+    return true;
   } catch (err) {
     console.error("Error checking API availability:", err);
+    useMockData = true;
     return false;
   }
 };
 
-// Helper function to build API URLs with CORS proxy - fixed to NOT use encodeURIComponent
-const getApiUrl = (endpoint: string): string => {
-  return `${CORS_PROXY}${API_BASE_URL}${endpoint}`;
+// Helper function to call the Edge Function
+const callEdgeFunction = async (endpoint: string) => {
+  try {
+    const response = await fetch(`${EDGE_FUNCTION_URL}${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Edge Function returned status ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`Error calling Edge Function with endpoint ${endpoint}:`, error);
+    throw error;
+  }
 };
 
 export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
+  if (useMockData) {
+    console.log("Using mock victim data");
+    return mockVictims;
+  }
+  
   try {
-    const response = await fetch(getApiUrl('/victims'));
-    
-    // Handle country blocking specific error
-    if (response.status === 403) {
-      const errorData = await response.json().catch(() => null);
-      if (errorData?.error?.message?.includes("Country blocked")) {
-        throw new Error("Geographic restriction: Your location is blocked from accessing ransomware.live data");
-      }
-    }
-    
-    if (!response.ok) {
-      throw new Error(`Error fetching victims: ${response.status}`);
-    }
-    
-    return await response.json();
+    const data = await callEdgeFunction('/victims');
+    return data;
   } catch (error) {
     console.error("Failed to fetch victims:", error);
-    const message = error instanceof Error && error.message.includes("Geographic restriction") 
-      ? "Geographic restriction: Your location is blocked from accessing victim data" 
-      : "Failed to fetch victim data. Please try again later.";
-    
-    toast.error(message);
-    throw error;
+    toast.error("Could not fetch victim data", {
+      description: "Falling back to demonstration data"
+    });
+    useMockData = true;
+    return mockVictims;
   }
 };
 
 export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVictim[]> => {
+  if (useMockData) {
+    console.log(`Using mock victim data for group ${group}`);
+    return mockVictims.filter(v => v.group_name === group);
+  }
+  
   try {
-    const response = await fetch(getApiUrl(`/victims/${group}`));
-    
-    // Handle country blocking specific error
-    if (response.status === 403) {
-      const errorData = await response.json().catch(() => null);
-      if (errorData?.error?.message?.includes("Country blocked")) {
-        throw new Error("Geographic restriction: Your location is blocked from accessing ransomware.live data");
-      }
-    }
-    
-    if (!response.ok) {
-      throw new Error(`Error fetching victims for group ${group}: ${response.status}`);
-    }
-    
-    return await response.json();
+    const data = await callEdgeFunction(`/victims/${group}`);
+    return data;
   } catch (error) {
     console.error(`Failed to fetch victims for group ${group}:`, error);
-    const message = error instanceof Error && error.message.includes("Geographic restriction") 
-      ? "Geographic restriction: Your location is blocked from accessing victim data" 
-      : `Failed to fetch victim data for ${group}. Please try again later.`;
-    
-    toast.error(message);
-    throw error;
+    toast.error("Could not fetch group data", {
+      description: "Falling back to demonstration data"
+    });
+    useMockData = true;
+    return mockVictims.filter(v => v.group_name === group);
   }
 };
 
 export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
+  if (useMockData) {
+    console.log("Using mock group data");
+    return mockGroups;
+  }
+  
   try {
-    const response = await fetch(getApiUrl('/groups'));
-    
-    // Handle country blocking specific error
-    if (response.status === 403) {
-      const errorData = await response.json().catch(() => null);
-      if (errorData?.error?.message?.includes("Country blocked")) {
-        throw new Error("Geographic restriction: Your location is blocked from accessing ransomware.live data");
-      }
-    }
-    
-    if (!response.ok) {
-      throw new Error(`Error fetching groups: ${response.status}`);
-    }
-    
-    return await response.json();
+    const data = await callEdgeFunction('/groups');
+    return data;
   } catch (error) {
     console.error("Failed to fetch groups:", error);
-    const message = error instanceof Error && error.message.includes("Geographic restriction") 
-      ? "Geographic restriction: Your location is blocked from accessing group data" 
-      : "Failed to fetch group data. Please try again later.";
-    
-    toast.error(message);
-    throw error;
+    toast.error("Could not fetch group data", {
+      description: "Falling back to demonstration data"
+    });
+    useMockData = true;
+    return mockGroups;
   }
 };
 
 export const fetchStats = async (): Promise<RansomwareStat[]> => {
+  if (useMockData) {
+    console.log("Using mock stats data");
+    return mockStats;
+  }
+  
   try {
-    const response = await fetch(getApiUrl('/stats'));
-    
-    // Handle country blocking specific error
-    if (response.status === 403) {
-      const errorData = await response.json().catch(() => null);
-      if (errorData?.error?.message?.includes("Country blocked")) {
-        throw new Error("Geographic restriction: Your location is blocked from accessing ransomware.live data");
-      }
-    }
-    
-    if (!response.ok) {
-      throw new Error(`Error fetching stats: ${response.status}`);
-    }
-    
-    return await response.json();
+    const data = await callEdgeFunction('/stats');
+    return data;
   } catch (error) {
     console.error("Failed to fetch stats:", error);
-    const message = error instanceof Error && error.message.includes("Geographic restriction") 
-      ? "Geographic restriction: Your location is blocked from accessing statistics data" 
-      : "Failed to fetch statistics data. Please try again later.";
-    
-    toast.error(message);
-    throw error;
+    toast.error("Could not fetch statistics data", {
+      description: "Falling back to demonstration data"
+    });
+    useMockData = true;
+    return mockStats;
   }
 };
 
 export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
+  if (useMockData) {
+    console.log("Using mock recent victims data");
+    return mockRecentVictims;
+  }
+  
   try {
-    const response = await fetch(getApiUrl('/today'));
-    
-    // Handle country blocking specific error
-    if (response.status === 403) {
-      const errorData = await response.json().catch(() => null);
-      if (errorData?.error?.message?.includes("Country blocked")) {
-        throw new Error("Geographic restriction: Your location is blocked from accessing ransomware.live data");
-      }
-    }
-    
-    if (!response.ok) {
-      throw new Error(`Error fetching recent victims: ${response.status}`);
-    }
-    
-    return await response.json();
+    const data = await callEdgeFunction('/today');
+    return data;
   } catch (error) {
     console.error("Failed to fetch recent victims:", error);
-    const message = error instanceof Error && error.message.includes("Geographic restriction") 
-      ? "Geographic restriction: Your location is blocked from accessing recent victim data" 
-      : "Failed to fetch recent victim data. Please try again later.";
-    
-    toast.error(message);
-    throw error;
+    toast.error("Could not fetch recent victim data", {
+      description: "Falling back to demonstration data"
+    });
+    useMockData = true;
+    return mockRecentVictims;
   }
 };

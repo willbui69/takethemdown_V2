@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { RansomwareGroup, RansomwareStat } from "@/types/ransomware";
 import { fetchGroups, fetchStats } from "@/services/ransomwareAPI";
@@ -42,15 +41,7 @@ export const GroupStatistics = () => {
           setGroups(groupsResult.value);
         } else {
           console.error("Error fetching groups:", groupsResult.reason);
-          
-          // Check if it's a geographic block
-          if (groupsResult.reason instanceof Error && 
-              groupsResult.reason.message.includes("Geographic restriction")) {
-            setIsGeoBlocked(true);
-            setError("Vị trí của bạn bị giới hạn truy cập dữ liệu từ ransomware.live.");
-          } else {
-            setError("Không thể tải dữ liệu nhóm");
-          }
+          setError("Không thể tải dữ liệu nhóm");
         }
         
         if (statsResult.status === 'fulfilled') {
@@ -58,8 +49,8 @@ export const GroupStatistics = () => {
         } else {
           console.error("Error fetching stats:", statsResult.reason);
           
-          // Only set error if not already set and not a geo-block (which we've already handled)
-          if (!isGeoBlocked && !error) {
+          // Only set error if not already set
+          if (!error) {
             setError("Không thể tải dữ liệu thống kê");
           }
         }

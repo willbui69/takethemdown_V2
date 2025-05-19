@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import RootLayout from "@/components/layout/RootLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,13 +28,15 @@ const RansomwareMonitor = () => {
       setError(null);
       setIsGeoBlocked(false);
       
-      // First check API availability
+      // First check API availability through our Edge Function
       const isAvailable = await checkApiAvailability();
       
       if (!isAvailable) {
-        setError("API ransomware.live hiện không khả dụng.");
+        setError("API hiện không khả dụng. Đang sử dụng dữ liệu mẫu.");
+        toast.warning("API không khả dụng", {
+          description: "Đang sử dụng dữ liệu mẫu thay thế."
+        });
         setLoading(false);
-        return;
       }
       
       // Using Promise.allSettled to continue even if one promise fails
@@ -48,24 +49,14 @@ const RansomwareMonitor = () => {
         setVictims(allVictimsResult.value);
       } else {
         console.error("Error fetching all victims:", allVictimsResult.reason);
-        
-        // Check if it's a geographic block
-        if (allVictimsResult.reason instanceof Error && 
-            allVictimsResult.reason.message.includes("Geographic restriction")) {
-          setIsGeoBlocked(true);
-          setError("Vị trí của bạn bị giới hạn truy cập dữ liệu từ ransomware.live.");
-        } else {
-          setError("Không thể tải dữ liệu nạn nhân.");
-        }
+        setError("Không thể tải dữ liệu nạn nhân.");
       }
       
       if (todayVictimsResult.status === 'fulfilled') {
         setRecentVictims(todayVictimsResult.value);
       } else {
         console.error("Error fetching recent victims:", todayVictimsResult.reason);
-        
-        // Only set error if not already set and not a geo-block (which we've already handled)
-        if (!isGeoBlocked && !error) {
+        if (!error) {
           setError("Không thể tải dữ liệu nạn nhân gần đây.");
         }
       }
