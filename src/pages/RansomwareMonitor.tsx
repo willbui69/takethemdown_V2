@@ -233,7 +233,7 @@ const RansomwareMonitor = () => {
           <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
             <h3 className="text-xl font-semibold mb-2">Về Dữ Liệu Này</h3>
             <p className="text-gray-700 mb-4">
-              Dữ liệu này được lấy từ ransomware.live, trang theo dõi các nhóm ransomware và nạn nhân của họ.
+              Dữ liệu này được lấy từ ransomware.live, trang theo dõi các nhóm ransomware và nạn nhân trên toàn thế giới.
               Thông tin được cập nhật tự động mỗi 4 giờ để cung cấp tổng quan mới nhất về hoạt động ransomware.
             </p>
             <p className="text-gray-700">
