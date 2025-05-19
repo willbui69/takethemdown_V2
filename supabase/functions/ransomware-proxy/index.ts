@@ -42,10 +42,9 @@ function isOriginAllowed(origin: string | null): boolean {
     if (allowedOrigin.includes('*')) {
       // Fix: Completely rewritten pattern creation to avoid syntax errors
       const patternString = allowedOrigin
-        .replace(/\./g, '\\.')  // Escape dots
-        .replace(/\*/g, '.*');  // Replace * with .*
+        .replace(/\./g, '\\.'); // Escape dots
       
-      const pattern = new RegExp(`^${patternString}$`);
+      const pattern = new RegExp(`^${patternString.replace(/\*/g, '.*')}$`);
       return pattern.test(origin);
     }
     return false;
