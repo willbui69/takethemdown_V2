@@ -1,3 +1,4 @@
+
 import { RansomwareGroup, RansomwareStat, RansomwareVictim } from "@/types/ransomware";
 import { toast } from "sonner";
 import { mockVictims, mockRecentVictims, mockGroups, mockStats } from "@/data/mockRansomwareData";
@@ -9,6 +10,9 @@ let useMockData = false;
 // Base URL for the Edge Function
 const EDGE_FUNCTION_URL = "https://euswzjdcxrnuupcyiddb.supabase.co/functions/v1/ransomware-proxy";
 
+// Supabase anon key - this is public and safe to include in client-side code
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE";
+
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
     console.log("Checking API availability via Edge Function");
@@ -17,7 +21,7 @@ export const checkApiAvailability = async (): Promise<boolean> => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE'
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
       }
     });
 
@@ -45,7 +49,7 @@ const callEdgeFunction = async (endpoint: string) => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE'
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
       }
     });
 

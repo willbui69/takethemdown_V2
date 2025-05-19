@@ -18,6 +18,16 @@ serve(async (req) => {
   }
 
   try {
+    // Check authorization
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      console.error("Missing authorization header in request");
+      return new Response(
+        JSON.stringify({ code: 401, message: "Missing authorization header" }),
+        { status: 401, headers: corsHeaders }
+      );
+    }
+    
     let path = "";
     
     // Check if the request has a body and try to extract the path from it
@@ -99,6 +109,6 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: corsHeaders }
-    );
-  }
+      );
+    }
 });
