@@ -15,11 +15,32 @@ const ALLOWED_ORIGINS = [
   "https://euswzjdcxrnuupcyiddb.supabase.co",
   "https://ransomware-monitor.vercel.app",
   "http://localhost:3000",
-  "http://localhost:5173"
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:54321",
+  "https://lovableproject.com",
+  "https://*.lovableproject.com"
 ];
 
+// Check if origin is allowed with wildcard support
+function isOriginAllowed(origin: string | null): boolean {
+  if (!origin) return false;
+  
+  // First check exact matches
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  
+  // Then check for wildcard matches
+  return ALLOWED_ORIGINS.some(allowedOrigin => {
+    if (allowedOrigin.includes('*')) {
+      const pattern = allowedOrigin.replace(/\./g, '\\.').replace(/\*/g, '.*');
+      return new RegExp(`^${pattern}$`).test(origin);
+    }
+    return false;
+  });
+}
+
 // Simple rate limiting implementation
-const RATE_LIMIT = 10; // requests per window
+const RATE_LIMIT = 20; // requests per window
 const RATE_WINDOW = 60000; // 1 minute in ms
 const ipRequests = new Map<string, number[]>();
 
@@ -73,16 +94,20 @@ serve(async (req) => {
     const origin = req.headers.get("Origin");
     let isLovablePreview = false;
     
+    // If origin is provided, validate it
     if (origin) {
       isLovablePreview = origin.includes("lovableproject.com");
       
-      if (!isLovablePreview && !ALLOWED_ORIGINS.includes(origin)) {
+      if (!isLovablePreview && !isOriginAllowed(origin)) {
         console.warn("Blocked request from unauthorized origin:", origin);
         return new Response(
           JSON.stringify({ error: "Unauthorized", message: "Origin not allowed" }), 
           { status: 403, headers }
         );
       }
+      
+      // Set the actual origin in CORS headers for non-preflight requests
+      headers["Access-Control-Allow-Origin"] = origin;
     }
     
     // Validate request method
@@ -165,7 +190,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: "Internal server error", 
-          message: "An error occurred processing your request" 
+          message: "An error occurred processing your request",
+          details: err.message
         }), 
         { status: 500, headers }
       );
@@ -174,7 +200,11 @@ serve(async (req) => {
     // Catch any unexpected errors in the request handling
     console.error("Unexpected error in edge function:", err);
     return new Response(
-      JSON.stringify({ error: "Server error", message: "An unexpected error occurred" }), 
+      JSON.stringify({ 
+        error: "Server error", 
+        message: "An unexpected error occurred",
+        details: err.message 
+      }), 
       { status: 500, headers }
     );
   }

@@ -4,8 +4,11 @@
 // Flag to track if we're falling back to mock data
 export let useMockData = false;
 
-// Base URL for the Edge Function
+// Base URL for the Edge Function - ensure it uses HTTPS for security
 export const EDGE_FUNCTION_URL = "https://euswzjdcxrnuupcyiddb.supabase.co/functions/v1/ransomware-proxy";
+
+// URL for local development testing - utilize to test in development mode
+export const LOCAL_EDGE_FUNCTION_URL = "http://localhost:54321/functions/v1/ransomware-proxy";
 
 // Supabase anon key - this is public and safe to include in client-side code
 export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE";
@@ -39,6 +42,23 @@ function hashMessage(message: string): string {
   return hash.toString(36);
 }
 
+// Get the appropriate Edge Function URL based on environment
+function getEdgeFunctionUrl() {
+  // Check for development environment
+  const isDevelopment = window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1';
+  
+  // For lovable preview environments always use production URL
+  const isLovablePreview = window.location.hostname.includes("lovableproject.com");
+  
+  if (isDevelopment && !isLovablePreview) {
+    console.log("Using local Edge Function URL");
+    return LOCAL_EDGE_FUNCTION_URL;
+  }
+
+  return EDGE_FUNCTION_URL;
+}
+
 // Helper function to call the Edge Function with retry mechanism and timeout
 export const callEdgeFunction = async (endpoint: string) => {
   // Check if we're in a backoff period after multiple failures
@@ -54,7 +74,7 @@ export const callEdgeFunction = async (endpoint: string) => {
     
     // Set a timeout for the request
     const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => abortController.abort(), 15000); // 15 second timeout
     
     // Generate request signature
     const timestamp = Math.floor(Date.now() / 1000);
@@ -62,7 +82,11 @@ export const callEdgeFunction = async (endpoint: string) => {
     
     console.log(`Generated signature: ${signature} for timestamp: ${timestamp}`);
     
-    const response = await fetch(`${EDGE_FUNCTION_URL}${endpoint}`, {
+    // Determine the correct URL for the Edge Function
+    const edgeFunctionUrl = getEdgeFunctionUrl();
+    console.log(`Using Edge Function URL: ${edgeFunctionUrl}`);
+    
+    const response = await fetch(`${edgeFunctionUrl}${endpoint}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -131,8 +155,11 @@ export const checkApiAvailability = async (): Promise<boolean> => {
     
     console.log(`API check signature: ${signature} for timestamp: ${timestamp}`);
     
+    // Determine the correct URL for the Edge Function
+    const edgeFunctionUrl = getEdgeFunctionUrl();
+    
     // Call the edge function with the /groups endpoint path
-    const response = await fetch(`${EDGE_FUNCTION_URL}/groups`, {
+    const response = await fetch(`${edgeFunctionUrl}/groups`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -12,6 +12,7 @@ import { VictimTabs } from "@/components/ransomware/VictimTabs";
 import { DataAboutSection } from "@/components/ransomware/DataAboutSection";
 import { GroupStatistics } from "@/components/ransomware/GroupStatistics";
 import { SubscriptionForm } from "@/components/ransomware/SubscriptionForm";
+import { EDGE_FUNCTION_URL } from "@/services/api/ransomwareConfig";
 
 const RansomwareMonitor = () => {
   const [victims, setVictims] = useState<RansomwareVictim[]>([]);
@@ -32,24 +33,35 @@ const RansomwareMonitor = () => {
       
       console.info("Fetching ransomware data for scheduled 4-hour update...");
       
+      // Collect system information for debugging
+      const systemInfo = {
+        userAgent: navigator.userAgent,
+        connectionType: (navigator as any).connection?.effectiveType || 'unknown',
+        onLine: navigator.onLine,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        apiEndpoint: EDGE_FUNCTION_URL
+      };
+      
+      setDebugInfo(`System Info:\n${JSON.stringify(systemInfo, null, 2)}\n\nConnection Status: ${navigator.onLine ? 'Online' : 'Offline'}`);
+      
       // First check API availability through our Edge Function
       let isAvailable;
       try {
         isAvailable = await checkApiAvailability();
         if (!isAvailable) {
-          setDebugInfo("API availability check failed - using mock data");
+          setDebugInfo(prev => `${prev}\n\nAPI availability check failed - using mock data`);
           setError("API hiện không khả dụng. Đang sử dụng dữ liệu mẫu.");
           toast.warning("API không khả dụng", {
             description: "Đang sử dụng dữ liệu mẫu thay thế."
           });
         } else {
-          setDebugInfo("API availability check passed");
+          setDebugInfo(prev => `${prev}\n\nAPI availability check passed`);
         }
       } catch (err) {
         console.error("Error during API availability check:", err);
-        setDebugInfo(`API availability error: ${err.message}`);
+        setDebugInfo(prev => `${prev}\n\nAPI availability error: ${err.message}`);
         isAvailable = false;
-        setError("Không thể kiểm tra API. Đang sử dụng dữ liệu mẫu.");
+        setError(`Không thể kiểm tra API: ${err.message}. Đang sử dụng dữ liệu mẫu.`);
         toast.warning("Lỗi kiểm tra API", {
           description: "Đang sử dụng dữ liệu mẫu thay thế."
         });
@@ -66,13 +78,14 @@ const RansomwareMonitor = () => {
       if (allVictimsResult.status === 'fulfilled') {
         setVictims(allVictimsResult.value);
         console.info(`Fetched ${allVictimsResult.value.length} victims in scheduled update`);
+        setDebugInfo(prev => `${prev}\n\nSuccessfully fetched ${allVictimsResult.value.length} victims`);
       } else {
         console.error("Error fetching all victims:", allVictimsResult.reason);
         
         // Append to debug info
-        setDebugInfo(prev => `${prev || ""}\n- All victims fetch error: ${allVictimsResult.reason?.message || "Unknown error"}`);
+        setDebugInfo(prev => `${prev || ""}\n\nAll victims fetch error: ${allVictimsResult.reason?.message || "Unknown error"}`);
         
-        setError("Không thể tải dữ liệu nạn nhân.");
+        setError(`Không thể tải dữ liệu nạn nhân: ${allVictimsResult.reason?.message || "Lỗi không xác định"}`);
         toast.error("Lỗi tải dữ liệu", {
           description: "Không thể tải dữ liệu nạn nhân tổng hợp."
         });
@@ -83,14 +96,15 @@ const RansomwareMonitor = () => {
         const recent24HourVictims = filterRecent24Hours(todayVictimsResult.value);
         console.info(`Filtered ${recent24HourVictims.length} victims within the last 24 hours`);
         setRecentVictims(recent24HourVictims);
+        setDebugInfo(prev => `${prev}\n\nSuccessfully fetched ${recent24HourVictims.length} recent victims`);
       } else {
         console.error("Error fetching recent victims:", todayVictimsResult.reason);
         
         // Append to debug info
-        setDebugInfo(prev => `${prev || ""}\n- Recent victims fetch error: ${todayVictimsResult.reason?.message || "Unknown error"}`);
+        setDebugInfo(prev => `${prev || ""}\n\nRecent victims fetch error: ${todayVictimsResult.reason?.message || "Unknown error"}`);
         
         if (!error) {
-          setError("Không thể tải dữ liệu nạn nhân gần đây.");
+          setError(`Không thể tải dữ liệu nạn nhân gần đây: ${todayVictimsResult.reason?.message || "Lỗi không xác định"}`);
           toast.error("Lỗi tải dữ liệu", {
             description: "Không thể tải dữ liệu nạn nhân gần đây."
           });
@@ -100,14 +114,15 @@ const RansomwareMonitor = () => {
       if (vietnamVictimsResult.status === 'fulfilled') {
         setVietnameseVictims(vietnamVictimsResult.value);
         console.info(`Fetched ${vietnamVictimsResult.value.length} Vietnamese victims`);
+        setDebugInfo(prev => `${prev}\n\nSuccessfully fetched ${vietnamVictimsResult.value.length} Vietnamese victims`);
       } else {
         console.error("Error fetching Vietnamese victims:", vietnamVictimsResult.reason);
         
         // Append to debug info
-        setDebugInfo(prev => `${prev || ""}\n- Vietnamese victims fetch error: ${vietnamVictimsResult.reason?.message || "Unknown error"}`);
+        setDebugInfo(prev => `${prev || ""}\n\nVietnamese victims fetch error: ${vietnamVictimsResult.reason?.message || "Unknown error"}`);
         
         if (!error) {
-          setError("Không thể tải dữ liệu nạn nhân Việt Nam.");
+          setError(`Không thể tải dữ liệu nạn nhân Việt Nam: ${vietnamVictimsResult.reason?.message || "Lỗi không xác định"}`);
           toast.error("Lỗi tải dữ liệu", {
             description: "Không thể tải dữ liệu nạn nhân Việt Nam."
           });
@@ -119,7 +134,7 @@ const RansomwareMonitor = () => {
     } catch (err) {
       console.error("Error fetching data:", err);
       setDebugInfo(`General fetch error: ${err.message}`);
-      setError("Không thể tải dữ liệu ransomware. Vui lòng thử lại sau.");
+      setError(`Không thể tải dữ liệu ransomware: ${err.message}. Vui lòng thử lại sau.`);
       toast.error("Lỗi", {
         description: "Đã xảy ra lỗi khi tải dữ liệu. Sử dụng dữ liệu mẫu."
       });
