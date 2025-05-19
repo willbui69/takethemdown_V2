@@ -1,19 +1,24 @@
 
+import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ShieldAlert, Bug } from "lucide-react";
+import { ShieldAlert, Bug, Code } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface InfoPanelProps {
   isGeoBlocked: boolean;
   error: string | null;
+  debugInfo?: string | null;
 }
 
-export const InfoPanel = ({ isGeoBlocked, error }: InfoPanelProps) => {
-  if (!isGeoBlocked && !error) return null;
+export const InfoPanel = ({ isGeoBlocked, error, debugInfo }: InfoPanelProps) => {
+  const [showDebug, setShowDebug] = useState(false);
+  
+  if (!isGeoBlocked && !error && !debugInfo) return null;
   
   return (
-    <>
+    <div className="mb-6 space-y-4">
       {isGeoBlocked && (
-        <Alert variant="destructive" className="mb-6">
+        <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Giới Hạn Địa Lý</AlertTitle>
           <AlertDescription>
@@ -23,11 +28,31 @@ export const InfoPanel = ({ isGeoBlocked, error }: InfoPanelProps) => {
       )}
       
       {error && (
-        <div className="text-center py-8 text-amber-500 flex flex-col items-center gap-2">
+        <div className="text-center py-4 text-amber-500 flex flex-col items-center gap-2">
           <Bug className="h-10 w-10" />
           {error}
+          
+          {debugInfo && (
+            <div className="mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDebug(!showDebug)}
+                className="flex items-center gap-1"
+              >
+                <Code className="h-4 w-4" />
+                {showDebug ? "Ẩn thông tin gỡ lỗi" : "Hiện thông tin gỡ lỗi"}
+              </Button>
+              
+              {showDebug && (
+                <div className="mt-3 p-3 bg-zinc-100 border border-zinc-200 rounded-md text-xs font-mono text-left text-zinc-700 whitespace-pre-wrap">
+                  {debugInfo}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
-    </>
+    </div>
   );
 };

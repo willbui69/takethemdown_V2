@@ -21,24 +21,38 @@ const RansomwareMonitor = () => {
   const [error, setError] = useState<string | null>(null);
   const [isGeoBlocked, setIsGeoBlocked] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
       setIsGeoBlocked(false);
+      setDebugInfo(null);
       
       console.info("Fetching ransomware data for scheduled 4-hour update...");
       
       // First check API availability through our Edge Function
-      const isAvailable = await checkApiAvailability();
-      
-      if (!isAvailable) {
-        setError("API hiện không khả dụng. Đang sử dụng dữ liệu mẫu.");
-        toast.warning("API không khả dụng", {
+      let isAvailable;
+      try {
+        isAvailable = await checkApiAvailability();
+        if (!isAvailable) {
+          setDebugInfo("API availability check failed - using mock data");
+          setError("API hiện không khả dụng. Đang sử dụng dữ liệu mẫu.");
+          toast.warning("API không khả dụng", {
+            description: "Đang sử dụng dữ liệu mẫu thay thế."
+          });
+        } else {
+          setDebugInfo("API availability check passed");
+        }
+      } catch (err) {
+        console.error("Error during API availability check:", err);
+        setDebugInfo(`API availability error: ${err.message}`);
+        isAvailable = false;
+        setError("Không thể kiểm tra API. Đang sử dụng dữ liệu mẫu.");
+        toast.warning("Lỗi kiểm tra API", {
           description: "Đang sử dụng dữ liệu mẫu thay thế."
         });
-        setLoading(false);
       }
       
       // Using Promise.allSettled to continue even if one promise fails
@@ -48,12 +62,20 @@ const RansomwareMonitor = () => {
         fetchVietnameseVictims()
       ]);
       
+      // Process results with better error handling
       if (allVictimsResult.status === 'fulfilled') {
         setVictims(allVictimsResult.value);
         console.info(`Fetched ${allVictimsResult.value.length} victims in scheduled update`);
       } else {
         console.error("Error fetching all victims:", allVictimsResult.reason);
+        
+        // Append to debug info
+        setDebugInfo(prev => `${prev || ""}\n- All victims fetch error: ${allVictimsResult.reason?.message || "Unknown error"}`);
+        
         setError("Không thể tải dữ liệu nạn nhân.");
+        toast.error("Lỗi tải dữ liệu", {
+          description: "Không thể tải dữ liệu nạn nhân tổng hợp."
+        });
       }
       
       if (todayVictimsResult.status === 'fulfilled') {
@@ -63,8 +85,15 @@ const RansomwareMonitor = () => {
         setRecentVictims(recent24HourVictims);
       } else {
         console.error("Error fetching recent victims:", todayVictimsResult.reason);
+        
+        // Append to debug info
+        setDebugInfo(prev => `${prev || ""}\n- Recent victims fetch error: ${todayVictimsResult.reason?.message || "Unknown error"}`);
+        
         if (!error) {
           setError("Không thể tải dữ liệu nạn nhân gần đây.");
+          toast.error("Lỗi tải dữ liệu", {
+            description: "Không thể tải dữ liệu nạn nhân gần đây."
+          });
         }
       }
       
@@ -73,8 +102,15 @@ const RansomwareMonitor = () => {
         console.info(`Fetched ${vietnamVictimsResult.value.length} Vietnamese victims`);
       } else {
         console.error("Error fetching Vietnamese victims:", vietnamVictimsResult.reason);
+        
+        // Append to debug info
+        setDebugInfo(prev => `${prev || ""}\n- Vietnamese victims fetch error: ${vietnamVictimsResult.reason?.message || "Unknown error"}`);
+        
         if (!error) {
           setError("Không thể tải dữ liệu nạn nhân Việt Nam.");
+          toast.error("Lỗi tải dữ liệu", {
+            description: "Không thể tải dữ liệu nạn nhân Việt Nam."
+          });
         }
       }
       
@@ -82,7 +118,11 @@ const RansomwareMonitor = () => {
       
     } catch (err) {
       console.error("Error fetching data:", err);
+      setDebugInfo(`General fetch error: ${err.message}`);
       setError("Không thể tải dữ liệu ransomware. Vui lòng thử lại sau.");
+      toast.error("Lỗi", {
+        description: "Đã xảy ra lỗi khi tải dữ liệu. Sử dụng dữ liệu mẫu."
+      });
     } finally {
       setLoading(false);
     }
@@ -111,7 +151,11 @@ const RansomwareMonitor = () => {
             onRefresh={loadData}
           />
 
-          <InfoPanel isGeoBlocked={isGeoBlocked} error={null} />
+          <InfoPanel 
+            isGeoBlocked={isGeoBlocked} 
+            error={error} 
+            debugInfo={debugInfo}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="md:col-span-2">

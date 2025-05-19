@@ -28,7 +28,7 @@ function generateSignature(path: string, timestamp: number): string {
   return hashMessage(message);
 }
 
-// Simple hash function - must match the one in the Edge Function
+// Simple hash function - matched to the one in the Edge Function
 function hashMessage(message: string): string {
   let hash = 0;
   for (let i = 0; i < message.length; i++) {
@@ -60,6 +60,8 @@ export const callEdgeFunction = async (endpoint: string) => {
     const timestamp = Math.floor(Date.now() / 1000);
     const signature = generateSignature(endpoint, timestamp);
     
+    console.log(`Generated signature: ${signature} for timestamp: ${timestamp}`);
+    
     const response = await fetch(`${EDGE_FUNCTION_URL}${endpoint}`, {
       method: 'GET',
       headers: {
@@ -82,7 +84,7 @@ export const callEdgeFunction = async (endpoint: string) => {
 
     // Handle unauthorized access
     if (response.status === 401 || response.status === 403) {
-      console.error("Authorization error with Edge Function");
+      console.error("Authorization error with Edge Function:", await response.text());
       useMockData = true;
       throw new Error("API access unauthorized. Using mock data instead.");
     }
@@ -92,7 +94,8 @@ export const callEdgeFunction = async (endpoint: string) => {
       consecutiveFailures++;
       lastFailureTime = Date.now();
       
-      console.error(`Edge Function returned status ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Edge Function returned status ${response.status}: ${errorText}`);
       throw new Error(`API request failed with status: ${response.status}`);
     }
 
@@ -126,6 +129,8 @@ export const checkApiAvailability = async (): Promise<boolean> => {
     const timestamp = Math.floor(Date.now() / 1000);
     const signature = generateSignature("/groups", timestamp);
     
+    console.log(`API check signature: ${signature} for timestamp: ${timestamp}`);
+    
     // Call the edge function with the /groups endpoint path
     const response = await fetch(`${EDGE_FUNCTION_URL}/groups`, {
       method: 'GET',
@@ -140,7 +145,8 @@ export const checkApiAvailability = async (): Promise<boolean> => {
     });
 
     if (!response.ok) {
-      console.error("Edge Function returned status", response.status);
+      const errorText = await response.text();
+      console.error("Edge Function returned status", response.status, errorText);
       useMockData = true;
       return false;
     }

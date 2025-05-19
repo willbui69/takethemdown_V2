@@ -10,7 +10,7 @@ export const API_REQUEST_SECRET = "ransomware-monitor-42735919";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-request-signature",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-request-signature, x-request-timestamp",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Content-Type": "application/json",
 };
@@ -46,38 +46,51 @@ export const securityHeaders = {
 // Get timestamp for validating request freshness
 export const getTimestamp = () => Math.floor(Date.now() / 1000);
 
-// Create a signature for request validation
+// Create a signature for request validation - simplified for compatibility
 export const generateSignature = (path: string, timestamp: number): string => {
   // This is a simple hash-based signature for demonstration
-  // In production, use a proper HMAC implementation
+  // Using a simpler implementation for better client-server compatibility
   const message = `${path}:${timestamp}:${API_REQUEST_SECRET}`;
   return hashMessage(message);
 };
 
-// Validate incoming request signature
+// Validate incoming request signature with more lenient timing
 export const validateSignature = (
   signature: string | null, 
   path: string, 
   timestamp: number
 ): boolean => {
-  if (!signature) return false;
+  if (!signature) {
+    console.log("Missing signature in request");
+    return false;
+  }
   
-  // Allow a 5-minute window for timestamp to account for clock drift
+  // Allow a wider 15-minute window for timestamp to account for clock drift and delays
   const now = getTimestamp();
-  if (Math.abs(now - timestamp) > 300) return false;
+  if (Math.abs(now - timestamp) > 900) {
+    console.log(`Timestamp too old or in future: ${timestamp}, current: ${now}, diff: ${Math.abs(now - timestamp)}`);
+    return false;
+  }
   
   const expectedSignature = generateSignature(path, timestamp);
-  return signature === expectedSignature;
+  
+  if (signature !== expectedSignature) {
+    console.log(`Invalid signature: ${signature}, expected: ${expectedSignature}`);
+    return false;
+  }
+  
+  return true;
 };
 
-// Simple hash function for signatures
-// In production, use crypto.subtle or similar for proper HMAC
+// Simple hash function for signatures that's identical on client and server
 function hashMessage(message: string): string {
+  // Simplified hash algorithm that works consistently across platforms
   let hash = 0;
   for (let i = 0; i < message.length; i++) {
     const char = message.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash; // Convert to 32bit integer
   }
+  // Return as string that can be safely used in headers
   return hash.toString(36);
 }

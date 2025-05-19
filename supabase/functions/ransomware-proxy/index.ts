@@ -60,90 +60,121 @@ function checkRateLimit(ip: string): boolean {
 serve(async (req) => {
   const headers = { ...corsHeaders, ...securityHeaders };
   
-  // Always handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers });
-  }
-  
-  // Validate request origin
-  const origin = req.headers.get("Origin");
-  if (origin && !ALLOWED_ORIGINS.includes(origin) && !origin.includes("lovableproject.com")) {
-    console.warn("Blocked request from unauthorized origin:", origin);
-    return new Response(
-      JSON.stringify({ error: "Unauthorized", message: "Origin not allowed" }), 
-      { status: 403, headers }
-    );
-  }
-  
-  // Validate request method
-  if (req.method !== "GET") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed", message: "Only GET requests are permitted" }), 
-      { status: 405, headers }
-    );
-  }
-  
-  // Validate request signature (except for preview environments)
-  if (!origin?.includes("lovableproject.com")) {
-    const requestTimestamp = Number(req.headers.get("x-request-timestamp") || "0");
-    const signature = req.headers.get("x-request-signature");
-    const url = new URL(req.url);
-    const path = url.pathname.replace(/^\/ransomware-proxy/, "");  // Remove function prefix from path
-
-    if (!validateSignature(signature, path, requestTimestamp)) {
-      console.warn("Invalid signature for request to:", path);
+  try {
+    console.log(`Request received: ${req.method} ${new URL(req.url).pathname}`);
+    
+    // Always handle CORS preflight
+    if (req.method === "OPTIONS") {
+      console.log("Handling CORS preflight request");
+      return new Response(null, { headers });
+    }
+    
+    // Validate request origin
+    const origin = req.headers.get("Origin");
+    let isLovablePreview = false;
+    
+    if (origin) {
+      isLovablePreview = origin.includes("lovableproject.com");
+      
+      if (!isLovablePreview && !ALLOWED_ORIGINS.includes(origin)) {
+        console.warn("Blocked request from unauthorized origin:", origin);
+        return new Response(
+          JSON.stringify({ error: "Unauthorized", message: "Origin not allowed" }), 
+          { status: 403, headers }
+        );
+      }
+    }
+    
+    // Validate request method
+    if (req.method !== "GET") {
+      console.warn(`Method not allowed: ${req.method}`);
       return new Response(
-        JSON.stringify({ error: "Unauthorized", message: "Invalid request signature" }), 
-        { status: 401, headers }
+        JSON.stringify({ error: "Method not allowed", message: "Only GET requests are permitted" }), 
+        { status: 405, headers }
       );
     }
-  }
-  
-  // Get client IP for rate limiting
-  const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
-
-  // Apply rate limiting
-  if (!checkRateLimit(clientIP)) {
-    return new Response(
-      JSON.stringify({ error: "Too many requests", message: "Rate limit exceeded. Try again later." }), 
-      { status: 429, headers }
-    );
-  }
-
-  const url = new URL(req.url);
-  const path = url.pathname.replace(/^\/ransomware-proxy/, "");  // Remove function prefix from path
-  const query = url.search;
-
-  // Validate requested path against allowed patterns
-  if (!ALLOWED.some(rx => rx.test(path))) {
-    console.error("Blocked unauthorized path:", path, "from IP:", clientIP);
-    return new Response(
-      JSON.stringify({ error: "Not found", message: "The requested resource does not exist" }), 
-      { status: 404, headers }
-    );
-  }
-
-  const target = `${API_BASE_URL}${path}${query}`;
-  console.log("Proxy →", target);
-
-  try {
-    const apiRes = await fetch(target, { 
-      headers: { 
-        "User-Agent": "RansomwareMonitor/1.0",
-        "Accept": "application/json",
-        "X-Client-Source": "ransomware-monitor-app" // Add a source identifier
-      },
-      signal: AbortSignal.timeout(15000) // 15 second timeout
-    });
     
-    return await handleApiResponse(apiRes, path);
+    // Get URL parts
+    const url = new URL(req.url);
+    const path = url.pathname.replace(/^\/ransomware-proxy/, "");  // Remove function prefix from path
+    const query = url.search;
+
+    console.log(`Processing request for path: ${path}`);
+    
+    // Validate request signature (except for preview environments)
+    if (!isLovablePreview) {
+      const requestTimestamp = Number(req.headers.get("x-request-timestamp") || "0");
+      const signature = req.headers.get("x-request-signature");
+
+      console.log(`Validating signature: ${signature}, timestamp: ${requestTimestamp}, path: ${path}`);
+
+      if (!validateSignature(signature, path, requestTimestamp)) {
+        console.warn(`Invalid signature for request to: ${path}`);
+        return new Response(
+          JSON.stringify({ 
+            error: "Unauthorized", 
+            message: "Invalid request signature",
+            details: "Signature validation failed. Check client implementation."
+          }), 
+          { status: 401, headers }
+        );
+      }
+      
+      console.log("Signature validation passed");
+    } else {
+      console.log("Skipping signature validation for Lovable preview");
+    }
+    
+    // Get client IP for rate limiting
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+
+    // Apply rate limiting
+    if (!checkRateLimit(clientIP)) {
+      console.warn(`Rate limit exceeded for IP: ${clientIP}`);
+      return new Response(
+        JSON.stringify({ error: "Too many requests", message: "Rate limit exceeded. Try again later." }), 
+        { status: 429, headers }
+      );
+    }
+
+    // Validate requested path against allowed patterns
+    if (!ALLOWED.some(rx => rx.test(path))) {
+      console.error(`Blocked unauthorized path: ${path}, from IP: ${clientIP}`);
+      return new Response(
+        JSON.stringify({ error: "Not found", message: "The requested resource does not exist" }), 
+        { status: 404, headers }
+      );
+    }
+
+    const target = `${API_BASE_URL}${path}${query}`;
+    console.log(`Proxy → ${target}`);
+
+    try {
+      const apiRes = await fetch(target, { 
+        headers: { 
+          "User-Agent": "RansomwareMonitor/1.0",
+          "Accept": "application/json",
+          "X-Client-Source": "ransomware-monitor-app" // Add a source identifier
+        },
+        signal: AbortSignal.timeout(15000) // 15 second timeout
+      });
+      
+      return await handleApiResponse(apiRes, path);
+    } catch (err) {
+      console.error(`Proxy error for ${path}:`, err.message);
+      return new Response(
+        JSON.stringify({ 
+          error: "Internal server error", 
+          message: "An error occurred processing your request" 
+        }), 
+        { status: 500, headers }
+      );
+    }
   } catch (err) {
-    console.error("Proxy error:", err.message);
+    // Catch any unexpected errors in the request handling
+    console.error("Unexpected error in edge function:", err);
     return new Response(
-      JSON.stringify({ 
-        error: "Internal server error", 
-        message: "An error occurred processing your request" 
-      }), 
+      JSON.stringify({ error: "Server error", message: "An unexpected error occurred" }), 
       { status: 500, headers }
     );
   }
