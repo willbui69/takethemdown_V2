@@ -69,8 +69,8 @@ serve(async (req) => {
     if (Array.isArray(data) && data.length > 0) {
       console.log("Sample data item:", data[0]);
       
-      // More detailed logging for recentvictims endpoint
-      if (path === "/recentvictims" && Array.isArray(data) && data.length > 0) {
+      // More detailed logging for all endpoints that return victim data
+      if ((path === "/recentvictims" || path.startsWith("/groupvictims/")) && Array.isArray(data) && data.length > 0) {
         const sample = data[0];
         console.log("Fields in victim data:", Object.keys(sample));
         console.log("Victim data sample values:", {

@@ -4,7 +4,7 @@ import { RansomwareVictim } from "@/types/ransomware";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, AlertTriangle } from "lucide-react";
+import { Search, Filter, AlertTriangle, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface VictimsTableProps {
@@ -16,6 +16,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<keyof RansomwareVictim>("published");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [displayLimit, setDisplayLimit] = useState(10);
   
   const handleSort = (field: keyof RansomwareVictim) => {
     if (sortField === field) {
@@ -60,6 +61,14 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     if (fieldA > fieldB) return sortDirection === "asc" ? 1 : -1;
     return 0;
   });
+
+  // Limit the number of displayed victims
+  const displayedVictims = sortedVictims.slice(0, displayLimit);
+  const hasMoreVictims = sortedVictims.length > displayLimit;
+
+  const handleShowMore = () => {
+    setDisplayLimit(prev => prev + 10);
+  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Không rõ";
@@ -181,14 +190,14 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                   Đang tải dữ liệu nạn nhân...
                 </TableCell>
               </TableRow>
-            ) : sortedVictims.length === 0 ? (
+            ) : displayedVictims.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
                   Không tìm thấy nạn nhân phù hợp với tiêu chí của bạn
                 </TableCell>
               </TableRow>
             ) : (
-              sortedVictims.map((victim, index) => (
+              displayedVictims.map((victim, index) => (
                 <TableRow key={`${victim.group_name}-${victim.victim_name}-${index}`}>
                   <TableCell className="font-medium">
                     {victim.url ? (
@@ -228,9 +237,23 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
           </TableBody>
         </Table>
       </div>
-      <div className="text-sm text-gray-500 text-right">
-        Hiển thị {sortedVictims.length} trong số {victims.length} nạn nhân
+      
+      <div className="flex flex-col items-center gap-2">
+        {hasMoreVictims && (
+          <Button 
+            variant="outline" 
+            onClick={handleShowMore} 
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <ChevronDown className="h-4 w-4" />
+            Xem Thêm Nạn Nhân ({sortedVictims.length - displayLimit} còn lại)
+          </Button>
+        )}
+        <div className="text-sm text-gray-500 text-center">
+          Hiển thị {Math.min(displayLimit, sortedVictims.length)} trong số {sortedVictims.length} nạn nhân
+        </div>
       </div>
     </div>
   );
 };
+
