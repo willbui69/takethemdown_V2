@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { RansomwareGroup, RansomwareStat } from "@/types/ransomware";
 import { fetchGroups, fetchStats } from "@/services/ransomwareAPI";
@@ -38,19 +39,35 @@ export const GroupStatistics = () => {
         ]);
         
         if (groupsResult.status === 'fulfilled') {
-          setGroups(groupsResult.value);
+          const groupsData = groupsResult.value;
+          setGroups(groupsData);
+          
+          // If stats fetch fails, we'll derive stats from groups data
+          if (statsResult.status === 'rejected') {
+            console.log("Stats fetch failed, deriving from groups data");
+            const derivedStats: RansomwareStat[] = groupsData.map((group: RansomwareGroup) => ({
+              group: group.name,
+              count: typeof group.count === 'number' ? group.count : 0
+            }));
+            setStats(derivedStats);
+          }
         } else {
           console.error("Error fetching groups:", groupsResult.reason);
           setError("Không thể tải dữ liệu nhóm");
         }
         
         if (statsResult.status === 'fulfilled') {
-          setStats(statsResult.value);
+          // Ensure we have proper count values
+          const processedStats = statsResult.value.map((stat: RansomwareStat) => ({
+            ...stat,
+            count: typeof stat.count === 'number' ? stat.count : 0
+          }));
+          setStats(processedStats);
         } else {
           console.error("Error fetching stats:", statsResult.reason);
           
-          // Only set error if not already set
-          if (!error) {
+          // Only set error if not already set and we couldn't derive stats from groups
+          if (!error && groupsResult.status !== 'fulfilled') {
             setError("Không thể tải dữ liệu thống kê");
           }
         }
@@ -69,9 +86,13 @@ export const GroupStatistics = () => {
   const combinedData = stats
     .map(stat => {
       const group = groups.find(g => g.name === stat.group);
+      
+      // Log to debug statistics data
+      console.log(`Processing group ${stat.group}, count: ${stat.count}, active: ${group?.active}`);
+      
       return {
         name: stat.group,
-        victims: stat.count,
+        victims: typeof stat.count === 'number' ? stat.count : 0, // Ensure count is a number
         active: group?.active ?? false,
       };
     })

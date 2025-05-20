@@ -164,7 +164,36 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
   
   try {
     const data = await callEdgeFunction('/groups');
-    return data;
+    
+    // Process the data to ensure we extract proper count values
+    const processedGroups = data.map((group: any) => {
+      // Extract count from various possible locations in the API response
+      let victimCount = 0;
+      
+      // The API might include count directly
+      if (typeof group.count === 'number') {
+        victimCount = group.count;
+      } 
+      // Or it might be in victim_count
+      else if (typeof group.victim_count === 'number') {
+        victimCount = group.victim_count;
+      }
+      // It could also be in the locations array length
+      else if (Array.isArray(group.locations)) {
+        victimCount = group.locations.length;
+      }
+      
+      console.log(`Group ${group.name}: extracted count = ${victimCount}`);
+      
+      return {
+        name: group.name,
+        active: group.active || group.parser || false,
+        url: group.url || "",
+        count: victimCount
+      };
+    });
+    
+    return processedGroups;
   } catch (error) {
     console.error("Failed to fetch groups:", error);
     toast.error("Could not fetch group data", {
@@ -182,15 +211,49 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
   }
   
   try {
-    // Since the /stats endpoint might not be available in the new API format,
-    // let's derive stats from the groups data
+    // First try to get stats data directly if available
+    try {
+      const statsData = await callEdgeFunction('/stats');
+      if (Array.isArray(statsData) && statsData.length > 0) {
+        console.log("Successfully fetched stats data directly");
+        return statsData.map((stat: any) => ({
+          group: stat.group || stat.name,
+          count: typeof stat.count === 'number' ? stat.count : 0
+        }));
+      }
+    } catch (statsError) {
+      console.log("Stats endpoint failed, falling back to deriving from groups:", statsError);
+      // Stats endpoint failed, continue to derive from groups
+    }
+    
+    // Since direct stats failed, derive stats from the groups data
     const groups = await callEdgeFunction('/groups');
     
-    // Convert the groups data to stats format
-    const derivedStats: RansomwareStat[] = groups.map((group: any) => ({
-      group: group.name,
-      count: group.victim_count || 0
-    }));
+    // Extract victim count from the groups data
+    const derivedStats: RansomwareStat[] = groups.map((group: any) => {
+      // Try to extract count from different possible fields
+      let count = 0;
+      
+      if (typeof group.count === 'number') {
+        count = group.count;
+      } else if (typeof group.victim_count === 'number') {
+        count = group.victim_count;
+      } else if (Array.isArray(group.victims)) {
+        count = group.victims.length;
+      } else if (Array.isArray(group.posts)) {
+        count = group.posts.length;
+      } else if (Array.isArray(group.locations)) {
+        // As a last resort, use the number of locations
+        count = group.locations.length;
+      }
+      
+      console.log(`Derived stats for ${group.name}: count = ${count}`);
+      
+      return {
+        group: group.name,
+        count: count
+      };
+    });
     
     return derivedStats;
   } catch (error) {
