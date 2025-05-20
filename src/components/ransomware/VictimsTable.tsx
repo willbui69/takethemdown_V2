@@ -38,19 +38,10 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     );
   });
   
-  const sanitizedVictims = filteredVictims.map(victim => ({
-    victim_name: victim.victim_name && victim.victim_name !== "Unknown" ? victim.victim_name : "Unknown",
-    group_name: victim.group_name && victim.group_name !== "Unknown Group" ? victim.group_name : "Unknown Group",
-    published: victim.published || null,
-    country: victim.country || null,
-    industry: victim.industry || null,
-    url: victim.url || null,
-    ...victim
-  }));
+  // Log some of the victim data for debugging
+  console.log("VictimsTable - First few victims:", victims.slice(0, 3));
   
-  console.log("Sanitized victims sample:", sanitizedVictims.slice(0, 2));
-  
-  const sortedVictims = [...sanitizedVictims].sort((a, b) => {
+  const sortedVictims = [...filteredVictims].sort((a, b) => {
     // Handle null or undefined values for sorting
     let fieldA = a[sortField];
     let fieldB = b[sortField];
@@ -77,6 +68,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
       const date = new Date(dateString);
       // Check if date is valid
       if (isNaN(date.getTime())) {
+        console.log("Invalid date format:", dateString);
         return "Không rõ";
       }
       return date.toLocaleDateString(undefined, {
@@ -101,6 +93,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     if (industryLower.includes("tech") || industryLower.includes("it")) return "green";
     if (industryLower.includes("government") || industryLower.includes("public")) return "purple";
     if (industryLower.includes("manufacturing")) return "orange";
+    if (industryLower.includes("consumer")) return "indigo";
     
     return "gray";
   };
@@ -205,15 +198,15 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
                         rel="noopener noreferrer"
                         className="text-security hover:underline"
                       >
-                        {victim.victim_name}
+                        {victim.victim_name || "Unknown"}
                       </a>
                     ) : (
-                      victim.victim_name
+                      victim.victim_name || "Unknown"
                     )}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="font-medium">
-                      {victim.group_name}
+                      {victim.group_name || "Unknown Group"}
                     </Badge>
                   </TableCell>
                   <TableCell>{formatDate(victim.published)}</TableCell>

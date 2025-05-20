@@ -58,7 +58,7 @@ serve(async (req) => {
 
     const data = await apiRes.json();
     
-    // Add some debugging logs
+    // Enhanced debugging logs
     console.log(`Response from ${path} endpoint:`, { 
       status: apiRes.status, 
       dataType: typeof data, 
@@ -68,6 +68,24 @@ serve(async (req) => {
     
     if (Array.isArray(data) && data.length > 0) {
       console.log("Sample data item:", data[0]);
+      
+      // More detailed logging for recentvictims endpoint
+      if (path === "/recentvictims" && Array.isArray(data) && data.length > 0) {
+        const sample = data[0];
+        console.log("Fields in victim data:", Object.keys(sample));
+        console.log("Victim data sample values:", {
+          victim: sample.victim,
+          victim_name: sample.victim_name,
+          group: sample.group,
+          group_name: sample.group_name,
+          attackdate: sample.attackdate,
+          discovered: sample.discovered, 
+          published: sample.published,
+          country: sample.country,
+          industry: sample.industry,
+          activity: sample.activity
+        });
+      }
     }
 
     return new Response(JSON.stringify(data), {
