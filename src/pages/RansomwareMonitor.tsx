@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import RootLayout from "@/components/layout/RootLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,7 +9,7 @@ import { SubscriptionForm } from "@/components/ransomware/SubscriptionForm";
 import { AdminPanel } from "@/components/ransomware/AdminPanel";
 import { checkApiAvailability, fetchAllVictims, fetchRecentVictims } from "@/services/ransomwareAPI";
 import { RansomwareVictim } from "@/types/ransomware";
-import { CirclePlus, CircleMinus, Database, Bug, ShieldAlert, RefreshCw } from "lucide-react";
+import { CirclePlus, CircleMinus, Database, Bug, ShieldAlert, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
