@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import RootLayout from "@/components/layout/RootLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -60,6 +61,7 @@ const RansomwareMonitor = () => {
         const processedData = todayVictimsResult.value;
         console.log("Received recent victim data:", processedData.slice(0, 2)); // Log first few items for debugging
         setRecentVictims(processedData);
+        console.info(`Fetched ${processedData.length} recent victims (24h)`);
       } else {
         console.error("Error fetching recent victims:", todayVictimsResult.reason);
         if (!error) {
@@ -183,6 +185,11 @@ const RansomwareMonitor = () => {
                   <div className="text-center py-8 text-amber-500 flex flex-col items-center gap-2">
                     <Bug className="h-10 w-10" />
                     {error}
+                  </div>
+                ) : recentVictims.length === 0 && !loading ? (
+                  <div className="text-center py-8 text-amber-500 flex flex-col items-center gap-2">
+                    <AlertTriangle className="h-10 w-10" />
+                    Không có nạn nhân mới trong 24 giờ qua
                   </div>
                 ) : (
                   <VictimsTable 
