@@ -32,48 +32,38 @@ export const GroupStatistics = () => {
         setError(null);
         setIsGeoBlocked(false);
         
-        // Using Promise.allSettled to continue even if one promise fails
-        const [groupsResult, statsResult] = await Promise.allSettled([
-          fetchGroups(),
-          fetchStats(),
-        ]);
+        // First fetch groups data
+        const groupsData = await fetchGroups();
+        console.log("Fetched groups data:", groupsData.slice(0, 5));
+        setGroups(groupsData);
         
-        if (groupsResult.status === 'fulfilled') {
-          const groupsData = groupsResult.value;
-          setGroups(groupsData);
+        // Derive initial stats from groups data to ensure we have something to display
+        const initialStats: RansomwareStat[] = groupsData.map((group: RansomwareGroup) => ({
+          group: group.name,
+          count: typeof group.count === 'number' ? group.count : 0
+        }));
+        
+        try {
+          // Then try to fetch dedicated stats if available
+          const statsData = await fetchStats();
+          console.log("Fetched stats data:", statsData.slice(0, 5));
           
-          // If stats fetch fails, we'll derive stats from groups data
-          if (statsResult.status === 'rejected') {
-            console.log("Stats fetch failed, deriving from groups data");
-            const derivedStats: RansomwareStat[] = groupsData.map((group: RansomwareGroup) => ({
-              group: group.name,
-              count: typeof group.count === 'number' ? group.count : 0
-            }));
-            setStats(derivedStats);
-          }
-        } else {
-          console.error("Error fetching groups:", groupsResult.reason);
-          setError("Không thể tải dữ liệu nhóm");
-        }
-        
-        if (statsResult.status === 'fulfilled') {
           // Ensure we have proper count values
-          const processedStats = statsResult.value.map((stat: RansomwareStat) => ({
+          const processedStats = statsData.map((stat: RansomwareStat) => ({
             ...stat,
             count: typeof stat.count === 'number' ? stat.count : 0
           }));
-          setStats(processedStats);
-        } else {
-          console.error("Error fetching stats:", statsResult.reason);
           
-          // Only set error if not already set and we couldn't derive stats from groups
-          if (!error && groupsResult.status !== 'fulfilled') {
-            setError("Không thể tải dữ liệu thống kê");
-          }
+          setStats(processedStats);
+        } catch (statsError) {
+          console.error("Error fetching stats:", statsError);
+          // Fall back to the derived stats from groups
+          console.log("Using derived stats from groups");
+          setStats(initialStats);
         }
       } catch (err) {
-        setError("Không thể tải dữ liệu nhóm ransomware");
         console.error("Error fetching data:", err);
+        setError("Không thể tải dữ liệu nhóm ransomware");
       } finally {
         setLoading(false);
       }
@@ -86,13 +76,14 @@ export const GroupStatistics = () => {
   const combinedData = stats
     .map(stat => {
       const group = groups.find(g => g.name === stat.group);
+      const victimCount = typeof stat.count === 'number' ? stat.count : 0;
       
       // Log to debug statistics data
-      console.log(`Processing group ${stat.group}, count: ${stat.count}, active: ${group?.active}`);
+      console.log(`Processing group ${stat.group}, count: ${victimCount}, active: ${group?.active}`);
       
       return {
         name: stat.group,
-        victims: typeof stat.count === 'number' ? stat.count : 0, // Ensure count is a number
+        victims: victimCount,
         active: group?.active ?? false,
       };
     })
@@ -104,6 +95,8 @@ export const GroupStatistics = () => {
     })
     .sort((a, b) => b.victims - a.victims)
     .slice(0, 15); // Only show top 15 groups
+
+  console.log("Final chart data:", combinedData);
 
   return (
     <Card>
