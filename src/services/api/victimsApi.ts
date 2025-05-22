@@ -1,4 +1,3 @@
-
 import { RansomwareVictim } from "@/types/ransomware";
 import { mockVictims, mockRecentVictims } from "@/data/mockRansomwareData";
 import { callEdgeFunction, useMockData, handleApiError } from "./apiUtils";
@@ -112,7 +111,7 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
   }
 };
 
-// Added new function to fetch victims by country code
+// Improved function to fetch victims by country code
 export const fetchVictimsByCountry = async (countryCode: string): Promise<RansomwareVictim[]> => {
   if (useMockData) {
     console.log(`Using mock victim data for country ${countryCode}`);
@@ -146,20 +145,35 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
       console.log(`Received ${data.length} victims for country ${countryCode}`);
       // Log the raw structure of the first few victims
       if (data.length > 0) {
-        console.log(`Sample victim data structure (first ${Math.min(3, data.length)} items):`, 
-          data.slice(0, 3).map(v => JSON.stringify(v, null, 2)));
-        
-        // Check for common fields to help diagnose mapping issues
-        const fields = new Set();
-        data.slice(0, 10).forEach(item => {
-          Object.keys(item).forEach(key => fields.add(key));
+        // Check for specific fields to understand structure
+        const sampleFields = new Set();
+        data.slice(0, 3).forEach(item => {
+          Object.keys(item).forEach(key => sampleFields.add(key));
         });
-        console.log(`Fields found in country victims data:`, Array.from(fields));
+        
+        console.log(`Fields in country victim data: ${Array.from(sampleFields).join(', ')}`);
+        console.log(`Sample victim data for ${countryCode}:`, 
+          data.slice(0, 2).map(v => ({
+            victim: v.victim,
+            victim_name: v.victim_name,
+            group: v.group,
+            group_name: v.group_name,
+            domain: v.domain,
+            title: v.title,
+            organization: v.organization,
+            extrainfos: v.extrainfos
+          })));
       }
     }
     
     const normalizedData = normalizeVictimData(data);
     console.log(`Normalized ${normalizedData.length} victims for country ${countryCode}`);
+    
+    // Log the first few normalized victims to check for mapping issues
+    if (normalizedData.length > 0) {
+      console.log(`First ${Math.min(3, normalizedData.length)} normalized victims for ${countryCode}:`, 
+        normalizedData.slice(0, 3));
+    }
     
     return normalizedData;
   } catch (error) {
@@ -167,7 +181,7 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
     handleApiError(`Failed to fetch victims for country ${countryCode}:`, `Could not fetch ${countryCode} victim data`);
     
     // Fallback to filtered mock data with improved matching
-    return mockVictims.filter(v => {
+    const fallbackData = mockVictims.filter(v => {
       if (!v.country) return false;
       const victimCountry = v.country.toLowerCase();
       if (countryCode === "VN") {
@@ -178,5 +192,8 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
       }
       return victimCountry === countryCode.toLowerCase();
     });
+    
+    console.log(`Using fallback data for ${countryCode}, found ${fallbackData.length} victims`);
+    return fallbackData;
   }
 };

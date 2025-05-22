@@ -39,18 +39,39 @@ export const VictimsDataTabs = ({
           return;
         }
         
-        // Filter out entries with empty or "Unknown" victim_name 
-        const filteredData = data.filter(victim => 
-          victim.victim_name && 
-          victim.victim_name !== "Unknown" && 
-          victim.victim_name.trim() !== ""
-        );
+        // Enhanced filtering: Remove entries with empty, Unknown, or "not available" victim_name
+        const filteredData = data.filter(victim => {
+          const name = victim.victim_name || "";
+          return name && 
+                 name !== "Unknown" && 
+                 name.trim() !== "" && 
+                 name !== "N/A" &&
+                 name !== "Not Available";
+        });
         
         console.log(`Vietnam victims: Total ${data.length}, After filtering ${filteredData.length}`);
         
-        if (filteredData.length === 0 && data.length > 0) {
-          // If we filtered everything out but had data, use original data
-          setVietnamVictims(data);
+        if (filteredData.length === 0) {
+          // If we don't have any valid victims after filtering
+          // Try to find victims from the general list that have Vietnam as country
+          const fallbackVietnamVictims = victims.filter(victim => {
+            const country = (victim.country || "").toLowerCase();
+            return country === "vietnam" || 
+                   country === "việt nam" || 
+                   country === "viet nam" || 
+                   country === "vn";
+          });
+          
+          console.log(`Using fallback Vietnam victims: Found ${fallbackVietnamVictims.length}`);
+          
+          if (fallbackVietnamVictims.length > 0) {
+            setVietnamVictims(fallbackVietnamVictims);
+          } else if (data.length > 0) {
+            // If we filtered everything out but had data, use original data
+            setVietnamVictims(data);
+          } else {
+            setVietnamVictims([]);
+          }
         } else {
           setVietnamVictims(filteredData);
         }
@@ -66,7 +87,7 @@ export const VictimsDataTabs = ({
     };
     
     loadVietnamVictims();
-  }, []);
+  }, [victims]);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
