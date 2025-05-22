@@ -5,6 +5,7 @@ import { RansomwareVictim } from "@/types/ransomware";
 import { Bug, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchVictimsByCountry } from "@/services/ransomwareAPI";
+import { toast } from "sonner";
 
 interface VictimsDataTabsProps {
   victims: RansomwareVictim[];
@@ -30,10 +31,22 @@ export const VictimsDataTabs = ({
         setVietnamError(null);
         const data = await fetchVictimsByCountry("VN");
         console.log("Fetched Vietnam victims:", data);
-        setVietnamVictims(data);
+        
+        // Filter out entries with "Unknown" victim_name if desired
+        const filteredData = data.filter(victim => victim.victim_name && victim.victim_name !== "Unknown");
+        
+        if (filteredData.length === 0 && data.length > 0) {
+          // If we filtered everything out but had data, use original data
+          setVietnamVictims(data);
+        } else {
+          setVietnamVictims(filteredData);
+        }
       } catch (err) {
         console.error("Error fetching Vietnam victims:", err);
         setVietnamError("Không thể tải dữ liệu nạn nhân tại Việt Nam");
+        toast.error("Không thể tải dữ liệu Việt Nam", {
+          description: "Đã xảy ra lỗi khi tải dữ liệu nạn nhân tại Việt Nam."
+        });
       } finally {
         setLoadingVietnam(false);
       }

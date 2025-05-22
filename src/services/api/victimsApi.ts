@@ -1,3 +1,4 @@
+
 import { RansomwareVictim } from "@/types/ransomware";
 import { mockVictims, mockRecentVictims } from "@/data/mockRansomwareData";
 import { callEdgeFunction, useMockData, handleApiError } from "./apiUtils";
@@ -115,7 +116,7 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
 export const fetchVictimsByCountry = async (countryCode: string): Promise<RansomwareVictim[]> => {
   if (useMockData) {
     console.log(`Using mock victim data for country ${countryCode}`);
-    // Filter mock data for country
+    // Filter mock data for country with more thorough name matching
     return mockVictims.filter(v => {
       if (!v.country) return false;
       const victimCountry = v.country.toLowerCase();
@@ -133,11 +134,22 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
     // Call the country-specific endpoint
     console.log(`Fetching victims for country ${countryCode} from /countryvictims endpoint`);
     const data = await callEdgeFunction(`/countryvictims/${countryCode}`);
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn(`No data returned for country ${countryCode} or invalid response format`);
+    } else {
+      console.log(`Received ${data.length} victims for country ${countryCode}`);
+      // Log a sample of the first victim data
+      if (data.length > 0) {
+        console.log("Sample victim data structure:", JSON.stringify(data[0], null, 2));
+      }
+    }
+    
     return normalizeVictimData(data);
   } catch (error) {
     handleApiError(`Failed to fetch victims for country ${countryCode}:`, `Could not fetch ${countryCode} victim data`);
     
-    // Fallback to filtered mock data
+    // Fallback to filtered mock data with improved matching
     return mockVictims.filter(v => {
       if (!v.country) return false;
       const victimCountry = v.country.toLowerCase();
