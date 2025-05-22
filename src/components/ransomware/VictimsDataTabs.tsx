@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VictimsTable } from "@/components/ransomware/VictimsTable";
 import { RansomwareVictim } from "@/types/ransomware";
@@ -29,17 +28,19 @@ export const VictimsDataTabs = ({
       try {
         setLoadingVietnam(true);
         setVietnamError(null);
-        const data = await fetchVictimsByCountry("VN");
-        console.log("Fetched Vietnam victims data:", data);
         
-        // Validate the data before using it
+        console.log("Fetching Vietnam victims data...");
+        const data = await fetchVictimsByCountry("VN");
+        
         if (!Array.isArray(data)) {
           console.error("Invalid Vietnam victims data format:", data);
           setVietnamError("Dữ liệu nạn nhân không đúng định dạng");
           return;
         }
         
-        // Enhanced filtering: Remove entries with empty, Unknown, or "not available" victim_name
+        console.log(`Retrieved ${data.length} Vietnam victims before filtering`);
+        
+        // Enhanced filtering: Remove entries with empty or "Unknown" victim_name
         const filteredData = data.filter(victim => {
           const name = victim.victim_name || "";
           return name && 
@@ -50,10 +51,13 @@ export const VictimsDataTabs = ({
         });
         
         console.log(`Vietnam victims: Total ${data.length}, After filtering ${filteredData.length}`);
+        console.log("First 3 Vietnam victims after filtering:", filteredData.slice(0, 3));
         
         if (filteredData.length === 0) {
-          // If we don't have any valid victims after filtering
-          // Try to find victims from the general list that have Vietnam as country
+          // If we don't have any valid victims after filtering, try fallback
+          console.log("No valid Vietnam victims found after filtering, trying fallback...");
+          
+          // Fallback to finding Vietnam victims in the general list
           const fallbackVietnamVictims = victims.filter(victim => {
             const country = (victim.country || "").toLowerCase();
             return country === "vietnam" || 
@@ -62,15 +66,17 @@ export const VictimsDataTabs = ({
                    country === "vn";
           });
           
-          console.log(`Using fallback Vietnam victims: Found ${fallbackVietnamVictims.length}`);
+          console.log(`Using fallback approach: Found ${fallbackVietnamVictims.length} Vietnam victims`);
           
           if (fallbackVietnamVictims.length > 0) {
             setVietnamVictims(fallbackVietnamVictims);
           } else if (data.length > 0) {
-            // If we filtered everything out but had data, use original data
+            // If fallback didn't work but we had data before filtering, use original data
+            console.log("Using unfiltered data as last resort");
             setVietnamVictims(data);
           } else {
             setVietnamVictims([]);
+            setVietnamError("Không tìm thấy dữ liệu nạn nhân tại Việt Nam");
           }
         } else {
           setVietnamVictims(filteredData);

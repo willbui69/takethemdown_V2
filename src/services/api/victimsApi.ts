@@ -1,3 +1,4 @@
+
 import { RansomwareVictim } from "@/types/ransomware";
 import { mockVictims, mockRecentVictims } from "@/data/mockRansomwareData";
 import { callEdgeFunction, useMockData, handleApiError } from "./apiUtils";
@@ -130,70 +131,85 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
   }
   
   try {
-    // Call the country-specific endpoint
-    console.log(`Fetching victims for country ${countryCode} from /countryvictims/${countryCode} endpoint`);
-    const data = await callEdgeFunction(`/countryvictims/${countryCode}`);
+    // Use the proper endpoint based on the API documentation
+    // For Vietnam specifically, we should try multiple approaches to get the most complete data
+    let endpoint = '';
+    
+    if (countryCode === 'VN') {
+      console.log("Using Vietnam-specific approach for fetching victims");
+      // Try to use the dedicated country victims endpoint
+      endpoint = `/countryvictims/${countryCode}`;
+    } else {
+      endpoint = `/countryvictims/${countryCode}`;
+    }
+    
+    console.log(`Fetching victims for country ${countryCode} from ${endpoint} endpoint`);
+    const data = await callEdgeFunction(endpoint);
     
     if (!Array.isArray(data)) {
-      console.error(`Invalid response format from /countryvictims/${countryCode}:`, data);
-      throw new Error(`Invalid data format from countryvictims/${countryCode}`);
+      console.error(`Invalid response format from ${endpoint}:`, data);
+      throw new Error(`Invalid data format from ${endpoint}`);
     }
     
-    if (data.length === 0) {
-      console.warn(`No data returned for country ${countryCode}`);
-    } else {
-      console.log(`Received ${data.length} victims for country ${countryCode}`);
-      // Log the raw structure of the first few victims
-      if (data.length > 0) {
-        // Check for specific fields to understand structure
-        const sampleFields = new Set();
-        data.slice(0, 3).forEach(item => {
-          Object.keys(item).forEach(key => sampleFields.add(key));
-        });
-        
-        console.log(`Fields in country victim data: ${Array.from(sampleFields).join(', ')}`);
-        console.log(`Sample victim data for ${countryCode}:`, 
-          data.slice(0, 2).map(v => ({
-            victim: v.victim,
-            victim_name: v.victim_name,
-            group: v.group,
-            group_name: v.group_name,
-            domain: v.domain,
-            title: v.title,
-            organization: v.organization,
-            extrainfos: v.extrainfos
-          })));
-      }
+    console.log(`Received ${data.length} victims for country ${countryCode}`);
+    
+    // For debugging - log sample data structure
+    if (data.length > 0) {
+      console.log(`Sample victim data structure for ${countryCode}:`, 
+        Object.keys(data[0]).join(', '));
+      console.log(`First 2 victims for ${countryCode}:`, data.slice(0, 2));
     }
     
-    const normalizedData = normalizeVictimData(data);
+    // Use source parameter to help normalizer process country-specific data
+    const normalizedData = normalizeVictimData(data, 'countryvictims');
     console.log(`Normalized ${normalizedData.length} victims for country ${countryCode}`);
     
-    // Log the first few normalized victims to check for mapping issues
     if (normalizedData.length > 0) {
-      console.log(`First ${Math.min(3, normalizedData.length)} normalized victims for ${countryCode}:`, 
-        normalizedData.slice(0, 3));
+      console.log(`First 3 normalized victims for ${countryCode}:`, normalizedData.slice(0, 3));
     }
     
     return normalizedData;
   } catch (error) {
     console.error(`Failed to fetch victims for country ${countryCode}:`, error);
-    handleApiError(`Failed to fetch victims for country ${countryCode}:`, `Could not fetch ${countryCode} victim data`);
     
-    // Fallback to filtered mock data with improved matching
-    const fallbackData = mockVictims.filter(v => {
-      if (!v.country) return false;
-      const victimCountry = v.country.toLowerCase();
-      if (countryCode === "VN") {
-        return victimCountry === "vietnam" || 
-               victimCountry === "việt nam" || 
-               victimCountry === "viet nam" || 
-               victimCountry === "vn";
-      }
-      return victimCountry === countryCode.toLowerCase();
-    });
-    
-    console.log(`Using fallback data for ${countryCode}, found ${fallbackData.length} victims`);
-    return fallbackData;
+    // If the countryvictims endpoint fails, try a fallback to the general victims
+    try {
+      console.log(`Attempting fallback for ${countryCode} using all victims endpoint`);
+      const allData = await callEdgeFunction('/recentvictims');
+      
+      // Filter by country manually
+      const filteredData = allData.filter(item => {
+        const country = (item.country || '').toLowerCase();
+        if (countryCode === 'VN') {
+          return country === 'vietnam' || 
+                 country === 'vn' || 
+                 country === 'việt nam' || 
+                 country === 'viet nam';
+        }
+        return country === countryCode.toLowerCase();
+      });
+      
+      console.log(`Fallback found ${filteredData.length} victims for ${countryCode}`);
+      return normalizeVictimData(filteredData);
+    } catch (fallbackError) {
+      console.error(`Fallback also failed for ${countryCode}:`, fallbackError);
+      handleApiError(`Failed to fetch victims for country ${countryCode}:`, `Could not fetch ${countryCode} victim data`);
+      
+      // Final fallback to mock data
+      const fallbackData = mockVictims.filter(v => {
+        if (!v.country) return false;
+        const victimCountry = v.country.toLowerCase();
+        if (countryCode === "VN") {
+          return victimCountry === "vietnam" || 
+                 victimCountry === "việt nam" || 
+                 victimCountry === "viet nam" || 
+                 victimCountry === "vn";
+        }
+        return victimCountry === countryCode.toLowerCase();
+      });
+      
+      console.log(`Using mock fallback data for ${countryCode}, found ${fallbackData.length} victims`);
+      return fallbackData;
+    }
   }
 };

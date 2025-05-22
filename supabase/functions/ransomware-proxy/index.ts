@@ -66,11 +66,20 @@ serve(async (req) => {
       sampleSize: Array.isArray(data) ? data.length : "N/A"
     });
     
+    // Special handling for Vietnam data
+    if (path === "/countryvictims/VN" && Array.isArray(data)) {
+      console.log(`Vietnam data received: ${data.length} items`);
+      if (data.length > 0) {
+        console.log("Vietnam data structure:", Object.keys(data[0]).join(", "));
+        console.log("Sample Vietnam victim:", data[0]);
+      }
+    }
+    
     if (Array.isArray(data) && data.length > 0) {
       console.log("Sample data item:", data[0]);
       
       // More detailed logging for all endpoints that return victim data
-      if ((path === "/recentvictims" || path.startsWith("/groupvictims/")) && Array.isArray(data) && data.length > 0) {
+      if ((path === "/recentvictims" || path.startsWith("/groupvictims/") || path.startsWith("/countryvictims/")) && Array.isArray(data) && data.length > 0) {
         const sample = data[0];
         console.log("Fields in victim data:", Object.keys(sample));
         console.log("Victim data sample values:", {
@@ -83,7 +92,9 @@ serve(async (req) => {
           published: sample.published,
           country: sample.country,
           industry: sample.industry,
-          activity: sample.activity
+          activity: sample.activity,
+          organization: sample.organization,
+          title: sample.title
         });
       }
     }
