@@ -200,18 +200,7 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
               displayedVictims.map((victim, index) => (
                 <TableRow key={`${victim.group_name}-${victim.victim_name}-${index}`}>
                   <TableCell className="font-medium">
-                    {victim.url ? (
-                      <a 
-                        href={victim.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-security hover:underline"
-                      >
-                        {victim.victim_name || "Unknown"}
-                      </a>
-                    ) : (
-                      victim.victim_name || "Unknown"
-                    )}
+                    {victim.victim_name || "Unknown"}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="font-medium">
