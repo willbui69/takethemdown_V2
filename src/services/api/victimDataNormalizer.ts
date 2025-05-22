@@ -9,18 +9,31 @@ export const normalizeVictimData = (data: any[], source?: string): RansomwareVic
   }
 
   return data.map(item => {
-    // Handle source-specific data formats
+    // Special handling for country victims data which has a different structure
     if (source === 'countryvictims') {
-      console.log("Processing country-specific victim data item:", item);
+      console.log("Processing country-specific victim data:", item);
       
-      // Country-specific endpoints may have a different structure
-      const victim_name = 
-        item.victim || 
+      // For Vietnam, website or post_title are most reliable victim identifiers
+      let victim_name = 
+        item.post_title || 
+        item.website ||
+        item.victim ||
         item.title ||
         item.organization || 
         item.name || 
         (item.extrainfos && typeof item.extrainfos === 'object' && item.extrainfos.company) || 
         "Unknown";
+      
+      // Clean up victim name if it's just a domain
+      if (victim_name.includes('.') && !victim_name.includes(' ')) {
+        // Format domain nicely by removing common TLDs
+        victim_name = victim_name
+          .replace(/\.(com|net|org|vn|edu|gov|io)$/i, '')
+          .replace(/\./g, ' ')
+          .split(' ')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
       
       // For country-specific data, group may be in different fields
       const group_name = item.group_name || item.group || "Unknown Group";
@@ -34,7 +47,7 @@ export const normalizeVictimData = (data: any[], source?: string): RansomwareVic
         published: publishedDate,
         country: item.country || item.location || null,
         industry: item.industry || item.activity || item.sector || null,
-        url: item.url || item.claim_url || item.victim_url || null,
+        url: item.url || item.claim_url || item.post_url || item.victim_url || null,
       };
     }
     
@@ -47,6 +60,8 @@ export const normalizeVictimData = (data: any[], source?: string): RansomwareVic
       item.company_name ||
       (item.title ? item.title.toString() : null) || 
       item.organization ||
+      item.website ||
+      item.post_title ||
       (item.extrainfos && item.extrainfos.company ? item.extrainfos.company : null) ||
       "Unknown";
     
@@ -59,7 +74,7 @@ export const normalizeVictimData = (data: any[], source?: string): RansomwareVic
       published: publishedDate,
       country: item.country || item.location || null,
       industry: item.industry || item.activity || item.sector || item.business_sector || null,
-      url: item.url || item.victim_url || item.claim_url || item.link || null,
+      url: item.url || item.victim_url || item.claim_url || item.post_url || item.link || null,
     };
   });
 };

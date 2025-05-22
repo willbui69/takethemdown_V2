@@ -40,8 +40,9 @@ export const VictimsDataTabs = ({
         
         console.log(`Retrieved ${data.length} Vietnam victims before filtering`);
         
-        // Enhanced filtering: Remove entries with empty or "Unknown" victim_name
+        // Only filter out completely invalid entries
         const filteredData = data.filter(victim => {
+          // Keep entries with any valid victim name that's not one of the common placeholders
           const name = victim.victim_name || "";
           return name && 
                  name !== "Unknown" && 
@@ -54,29 +55,28 @@ export const VictimsDataTabs = ({
         console.log("First 3 Vietnam victims after filtering:", filteredData.slice(0, 3));
         
         if (filteredData.length === 0) {
-          // If we don't have any valid victims after filtering, try fallback
-          console.log("No valid Vietnam victims found after filtering, trying fallback...");
-          
-          // Fallback to finding Vietnam victims in the general list
-          const fallbackVietnamVictims = victims.filter(victim => {
-            const country = (victim.country || "").toLowerCase();
-            return country === "vietnam" || 
-                   country === "việt nam" || 
-                   country === "viet nam" || 
-                   country === "vn";
-          });
-          
-          console.log(`Using fallback approach: Found ${fallbackVietnamVictims.length} Vietnam victims`);
-          
-          if (fallbackVietnamVictims.length > 0) {
-            setVietnamVictims(fallbackVietnamVictims);
-          } else if (data.length > 0) {
-            // If fallback didn't work but we had data before filtering, use original data
+          // If we still don't have enough valid victims, use the unfiltered data as last resort
+          if (data.length > 0) {
             console.log("Using unfiltered data as last resort");
             setVietnamVictims(data);
           } else {
-            setVietnamVictims([]);
-            setVietnamError("Không tìm thấy dữ liệu nạn nhân tại Việt Nam");
+            // Final fallback - search for Vietnam in the general victims list
+            console.log("No Vietnam victims found, searching in general list...");
+            const fallbackVietnamVictims = victims.filter(victim => {
+              const country = (victim.country || "").toLowerCase();
+              return country === "vietnam" || 
+                     country === "việt nam" || 
+                     country === "viet nam" || 
+                     country === "vn";
+            });
+            
+            if (fallbackVietnamVictims.length > 0) {
+              console.log(`Found ${fallbackVietnamVictims.length} Vietnam victims in general list`);
+              setVietnamVictims(fallbackVietnamVictims);
+            } else {
+              setVietnamVictims([]);
+              setVietnamError("Không tìm thấy dữ liệu nạn nhân tại Việt Nam");
+            }
           }
         } else {
           setVietnamVictims(filteredData);

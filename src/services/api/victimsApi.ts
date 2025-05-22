@@ -131,19 +131,10 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
   }
   
   try {
-    // Use the proper endpoint based on the API documentation
-    // For Vietnam specifically, we should try multiple approaches to get the most complete data
-    let endpoint = '';
+    // For Vietnam we need special handling as the API may return data in a different format
+    const endpoint = `/countryvictims/${countryCode}`;
     
-    if (countryCode === 'VN') {
-      console.log("Using Vietnam-specific approach for fetching victims");
-      // Try to use the dedicated country victims endpoint
-      endpoint = `/countryvictims/${countryCode}`;
-    } else {
-      endpoint = `/countryvictims/${countryCode}`;
-    }
-    
-    console.log(`Fetching victims for country ${countryCode} from ${endpoint} endpoint`);
+    console.log(`Fetching victims for country ${countryCode} from ${endpoint}`);
     const data = await callEdgeFunction(endpoint);
     
     if (!Array.isArray(data)) {
@@ -166,6 +157,27 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
     
     if (normalizedData.length > 0) {
       console.log(`First 3 normalized victims for ${countryCode}:`, normalizedData.slice(0, 3));
+    } else {
+      console.log(`No victims found after normalization for ${countryCode}, trying allcyberattacks endpoint`);
+      
+      // Backup approach for Vietnam: try the allcyberattacks endpoint
+      if (countryCode === "VN") {
+        const backupData = await callEdgeFunction('/allcyberattacks');
+        
+        if (Array.isArray(backupData)) {
+          // Filter for Vietnam entries
+          const vnAttacks = backupData.filter(item => {
+            const country = (item.country || '').toUpperCase();
+            return country === 'VN' || country === 'VIETNAM';
+          });
+          
+          console.log(`Found ${vnAttacks.length} Vietnam attacks in allcyberattacks`);
+          
+          if (vnAttacks.length > 0) {
+            return normalizeVictimData(vnAttacks, 'cyberattacks');
+          }
+        }
+      }
     }
     
     return normalizedData;

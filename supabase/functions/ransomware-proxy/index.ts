@@ -85,6 +85,8 @@ serve(async (req) => {
         console.log("Victim data sample values:", {
           victim: sample.victim,
           victim_name: sample.victim_name,
+          website: sample.website,
+          post_title: sample.post_title,
           group: sample.group,
           group_name: sample.group_name,
           attackdate: sample.attackdate,
