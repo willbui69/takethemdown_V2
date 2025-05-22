@@ -1,15 +1,9 @@
 
 import { RansomwareGroup, RansomwareStat } from "@/types/ransomware";
-import { mockGroups, mockStats } from "@/data/mockRansomwareData";
-import { callEdgeFunction, useMockData, handleApiError } from "./apiUtils";
+import { callEdgeFunction, handleApiError } from "./apiUtils";
 import { fetchVictimCountForGroup } from "./victimsApi";
 
 export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
-  if (useMockData) {
-    console.log("Using mock group data");
-    return mockGroups;
-  }
-  
   try {
     const data = await callEdgeFunction('/groups');
     
@@ -26,17 +20,12 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
     return processedGroups;
   } catch (error) {
     handleApiError("Failed to fetch groups:", "Could not fetch group data");
-    return mockGroups;
+    return [];
   }
 };
 
 // We'll derive stats by fetching victim counts for each group
 export const fetchStats = async (): Promise<RansomwareStat[]> => {
-  if (useMockData) {
-    console.log("Using mock stats data");
-    return mockStats;
-  }
-  
   try {
     console.log("Fetching groups to derive stats from victim counts");
     const groups = await fetchGroups();
@@ -46,7 +35,8 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
       const victimCount = await fetchVictimCountForGroup(group.name);
       return {
         group: group.name,
-        count: victimCount
+        count: victimCount,
+        last_update: new Date().toISOString() // Use current date as we don't have actual last update
       };
     });
     
@@ -56,6 +46,6 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
     return derivedStats;
   } catch (error) {
     handleApiError("Failed to fetch stats:", "Could not fetch statistics data");
-    return mockStats;
+    return [];
   }
 };

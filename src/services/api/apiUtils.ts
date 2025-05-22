@@ -2,9 +2,6 @@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-// Flag to track if we're falling back to mock data
-export let useMockData = false;
-
 // Base URL for the Edge Function
 export const EDGE_FUNCTION_URL = "https://euswzjdcxrnuupcyiddb.supabase.co/functions/v1/ransomware-proxy";
 
@@ -25,16 +22,13 @@ export const checkApiAvailability = async (): Promise<boolean> => {
 
     if (!response.ok) {
       console.error("Edge Function returned status", response.status);
-      useMockData = true;
       return false;
     }
 
     console.log("Edge Function is available");
-    useMockData = false;
     return true;
   } catch (err) {
     console.error("Error checking API availability:", err);
-    useMockData = true;
     return false;
   }
 };
@@ -62,11 +56,10 @@ export const callEdgeFunction = async (endpoint: string) => {
   }
 };
 
-// Helper function to display error toast and fall back to mock data
+// Helper function to display error toast
 export const handleApiError = (errorMsg: string, fallbackMsg: string) => {
   console.error(errorMsg);
   toast.error(fallbackMsg, {
-    description: "Falling back to demonstration data"
+    description: "Unable to load data, please try again later"
   });
-  useMockData = true;
 };

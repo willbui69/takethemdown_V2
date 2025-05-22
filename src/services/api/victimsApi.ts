@@ -1,49 +1,32 @@
 
 import { RansomwareVictim } from "@/types/ransomware";
-import { mockVictims, mockRecentVictims } from "@/data/mockRansomwareData";
-import { callEdgeFunction, useMockData, handleApiError } from "./apiUtils";
+import { callEdgeFunction, handleApiError } from "./apiUtils";
 import { normalizeVictimData } from "./victimDataNormalizer";
 
 export const fetchAllVictims = async (): Promise<RansomwareVictim[]> => {
-  if (useMockData) {
-    console.log("Using mock victim data");
-    return mockVictims;
-  }
-  
   try {
-    // Try to use the new recentvictims endpoint as it might be more reliable
+    // Try to use the recentvictims endpoint
     const data = await callEdgeFunction('/recentvictims');
     return normalizeVictimData(data);
   } catch (error) {
     handleApiError("Failed to fetch victims:", "Could not fetch victim data");
-    return mockVictims;
+    return [];
   }
 };
 
 export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVictim[]> => {
-  if (useMockData) {
-    console.log(`Using mock victim data for group ${group}`);
-    return mockVictims.filter(v => v.group_name === group);
-  }
-  
   try {
-    // Try the new groupvictims endpoint format
+    // Try the groupvictims endpoint format
     const data = await callEdgeFunction(`/groupvictims/${group}`);
     return normalizeVictimData(data);
   } catch (error) {
     handleApiError(`Failed to fetch victims for group ${group}:`, "Could not fetch group data");
-    return mockVictims.filter(v => v.group_name === group);
+    return [];
   }
 };
 
 // This method will fetch victim counts directly from the groupvictims endpoint
 export const fetchVictimCountForGroup = async (groupName: string): Promise<number> => {
-  if (useMockData) {
-    console.log(`Using mock victim count data for group ${groupName}`);
-    const mockGroupVictims = mockVictims.filter(v => v.group_name === groupName);
-    return mockGroupVictims.length;
-  }
-  
   try {
     console.log(`Fetching victim count for group ${groupName} from /groupvictims endpoint`);
     const data = await callEdgeFunction(`/groupvictims/${groupName}`);
@@ -62,21 +45,8 @@ export const fetchVictimCountForGroup = async (groupName: string): Promise<numbe
 };
 
 export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
-  if (useMockData) {
-    console.log("Using mock recent victims data");
-    // Filter mock data to last 24 hours
-    const oneDayAgo = new Date();
-    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
-    
-    return mockRecentVictims.filter(victim => {
-      if (!victim.published) return false;
-      const publishDate = new Date(victim.published);
-      return publishDate >= oneDayAgo;
-    });
-  }
-  
   try {
-    // Try the recentvictims endpoint (new format)
+    // Try the recentvictims endpoint
     const data = await callEdgeFunction('/recentvictims');
     const normalizedData = normalizeVictimData(data);
     
@@ -99,37 +69,12 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
     });
   } catch (error) {
     handleApiError("Failed to fetch recent victims:", "Could not fetch recent victim data");
-    
-    // Filter mock data to last 24 hours
-    const oneDayAgo = new Date();
-    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
-    
-    return mockRecentVictims.filter(victim => {
-      if (!victim.published) return false;
-      const publishDate = new Date(victim.published);
-      return publishDate >= oneDayAgo;
-    });
+    return [];
   }
 };
 
 // Improved function to fetch victims by country code
 export const fetchVictimsByCountry = async (countryCode: string): Promise<RansomwareVictim[]> => {
-  if (useMockData) {
-    console.log(`Using mock victim data for country ${countryCode}`);
-    // Filter mock data for country with more thorough name matching
-    return mockVictims.filter(v => {
-      if (!v.country) return false;
-      const victimCountry = v.country.toLowerCase();
-      if (countryCode === "VN") {
-        return victimCountry === "vietnam" || 
-               victimCountry === "việt nam" || 
-               victimCountry === "viet nam" || 
-               victimCountry === "vn";
-      }
-      return victimCountry === countryCode.toLowerCase();
-    });
-  }
-  
   try {
     // For Vietnam we need special handling as the API may return data in a different format
     const endpoint = `/countryvictims/${countryCode}`;
@@ -157,6 +102,7 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
     
     if (normalizedData.length > 0) {
       console.log(`First 3 normalized victims for ${countryCode}:`, normalizedData.slice(0, 3));
+      return normalizedData;
     } else {
       console.log(`No victims found after normalization for ${countryCode}, trying allcyberattacks endpoint`);
       
@@ -178,9 +124,10 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
           }
         }
       }
+      
+      // If all attempts failed, return empty array
+      return [];
     }
-    
-    return normalizedData;
   } catch (error) {
     console.error(`Failed to fetch victims for country ${countryCode}:`, error);
     
@@ -207,21 +154,8 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
       console.error(`Fallback also failed for ${countryCode}:`, fallbackError);
       handleApiError(`Failed to fetch victims for country ${countryCode}:`, `Could not fetch ${countryCode} victim data`);
       
-      // Final fallback to mock data
-      const fallbackData = mockVictims.filter(v => {
-        if (!v.country) return false;
-        const victimCountry = v.country.toLowerCase();
-        if (countryCode === "VN") {
-          return victimCountry === "vietnam" || 
-                 victimCountry === "việt nam" || 
-                 victimCountry === "viet nam" || 
-                 victimCountry === "vn";
-        }
-        return victimCountry === countryCode.toLowerCase();
-      });
-      
-      console.log(`Using mock fallback data for ${countryCode}, found ${fallbackData.length} victims`);
-      return fallbackData;
+      // Return empty array as last resort
+      return [];
     }
   }
 };

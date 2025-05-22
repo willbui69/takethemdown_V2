@@ -2,7 +2,7 @@
 import { RansomwareVictim, RansomwareGroup, RansomwareStat } from "@/types/ransomware";
 
 // Re-export from individual modules
-export { useMockData, checkApiAvailability } from "./api/apiUtils";
+export { checkApiAvailability } from "./api/apiUtils";
 export { 
   fetchAllVictims, 
   fetchVictimsByGroup, 

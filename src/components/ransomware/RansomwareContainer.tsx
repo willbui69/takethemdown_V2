@@ -24,10 +24,12 @@ export const useRansomwareData = () => {
       const isAvailable = await checkApiAvailability();
       
       if (!isAvailable) {
-        setError("API hiện không khả dụng. Đang sử dụng dữ liệu mẫu.");
+        setError("API hiện không khả dụng. Vui lòng thử lại sau.");
         toast.warning("API không khả dụng", {
-          description: "Đang sử dụng dữ liệu mẫu thay thế."
+          description: "Không thể tải dữ liệu hiện tại, vui lòng thử lại sau."
         });
+        setLoading(false);
+        return;
       }
       
       // Using Promise.allSettled to continue even if one promise fails
