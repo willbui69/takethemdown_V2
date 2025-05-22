@@ -3,7 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VictimsTable } from "@/components/ransomware/VictimsTable";
 import { RansomwareVictim } from "@/types/ransomware";
 import { Bug, AlertTriangle } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
+import { fetchVictimsByCountry } from "@/services/ransomwareAPI";
 
 interface VictimsDataTabsProps {
   victims: RansomwareVictim[];
@@ -18,20 +19,28 @@ export const VictimsDataTabs = ({
   loading,
   error
 }: VictimsDataTabsProps) => {
+  const [vietnamVictims, setVietnamVictims] = useState<RansomwareVictim[]>([]);
+  const [loadingVietnam, setLoadingVietnam] = useState(false);
+  const [vietnamError, setVietnamError] = useState<string | null>(null);
   
-  // Filter victims to find those located in Vietnam
-  const vietnamVictims = useMemo(() => {
-    return victims.filter(victim => {
-      if (!victim.country) return false;
-      
-      // Case-insensitive check for "Vietnam" in the country field
-      const countryLower = victim.country.toLowerCase();
-      return countryLower === "vietnam" || 
-             countryLower === "việt nam" || 
-             countryLower === "viet nam" || 
-             countryLower === "vn";
-    });
-  }, [victims]);
+  useEffect(() => {
+    const loadVietnamVictims = async () => {
+      try {
+        setLoadingVietnam(true);
+        setVietnamError(null);
+        const data = await fetchVictimsByCountry("VN");
+        console.log("Fetched Vietnam victims:", data);
+        setVietnamVictims(data);
+      } catch (err) {
+        console.error("Error fetching Vietnam victims:", err);
+        setVietnamError("Không thể tải dữ liệu nạn nhân tại Việt Nam");
+      } finally {
+        setLoadingVietnam(false);
+      }
+    };
+    
+    loadVietnamVictims();
+  }, []);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -73,12 +82,12 @@ export const VictimsDataTabs = ({
           )}
         </TabsContent>
         <TabsContent value="vietnam" className="pt-4">
-          {error ? (
+          {vietnamError || error ? (
             <div className="text-center py-8 text-amber-500 flex flex-col items-center gap-2">
               <Bug className="h-10 w-10" />
-              {error}
+              {vietnamError || error}
             </div>
-          ) : vietnamVictims.length === 0 && !loading ? (
+          ) : vietnamVictims.length === 0 && !loadingVietnam ? (
             <div className="text-center py-8 text-amber-500 flex flex-col items-center gap-2">
               <AlertTriangle className="h-10 w-10" />
               Không tìm thấy nạn nhân tại Việt Nam
@@ -86,7 +95,7 @@ export const VictimsDataTabs = ({
           ) : (
             <VictimsTable 
               victims={vietnamVictims} 
-              loading={loading} 
+              loading={loadingVietnam} 
             />
           )}
         </TabsContent>

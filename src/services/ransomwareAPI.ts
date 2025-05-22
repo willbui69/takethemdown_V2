@@ -7,6 +7,7 @@ export {
   fetchAllVictims, 
   fetchVictimsByGroup, 
   fetchVictimCountForGroup, 
-  fetchRecentVictims 
+  fetchRecentVictims,
+  fetchVictimsByCountry 
 } from "./api/victimsApi";
 export { fetchGroups, fetchStats } from "./api/groupsApi";

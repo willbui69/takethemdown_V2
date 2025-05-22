@@ -1,4 +1,3 @@
-
 import { RansomwareVictim } from "@/types/ransomware";
 import { mockVictims, mockRecentVictims } from "@/data/mockRansomwareData";
 import { callEdgeFunction, useMockData, handleApiError } from "./apiUtils";
@@ -108,6 +107,47 @@ export const fetchRecentVictims = async (): Promise<RansomwareVictim[]> => {
       if (!victim.published) return false;
       const publishDate = new Date(victim.published);
       return publishDate >= oneDayAgo;
+    });
+  }
+};
+
+// Added new function to fetch victims by country code
+export const fetchVictimsByCountry = async (countryCode: string): Promise<RansomwareVictim[]> => {
+  if (useMockData) {
+    console.log(`Using mock victim data for country ${countryCode}`);
+    // Filter mock data for country
+    return mockVictims.filter(v => {
+      if (!v.country) return false;
+      const victimCountry = v.country.toLowerCase();
+      if (countryCode === "VN") {
+        return victimCountry === "vietnam" || 
+               victimCountry === "việt nam" || 
+               victimCountry === "viet nam" || 
+               victimCountry === "vn";
+      }
+      return victimCountry === countryCode.toLowerCase();
+    });
+  }
+  
+  try {
+    // Call the country-specific endpoint
+    console.log(`Fetching victims for country ${countryCode} from /countryvictims endpoint`);
+    const data = await callEdgeFunction(`/countryvictims/${countryCode}`);
+    return normalizeVictimData(data);
+  } catch (error) {
+    handleApiError(`Failed to fetch victims for country ${countryCode}:`, `Could not fetch ${countryCode} victim data`);
+    
+    // Fallback to filtered mock data
+    return mockVictims.filter(v => {
+      if (!v.country) return false;
+      const victimCountry = v.country.toLowerCase();
+      if (countryCode === "VN") {
+        return victimCountry === "vietnam" || 
+               victimCountry === "việt nam" || 
+               victimCountry === "viet nam" || 
+               victimCountry === "vn";
+      }
+      return victimCountry === countryCode.toLowerCase();
     });
   }
 };
