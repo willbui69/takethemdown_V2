@@ -155,6 +155,31 @@ export const fetchVictimsByGroup = async (group: string): Promise<RansomwareVict
   }
 };
 
+// This method will fetch victim counts directly from the groupvictims endpoint
+export const fetchVictimCountForGroup = async (groupName: string): Promise<number> => {
+  if (useMockData) {
+    console.log(`Using mock victim count data for group ${groupName}`);
+    const mockGroupVictims = mockVictims.filter(v => v.group_name === groupName);
+    return mockGroupVictims.length;
+  }
+  
+  try {
+    console.log(`Fetching victim count for group ${groupName} from /groupvictims endpoint`);
+    const data = await callEdgeFunction(`/groupvictims/${groupName}`);
+    
+    if (!Array.isArray(data)) {
+      console.error(`Invalid response format for group ${groupName} victims:`, data);
+      return 0;
+    }
+    
+    console.log(`Received ${data.length} victims for group ${groupName}`);
+    return data.length;
+  } catch (error) {
+    console.error(`Failed to fetch victim count for group ${groupName}:`, error);
+    return 0;
+  }
+};
+
 export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
   if (useMockData) {
     console.log("Using mock group data");
@@ -164,39 +189,13 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
   try {
     const data = await callEdgeFunction('/groups');
     
-    // Process the data to ensure we extract proper count values
+    // Process the groups but defer victim count to the separate API call
     const processedGroups = data.map((group: any) => {
-      // Extract count from various possible locations in the API response
-      let victimCount = 0;
-      
-      // Based on the Edge Function logs, we know that group.locations is available
-      if (Array.isArray(group.locations)) {
-        victimCount = group.locations.length;
-      }
-      // The API might include count directly
-      else if (typeof group.count === 'number') {
-        victimCount = group.count;
-      } 
-      // Or it might be in victim_count
-      else if (typeof group.victim_count === 'number') {
-        victimCount = group.victim_count;
-      }
-      // It could also be in the victims array length
-      else if (Array.isArray(group.victims)) {
-        victimCount = group.victims.length;
-      }
-      // Or in posts array length
-      else if (Array.isArray(group.posts)) {
-        victimCount = group.posts.length;
-      }
-      
-      console.log(`Group ${group.name}: extracted count = ${victimCount}, has locations: ${Array.isArray(group.locations)}, locations length: ${Array.isArray(group.locations) ? group.locations.length : 'N/A'}`);
-      
       return {
         name: group.name,
-        active: group.parser || false, // Based on Edge Function logs, parser seems to be the active flag
+        active: group.parser || false,
         url: group.url || "",
-        count: victimCount
+        count: 0 // Initialize with 0, will fetch actual counts separately
       };
     });
     
@@ -211,7 +210,7 @@ export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
   }
 };
 
-// We'll derive stats directly from the groups data since the /stats endpoint isn't working
+// We'll derive stats by fetching victim counts for each group
 export const fetchStats = async (): Promise<RansomwareStat[]> => {
   if (useMockData) {
     console.log("Using mock stats data");
@@ -219,20 +218,21 @@ export const fetchStats = async (): Promise<RansomwareStat[]> => {
   }
   
   try {
-    // From the Edge Function logs, we see the /stats endpoint is blocked
-    // So we'll derive stats directly from the groups data
-    console.log("Stats endpoint seems to be blocked, deriving from groups data");
+    console.log("Fetching groups to derive stats from victim counts");
     const groups = await fetchGroups();
     
-    // Convert group data to stats format
-    const derivedStats: RansomwareStat[] = groups.map((group) => {
+    // For each group, fetch the actual victim count from the dedicated endpoint
+    const statsPromises = groups.map(async (group) => {
+      const victimCount = await fetchVictimCountForGroup(group.name);
       return {
         group: group.name,
-        count: group.count
+        count: victimCount
       };
     });
     
-    console.log("Derived stats from groups:", derivedStats.slice(0, 5));
+    const derivedStats = await Promise.all(statsPromises);
+    
+    console.log("Derived stats with actual victim counts:", derivedStats.slice(0, 5));
     return derivedStats;
   } catch (error) {
     console.error("Failed to fetch stats:", error);

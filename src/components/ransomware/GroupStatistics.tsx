@@ -37,30 +37,17 @@ export const GroupStatistics = () => {
         console.log("Fetched groups data:", groupsData.slice(0, 5));
         setGroups(groupsData);
         
-        // Derive initial stats from groups data to ensure we have something to display
-        const initialStats: RansomwareStat[] = groupsData.map((group: RansomwareGroup) => ({
-          group: group.name,
-          count: typeof group.count === 'number' ? group.count : 0
+        // Fetch stats data which now calls /groupvictims/<group_name> for each group
+        const statsData = await fetchStats();
+        console.log("Fetched stats data with actual victim counts:", statsData.slice(0, 5));
+        
+        // Ensure we have proper count values
+        const processedStats = statsData.map((stat: RansomwareStat) => ({
+          ...stat,
+          count: typeof stat.count === 'number' ? stat.count : 0
         }));
         
-        try {
-          // Then try to fetch dedicated stats if available
-          const statsData = await fetchStats();
-          console.log("Fetched stats data:", statsData.slice(0, 5));
-          
-          // Ensure we have proper count values
-          const processedStats = statsData.map((stat: RansomwareStat) => ({
-            ...stat,
-            count: typeof stat.count === 'number' ? stat.count : 0
-          }));
-          
-          setStats(processedStats);
-        } catch (statsError) {
-          console.error("Error fetching stats:", statsError);
-          // Fall back to the derived stats from groups
-          console.log("Using derived stats from groups");
-          setStats(initialStats);
-        }
+        setStats(processedStats);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Không thể tải dữ liệu nhóm ransomware");
