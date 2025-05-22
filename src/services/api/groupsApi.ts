@@ -1,7 +1,7 @@
 
 import { RansomwareGroup, RansomwareStat } from "@/types/ransomware";
 import { callEdgeFunction, handleApiError } from "./apiUtils";
-import { fetchVictimCountForGroup } from "./victimsApi";
+import { fetchVictimCountForGroup } from "./victims";
 
 export const fetchGroups = async (): Promise<RansomwareGroup[]> => {
   try {
