@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import RootLayout from "@/components/layout/RootLayout";
 import { SubscriptionProvider } from "@/context/SubscriptionContext";
@@ -11,6 +10,7 @@ import { VictimsDataTabs } from "@/components/ransomware/VictimsDataTabs";
 import { DataInfoSection } from "@/components/ransomware/DataInfoSection";
 
 const RansomwareMonitor = () => {
+  // Keep the state but set default to false and don't provide UI to change it
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const { 
     victims, 
