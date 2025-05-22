@@ -30,10 +30,23 @@ export const VictimsDataTabs = ({
         setLoadingVietnam(true);
         setVietnamError(null);
         const data = await fetchVictimsByCountry("VN");
-        console.log("Fetched Vietnam victims:", data);
+        console.log("Fetched Vietnam victims data:", data);
         
-        // Filter out entries with "Unknown" victim_name if desired
-        const filteredData = data.filter(victim => victim.victim_name && victim.victim_name !== "Unknown");
+        // Validate the data before using it
+        if (!Array.isArray(data)) {
+          console.error("Invalid Vietnam victims data format:", data);
+          setVietnamError("Dữ liệu nạn nhân không đúng định dạng");
+          return;
+        }
+        
+        // Filter out entries with empty or "Unknown" victim_name 
+        const filteredData = data.filter(victim => 
+          victim.victim_name && 
+          victim.victim_name !== "Unknown" && 
+          victim.victim_name.trim() !== ""
+        );
+        
+        console.log(`Vietnam victims: Total ${data.length}, After filtering ${filteredData.length}`);
         
         if (filteredData.length === 0 && data.length > 0) {
           // If we filtered everything out but had data, use original data

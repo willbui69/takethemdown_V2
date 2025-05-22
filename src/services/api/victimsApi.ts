@@ -132,21 +132,38 @@ export const fetchVictimsByCountry = async (countryCode: string): Promise<Ransom
   
   try {
     // Call the country-specific endpoint
-    console.log(`Fetching victims for country ${countryCode} from /countryvictims endpoint`);
+    console.log(`Fetching victims for country ${countryCode} from /countryvictims/${countryCode} endpoint`);
     const data = await callEdgeFunction(`/countryvictims/${countryCode}`);
     
-    if (!Array.isArray(data) || data.length === 0) {
-      console.warn(`No data returned for country ${countryCode} or invalid response format`);
+    if (!Array.isArray(data)) {
+      console.error(`Invalid response format from /countryvictims/${countryCode}:`, data);
+      throw new Error(`Invalid data format from countryvictims/${countryCode}`);
+    }
+    
+    if (data.length === 0) {
+      console.warn(`No data returned for country ${countryCode}`);
     } else {
       console.log(`Received ${data.length} victims for country ${countryCode}`);
-      // Log a sample of the first victim data
+      // Log the raw structure of the first few victims
       if (data.length > 0) {
-        console.log("Sample victim data structure:", JSON.stringify(data[0], null, 2));
+        console.log(`Sample victim data structure (first ${Math.min(3, data.length)} items):`, 
+          data.slice(0, 3).map(v => JSON.stringify(v, null, 2)));
+        
+        // Check for common fields to help diagnose mapping issues
+        const fields = new Set();
+        data.slice(0, 10).forEach(item => {
+          Object.keys(item).forEach(key => fields.add(key));
+        });
+        console.log(`Fields found in country victims data:`, Array.from(fields));
       }
     }
     
-    return normalizeVictimData(data);
+    const normalizedData = normalizeVictimData(data);
+    console.log(`Normalized ${normalizedData.length} victims for country ${countryCode}`);
+    
+    return normalizedData;
   } catch (error) {
+    console.error(`Failed to fetch victims for country ${countryCode}:`, error);
     handleApiError(`Failed to fetch victims for country ${countryCode}:`, `Could not fetch ${countryCode} victim data`);
     
     // Fallback to filtered mock data with improved matching
