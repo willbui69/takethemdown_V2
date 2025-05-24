@@ -6,7 +6,7 @@ const API_BASE_URL = "https://api.ransomware.live/v2";
 // Enhanced CORS and Security Headers
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-requested-with",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Content-Type": "application/json",
   // Security headers
@@ -96,125 +96,139 @@ setInterval(() => {
 }, 60000); // Clean up every minute
 
 serve(async (req) => {
-  // Handle OPTIONS requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-  
-  // Only allow GET requests
-  if (req.method !== "GET") {
-    console.error("Non-GET request attempted:", req.method);
-    return new Response(
-      JSON.stringify({ error: "Only GET requests are allowed" }), 
-      { status: 405, headers: corsHeaders }
-    );
-  }
-
-  // Get client IP for rate limiting
-  const clientIP = req.headers.get("x-forwarded-for") || 
-                   req.headers.get("x-real-ip") || 
-                   "unknown";
-
-  // Check rate limit
-  if (!checkRateLimit(clientIP)) {
-    console.error("Rate limit exceeded for IP:", clientIP);
-    return new Response(
-      JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), 
-      { status: 429, headers: corsHeaders }
-    );
-  }
-
-  const url = new URL(req.url);
-  const path = url.pathname.replace(/^\/ransomware-proxy/, "");
-  const query = url.search;
-
-  // Enhanced path validation
-  if (!ALLOWED_ENDPOINTS.some(pattern => pattern.test(path))) {
-    console.error("Blocked path:", path);
-    return new Response(
-      JSON.stringify({ error: "Endpoint not allowed" }), 
-      { status: 404, headers: corsHeaders }
-    );
-  }
-
-  // Additional input validation based on endpoint type
-  const pathParts = path.split('/').filter(Boolean);
-  
-  if (pathParts.length >= 2) {
-    // Validate country codes
-    if ((pathParts[0] === 'countrycyberattacks' || pathParts[0] === 'countryvictims' || pathParts[0] === 'certs') && 
-        pathParts[1] && !validateCountryCode(pathParts[1])) {
-      console.error("Invalid country code:", pathParts[1]);
+  try {
+    // Handle OPTIONS requests
+    if (req.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
+    }
+    
+    // Only allow GET requests
+    if (req.method !== "GET") {
+      console.error("Non-GET request attempted:", req.method);
       return new Response(
-        JSON.stringify({ error: "Invalid country code format" }), 
-        { status: 400, headers: corsHeaders }
+        JSON.stringify({ error: "Only GET requests are allowed" }), 
+        { status: 405, headers: corsHeaders }
       );
     }
-    
-    // Validate group names
-    if ((pathParts[0] === 'group' || pathParts[0] === 'groupvictims' || pathParts[0] === 'yara') && 
-        pathParts[1] && !validateGroupName(pathParts[1])) {
-      console.error("Invalid group name:", pathParts[1]);
+
+    // Get client IP for rate limiting - be more flexible with IP detection
+    const clientIP = req.headers.get("x-forwarded-for")?.split(',')[0]?.trim() || 
+                     req.headers.get("x-real-ip") || 
+                     req.headers.get("cf-connecting-ip") ||
+                     "unknown";
+
+    // Check rate limit
+    if (!checkRateLimit(clientIP)) {
+      console.error("Rate limit exceeded for IP:", clientIP.substring(0, 10) + "...");
       return new Response(
-        JSON.stringify({ error: "Invalid group name format" }), 
-        { status: 400, headers: corsHeaders }
+        JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), 
+        { status: 429, headers: corsHeaders }
       );
     }
-    
-    // Validate search terms
-    if (pathParts[0] === 'searchvictims' && pathParts[1] && !validateSearchTerm(pathParts[1])) {
-      console.error("Invalid search term:", pathParts[1]);
+
+    const url = new URL(req.url);
+    const path = url.pathname.replace(/^\/ransomware-proxy/, "");
+    const query = url.search;
+
+    console.log("Processing request for path:", path);
+
+    // Enhanced path validation
+    if (!ALLOWED_ENDPOINTS.some(pattern => pattern.test(path))) {
+      console.error("Blocked path:", path);
       return new Response(
-        JSON.stringify({ error: "Invalid search term format" }), 
-        { status: 400, headers: corsHeaders }
+        JSON.stringify({ error: "Endpoint not allowed" }), 
+        { status: 404, headers: corsHeaders }
       );
     }
+
+    // Additional input validation based on endpoint type
+    const pathParts = path.split('/').filter(Boolean);
     
-    // Validate year/month for victims endpoint
-    if (pathParts[0] === 'victims' && pathParts.length === 3) {
-      if (!validateYearMonth(pathParts[1], pathParts[2])) {
-        console.error("Invalid year/month:", pathParts[1], pathParts[2]);
-        return new Response(
-          JSON.stringify({ error: "Invalid year/month format" }), 
-          { status: 400, headers: corsHeaders }
-        );
-      }
-    }
-    
-    // Validate sector names with optional country code
-    if (pathParts[0] === 'sectorvictims') {
-      if (pathParts[1] && !/^[a-zA-Z0-9\s_-]{1,50}$/.test(pathParts[1])) {
-        console.error("Invalid sector name:", pathParts[1]);
-        return new Response(
-          JSON.stringify({ error: "Invalid sector name format" }), 
-          { status: 400, headers: corsHeaders }
-        );
-      }
-      if (pathParts[2] && !validateCountryCode(pathParts[2])) {
-        console.error("Invalid country code in sector endpoint:", pathParts[2]);
+    if (pathParts.length >= 2) {
+      // Validate country codes
+      if ((pathParts[0] === 'countrycyberattacks' || pathParts[0] === 'countryvictims' || pathParts[0] === 'certs') && 
+          pathParts[1] && !validateCountryCode(pathParts[1])) {
+        console.error("Invalid country code:", pathParts[1]);
         return new Response(
           JSON.stringify({ error: "Invalid country code format" }), 
           { status: 400, headers: corsHeaders }
         );
       }
+      
+      // Validate group names
+      if ((pathParts[0] === 'group' || pathParts[0] === 'groupvictims' || pathParts[0] === 'yara') && 
+          pathParts[1] && !validateGroupName(pathParts[1])) {
+        console.error("Invalid group name:", pathParts[1]);
+        return new Response(
+          JSON.stringify({ error: "Invalid group name format" }), 
+          { status: 400, headers: corsHeaders }
+        );
+      }
+      
+      // Validate search terms
+      if (pathParts[0] === 'searchvictims' && pathParts[1] && !validateSearchTerm(pathParts[1])) {
+        console.error("Invalid search term:", pathParts[1]);
+        return new Response(
+          JSON.stringify({ error: "Invalid search term format" }), 
+          { status: 400, headers: corsHeaders }
+        );
+      }
+      
+      // Validate year/month for victims endpoint
+      if (pathParts[0] === 'victims' && pathParts.length === 3) {
+        if (!validateYearMonth(pathParts[1], pathParts[2])) {
+          console.error("Invalid year/month:", pathParts[1], pathParts[2]);
+          return new Response(
+            JSON.stringify({ error: "Invalid year/month format" }), 
+            { status: 400, headers: corsHeaders }
+          );
+        }
+      }
+      
+      // Validate sector names with optional country code
+      if (pathParts[0] === 'sectorvictims') {
+        if (pathParts[1] && !/^[a-zA-Z0-9\s_-]{1,50}$/.test(pathParts[1])) {
+          console.error("Invalid sector name:", pathParts[1]);
+          return new Response(
+            JSON.stringify({ error: "Invalid sector name format" }), 
+            { status: 400, headers: corsHeaders }
+          );
+        }
+        if (pathParts[2] && !validateCountryCode(pathParts[2])) {
+          console.error("Invalid country code in sector endpoint:", pathParts[2]);
+          return new Response(
+            JSON.stringify({ error: "Invalid country code format" }), 
+            { status: 400, headers: corsHeaders }
+          );
+        }
+      }
     }
-  }
 
-  const target = `${API_BASE_URL}${path}${query}`;
-  console.log("Proxy →", target, "from IP:", clientIP);
+    const target = `${API_BASE_URL}${path}${query}`;
+    console.log("Proxy →", target, "from IP:", clientIP.substring(0, 10) + "...");
 
-  try {
     // Add timeout to prevent hanging requests
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
     
     const apiRes = await fetch(target, { 
-      headers: { "User-Agent": "RansomwareMonitor/1.0" },
+      headers: { 
+        "User-Agent": "RansomwareMonitor/1.0",
+        "Accept": "application/json"
+      },
       signal: controller.signal
     });
     
     clearTimeout(timeoutId);
     
+    if (!apiRes.ok) {
+      console.error("API response not OK:", apiRes.status, apiRes.statusText);
+      return new Response(
+        JSON.stringify({ error: `Upstream API error: ${apiRes.status}` }), 
+        { status: apiRes.status, headers: corsHeaders }
+      );
+    }
+
     const contentType = apiRes.headers.get("content-type") || "";
 
     if (!contentType.includes("application/json")) {
@@ -278,14 +292,14 @@ serve(async (req) => {
   } catch (err) {
     // Enhanced error handling
     if (err.name === 'AbortError') {
-      console.error("Request timeout for:", target);
+      console.error("Request timeout for:", req.url);
       return new Response(
         JSON.stringify({ error: "Request timeout" }), 
         { status: 504, headers: corsHeaders }
       );
     }
     
-    console.error("Proxy error:", err.message);
+    console.error("Proxy error:", err.message, err.stack);
     return new Response(
       JSON.stringify({ error: "Internal server error" }), 
       { status: 500, headers: corsHeaders }
