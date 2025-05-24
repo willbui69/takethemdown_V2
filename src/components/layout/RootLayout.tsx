@@ -65,6 +65,12 @@ const RootLayout = ({ children }: RootLayoutProps) => {
             >
               Ransomware
             </Link>
+            <Link 
+              to="/investigation" 
+              className="text-gray-700 hover:text-security font-medium transition-colors"
+            >
+              Điều tra
+            </Link>
             <button 
               onClick={() => scrollToSection("contact")} 
               className="bg-security text-white px-4 py-2 rounded-md hover:bg-security-light transition-colors"

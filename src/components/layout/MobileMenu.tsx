@@ -99,6 +99,24 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               </Link>
             </li>
             <li>
+              <Link
+                to="/ransomware"
+                className="block py-2 text-gray-700 hover:text-security font-medium"
+                onClick={onClose}
+              >
+                Ransomware
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/investigation"
+                className="block py-2 text-gray-700 hover:text-security font-medium"
+                onClick={onClose}
+              >
+                Điều tra
+              </Link>
+            </li>
+            <li>
               <button 
                 className="block w-full text-left py-2 text-gray-700 hover:text-security font-medium"
                 onClick={() => scrollToSection("contact")}

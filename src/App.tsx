@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,7 @@ import RansomwareMonitor from "./pages/RansomwareMonitor";
 import SubscriptionManage from "./pages/SubscriptionManage";
 import UnsubscribePage from "./pages/UnsubscribePage";
 import ScrollToTop from "./components/utils/ScrollToTop";
+import Investigation from "./pages/Investigation";
 
 console.log('App.tsx: Loading App component');
 
@@ -47,6 +47,7 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/reporting" element={<ReportingResources />} />
               <Route path="/ransomware" element={<RansomwareMonitor />} />
+              <Route path="/investigation" element={<Investigation />} />
               <Route path="/subscription" element={<SubscriptionManage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
