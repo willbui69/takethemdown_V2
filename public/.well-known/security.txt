@@ -1,0 +1,7 @@
+
+Contact: mailto:lienhe@takethemdown.com.vn
+Expires: 2025-12-31T23:59:59.000Z
+Acknowledgments: https://takethemdown.com.vn
+Preferred-Languages: vi, en
+Canonical: https://takethemdown.com.vn/.well-known/security.txt
+Policy: https://takethemdown.com.vn
