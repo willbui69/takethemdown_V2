@@ -7,6 +7,7 @@ import { Subscription, FetchHistory } from "@/types/ransomware";
 import { fetchAllVictims } from "@/services/ransomwareAPI";
 import { toast } from "sonner";
 import { DatabaseBackup, FileSearch, Bug } from "lucide-react";
+import { ClearDataButton } from "./ClearDataButton";
 
 export const AdminPanel = () => {
   const { subscriptions } = useSubscription();
@@ -104,6 +105,9 @@ export const AdminPanel = () => {
     <div className="space-y-8">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-xl font-semibold mb-4">Điều Khiển Quản Trị</h3>
+        
+        <ClearDataButton />
+        
         <Button 
           onClick={triggerFetch} 
           disabled={fetching}
