@@ -110,9 +110,9 @@ serve(async (req) => {
 
     const emailContent = generateWelcomeEmailContent(countries, unsubscribe_token);
 
-    // Use the default Resend sender address for better deliverability
+    // Now use your verified domain
     const emailResult = await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: "TakeThemDown Alert <noreply@takethemdown.com.vn>",
       to: [email],
       subject: "Chào mừng đến với Dịch vụ Cảnh báo Ransomware TakeThemDown",
       html: emailContent,
