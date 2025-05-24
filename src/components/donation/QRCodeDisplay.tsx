@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
 import { Copy, Download } from "lucide-react";
 
@@ -13,12 +12,14 @@ interface QRCodeDisplayProps {
 const QRCodeDisplay = ({ paymentMethod, amount, onBack }: QRCodeDisplayProps) => {
   const [qrCodeDataURL, setQrCodeDataURL] = useState<string>("");
   const [paymentInfo, setPaymentInfo] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     generateQRCode();
   }, [paymentMethod, amount]);
 
   const generateQRCode = async () => {
+    setIsLoading(true);
     let qrData = "";
     let info = "";
 
@@ -43,7 +44,9 @@ const QRCodeDisplay = ({ paymentMethod, amount, onBack }: QRCodeDisplayProps) =>
     setPaymentInfo(info);
 
     try {
-      const qrCodeURL = await QRCode.toDataURL(qrData, {
+      // Dynamically import qrcode to avoid build issues
+      const QRCode = await import('qrcode');
+      const qrCodeURL = await QRCode.default.toDataURL(qrData, {
         width: 256,
         margin: 2,
         color: {
@@ -54,15 +57,24 @@ const QRCodeDisplay = ({ paymentMethod, amount, onBack }: QRCodeDisplayProps) =>
       setQrCodeDataURL(qrCodeURL);
     } catch (error) {
       console.error("Error generating QR code:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(paymentInfo);
-    alert("Đã sao chép thông tin thanh toán!");
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(paymentInfo);
+      alert("Đã sao chép thông tin thanh toán!");
+    } catch (error) {
+      console.error("Failed to copy to clipboard:", error);
+      alert("Không thể sao chép. Vui lòng copy thủ công.");
+    }
   };
 
   const downloadQR = () => {
+    if (!qrCodeDataURL) return;
+    
     const link = document.createElement("a");
     link.download = `${paymentMethod}-QR-${amount}VND.png`;
     link.href = qrCodeDataURL;
@@ -92,11 +104,15 @@ const QRCodeDisplay = ({ paymentMethod, amount, onBack }: QRCodeDisplayProps) =>
       {/* QR Code */}
       <div className="flex justify-center">
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-          {qrCodeDataURL ? (
+          {isLoading ? (
+            <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+              <span className="text-gray-500">Đang tạo mã QR...</span>
+            </div>
+          ) : qrCodeDataURL ? (
             <img src={qrCodeDataURL} alt="QR Code" className="w-64 h-64" />
           ) : (
             <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-              <span className="text-gray-500">Đang tạo mã QR...</span>
+              <span className="text-gray-500">Không thể tạo mã QR</span>
             </div>
           )}
         </div>
@@ -125,7 +141,7 @@ const QRCodeDisplay = ({ paymentMethod, amount, onBack }: QRCodeDisplayProps) =>
             onClick={downloadQR}
             variant="outline"
             className="flex-1"
-            disabled={!qrCodeDataURL}
+            disabled={!qrCodeDataURL || isLoading}
           >
             <Download className="h-4 w-4 mr-2" />
             Tải mã QR
