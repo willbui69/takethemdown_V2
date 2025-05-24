@@ -3,6 +3,7 @@ import { createContext, useState, useContext, ReactNode, useEffect } from 'react
 import { toast } from '@/components/ui/sonner';
 import { Subscription } from '@/types/ransomware';
 import { fetchAllVictims } from '@/services/ransomwareAPI';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SubscriptionContextType {
   subscriptions: Subscription[];
@@ -30,176 +31,241 @@ interface SubscriptionProviderProps {
 export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(false);
+  const [lastProcessedTime, setLastProcessedTime] = useState<string>(localStorage.getItem('lastProcessedTime') || new Date().toISOString());
+
+  // Check for rate limiting (max 3 attempts per email per 24 hours)
+  const checkRateLimit = async (email: string): Promise<boolean> => {
+    const { data, error } = await supabase
+      .from('subscription_attempts')
+      .select('id')
+      .eq('email', email)
+      .gte('attempted_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+    if (error) {
+      console.error('Error checking rate limit:', error);
+      return true; // Allow on error
+    }
+
+    return data.length < 3;
+  };
+
+  // Log subscription attempt
+  const logSubscriptionAttempt = async (email: string) => {
+    await supabase
+      .from('subscription_attempts')
+      .insert({ email });
+  };
+
+  // Check for new victims and send notifications
+  const checkAndNotifyNewVictims = async () => {
+    try {
+      console.log("Checking for new ransomware victims...");
+      
+      // Get all active subscriptions
+      const { data: activeSubscriptions, error: subsError } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('is_active', true);
+
+      if (subsError || !activeSubscriptions || activeSubscriptions.length === 0) {
+        console.log("No active subscriptions found");
+        return;
+      }
+
+      // Fetch latest victims
+      const allVictims = await fetchAllVictims();
+      
+      // Filter victims discovered after last processed time
+      const newVictims = allVictims.filter(victim => {
+        const victimDate = new Date(victim.discovered || victim.published || victim.attackdate || '');
+        const lastProcessed = new Date(lastProcessedTime);
+        return victimDate > lastProcessed;
+      });
+
+      if (newVictims.length === 0) {
+        console.log("No new victims found");
+        return;
+      }
+
+      console.log(`Found ${newVictims.length} new victims, sending notifications...`);
+
+      // Send notifications to each subscriber
+      for (const subscription of activeSubscriptions) {
+        let relevantVictims = newVictims;
+        
+        // Filter by countries if specified
+        if (subscription.countries && subscription.countries.length > 0) {
+          relevantVictims = newVictims.filter(victim => 
+            subscription.countries!.includes(victim.country || "Unknown")
+          );
+        }
+
+        if (relevantVictims.length > 0) {
+          try {
+            const response = await fetch(`${supabase.supabaseUrl}/functions/v1/send-notification-email`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabase.supabaseKey}`,
+              },
+              body: JSON.stringify({
+                subscription_id: subscription.id,
+                email: subscription.email,
+                victims: relevantVictims,
+                countries: subscription.countries
+              }),
+            });
+
+            if (response.ok) {
+              console.log(`Notification sent to ${subscription.email} for ${relevantVictims.length} victims`);
+            } else {
+              console.error(`Failed to send notification to ${subscription.email}`);
+            }
+          } catch (error) {
+            console.error(`Error sending notification to ${subscription.email}:`, error);
+          }
+        }
+      }
+
+      // Update last processed time
+      const newLastProcessedTime = new Date().toISOString();
+      setLastProcessedTime(newLastProcessedTime);
+      localStorage.setItem('lastProcessedTime', newLastProcessedTime);
+
+    } catch (error) {
+      console.error("Error in checkAndNotifyNewVictims:", error);
+    }
+  };
 
   // Set up data refresh every 4 hours
   useEffect(() => {
-    // Immediately fetch data when component mounts
-    fetchRansomwareData();
+    // Check immediately on mount
+    checkAndNotifyNewVictims();
     
-    // Set up interval for every 4 hours (4 * 60 * 60 * 1000 = 14400000 ms)
-    const intervalId = setInterval(fetchRansomwareData, 14400000);
+    // Set up interval for every 4 hours
+    const intervalId = setInterval(checkAndNotifyNewVictims, 4 * 60 * 60 * 1000);
     
-    // Clean up the interval when component unmounts
     return () => clearInterval(intervalId);
-  }, []);
+  }, [lastProcessedTime]);
 
-  const fetchRansomwareData = async () => {
-    try {
-      console.log("Fetching ransomware data for scheduled 4-hour update...");
-      const victims = await fetchAllVictims();
-      console.log(`Fetched ${victims.length} victims in scheduled update`);
-      
-      // Here you would process the data and send notifications to subscribers
-      // based on their country preferences
-      notifySubscribers(victims);
-    } catch (error) {
-      console.error("Error in scheduled data update:", error);
-    }
-  };
-
-  // In a real implementation, this would send actual emails
-  const notifySubscribers = (victims: any[]) => {
-    if (subscriptions.length === 0) return;
-    
-    console.log(`Processing notifications for ${subscriptions.length} subscribers`);
-    
-    subscriptions.forEach(sub => {
-      if (!sub.verified) return;
-      
-      // Filter victims based on subscriber's country preferences
-      let relevantVictims = victims;
-      if (sub.countries && sub.countries.length > 0) {
-        relevantVictims = victims.filter(victim => 
-          sub.countries!.includes(victim.country || "Unknown")
-        );
-      }
-      
-      if (relevantVictims.length > 0) {
-        console.log(`Would send notification to ${sub.email} for ${relevantVictims.length} victims`);
-        // In a real app, this would make an API call to send an email
-      }
-    });
-  };
-
-  // Helper function to get a verification link for a specific email
-  const getVerificationLink = (email: string): string | undefined => {
-    const subscription = subscriptions.find(sub => sub.email === email && !sub.verified);
-    if (subscription && subscription.verificationToken) {
-      // Generate the verification URL that would be in the email
-      return `${window.location.origin}/subscription?verify=${subscription.verificationToken}`;
-    }
-    return undefined;
-  };
-
-  // In a real implementation, these would interact with a backend
   const addSubscription = async (email: string, countries: string[] | null) => {
     try {
       setLoading(true);
-      // Mock API call - in real app this would be a fetch to backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newSubscription: Subscription = {
-        id: Date.now().toString(),
-        email,
-        verified: false,
-        createdAt: new Date().toISOString(),
-        verificationToken: `verify-${Math.random().toString(36).substring(2, 15)}`,
-        unsubscribeToken: `unsub-${Math.random().toString(36).substring(2, 15)}`,
-        countries: countries || undefined,
-      };
-      
-      setSubscriptions(prev => [...prev, newSubscription]);
-      
-      // Demo notification with link
-      const verificationLink = `${window.location.origin}/subscription?verify=${newSubscription.verificationToken}`;
-      toast.success("Xác thực email đã được gửi!", {
-        description: "Đây là phiên bản demo. Trong ứng dụng thực tế, email xác thực sẽ được gửi.",
-        action: {
-          label: "Xác thực ngay",
-          onClick: () => {
-            window.open(verificationLink, "_blank");
-          }
+
+      // Check rate limiting
+      const withinLimit = await checkRateLimit(email);
+      if (!withinLimit) {
+        toast.error("Đã đạt giới hạn đăng ký", {
+          description: "Bạn chỉ có thể thử đăng ký tối đa 3 lần trong 24 giờ."
+        });
+        return;
+      }
+
+      // Log the attempt
+      await logSubscriptionAttempt(email);
+
+      // Check if email already exists
+      const { data: existing } = await supabase
+        .from('subscriptions')
+        .select('id, is_active')
+        .eq('email', email)
+        .single();
+
+      if (existing) {
+        if (existing.is_active) {
+          toast.error("Email đã được đăng ký", {
+            description: "Email này đã được đăng ký để nhận thông báo."
+          });
+          return;
+        } else {
+          // Reactivate subscription
+          const { error: updateError } = await supabase
+            .from('subscriptions')
+            .update({ 
+              is_active: true, 
+              countries: countries,
+              updated_at: new Date().toISOString() 
+            })
+            .eq('id', existing.id);
+
+          if (updateError) throw updateError;
+
+          toast.success("Đăng ký đã được kích hoạt lại!");
+          return;
         }
+      }
+
+      // Create new subscription
+      const { data: newSubscription, error } = await supabase
+        .from('subscriptions')
+        .insert({
+          email,
+          countries: countries || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Send welcome email
+      const welcomeResponse = await fetch(`${supabase.supabaseUrl}/functions/v1/send-welcome-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.supabaseKey}`,
+        },
+        body: JSON.stringify({
+          email,
+          countries: countries || undefined,
+          unsubscribe_token: newSubscription.unsubscribe_token
+        }),
       });
-      
-      // In a real app, we'd send a verification email here
-      console.log(`Verification email sent to ${email} with token ${newSubscription.verificationToken}`);
-      
+
+      if (!welcomeResponse.ok) {
+        console.error('Failed to send welcome email');
+      }
+
+      toast.success("Đăng ký thành công!", {
+        description: "Bạn sẽ nhận được email xác nhận và thông báo khi có nạn nhân mới."
+      });
+
+      // Update local state
+      setSubscriptions(prev => [...prev, {
+        id: newSubscription.id,
+        email: newSubscription.email,
+        verified: true, // No verification needed per requirements
+        createdAt: newSubscription.created_at,
+        countries: newSubscription.countries || undefined,
+        unsubscribeToken: newSubscription.unsubscribe_token,
+      }]);
+
     } catch (error) {
       console.error("Failed to add subscription:", error);
-      toast.error("Không thể đăng ký. Vui lòng thử lại sau.");
+      toast.error("Không thể đăng ký", {
+        description: "Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại sau."
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  // These functions are kept for compatibility but not used in new flow
   const verifySubscription = async (token: string): Promise<boolean> => {
-    try {
-      setLoading(true);
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      let verified = false;
-      
-      setSubscriptions(prev => 
-        prev.map(sub => {
-          if (sub.verificationToken === token) {
-            verified = true;
-            return { ...sub, verified: true, verificationToken: undefined };
-          }
-          return sub;
-        })
-      );
-      
-      if (verified) {
-        toast.success("Đăng ký đã được xác thực thành công!");
-      } else {
-        toast.error("Mã xác thực không hợp lệ.");
-      }
-      
-      return verified;
-    } catch (error) {
-      console.error("Failed to verify subscription:", error);
-      toast.error("Không thể xác thực đăng ký. Vui lòng thử lại sau.");
-      return false;
-    } finally {
-      setLoading(false);
-    }
+    return true; // No verification needed
   };
 
   const unsubscribe = async (token: string): Promise<boolean> => {
     try {
-      setLoading(true);
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      let unsubscribed = false;
-      
-      setSubscriptions(prev => {
-        const filtered = prev.filter(sub => {
-          if (sub.unsubscribeToken === token) {
-            unsubscribed = true;
-            return false;
-          }
-          return true;
-        });
-        return filtered;
-      });
-      
-      if (unsubscribed) {
-        toast.success("Bạn đã hủy đăng ký thành công.");
-      } else {
-        toast.error("Mã hủy đăng ký không hợp lệ.");
-      }
-      
-      return unsubscribed;
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/unsubscribe?token=${token}`);
+      return response.ok;
     } catch (error) {
       console.error("Failed to unsubscribe:", error);
-      toast.error("Không thể hủy đăng ký. Vui lòng thử lại sau.");
       return false;
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const getVerificationLink = (email: string): string | undefined => {
+    return undefined; // No verification needed
   };
 
   const value = {

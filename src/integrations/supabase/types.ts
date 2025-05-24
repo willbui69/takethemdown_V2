@@ -9,13 +9,95 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      notification_history: {
+        Row: {
+          id: string
+          sent_at: string
+          subscription_id: string | null
+          victim_data: Json
+        }
+        Insert: {
+          id?: string
+          sent_at?: string
+          subscription_id?: string | null
+          victim_data: Json
+        }
+        Update: {
+          id?: string
+          sent_at?: string
+          subscription_id?: string | null
+          victim_data?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_history_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_attempts: {
+        Row: {
+          attempted_at: string
+          email: string
+          id: string
+          ip_address: string | null
+        }
+        Insert: {
+          attempted_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+        }
+        Update: {
+          attempted_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          countries: string[] | null
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          unsubscribe_token: string
+          updated_at: string
+        }
+        Insert: {
+          countries?: string[] | null
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          unsubscribe_token?: string
+          updated_at?: string
+        }
+        Update: {
+          countries?: string[] | null
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          unsubscribe_token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_old_subscription_attempts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,8 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Mail, ExternalLink } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Mail, Shield, Clock, Globe } from 'lucide-react';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Vui lòng nhập địa chỉ email hợp lệ' }),
@@ -21,18 +20,17 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-// Sample list of countries - in a real app, this would come from the API
+// Updated list of countries in Vietnamese
 const countries = [
-  'Hoa Kỳ', 'Anh', 'Canada', 'Úc', 
-  'Đức', 'Pháp', 'Ý', 'Tây Ban Nha', 'Brazil', 'Ấn Độ',
-  'Nhật Bản', 'Hàn Quốc', 'Trung Quốc', 'Nga', 'Nam Phi', 'Việt Nam'
+  'Hoa Kỳ', 'Anh', 'Canada', 'Úc', 'Đức', 'Pháp', 'Ý', 'Tây Ban Nha', 
+  'Brazil', 'Ấn Độ', 'Nhật Bản', 'Hàn Quốc', 'Trung Quốc', 'Nga', 
+  'Nam Phi', 'Việt Nam', 'Thái Lan', 'Malaysia', 'Singapore', 'Indonesia'
 ];
 
 export const SubscriptionForm = () => {
-  const { addSubscription, loading, getVerificationLink } = useSubscription();
+  const { addSubscription, loading } = useSubscription();
   const [submitted, setSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState<string>('');
-  const [verificationLink, setVerificationLink] = useState<string | undefined>();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -53,42 +51,57 @@ export const SubscriptionForm = () => {
     );
     setSubmitted(true);
     form.reset();
-    
-    // Give the subscription system time to update
-    setTimeout(() => {
-      const link = getVerificationLink(values.email);
-      setVerificationLink(link);
-    }, 100);
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold mb-4">Đăng Ký Thông Báo Ransomware</h3>
+    <div className="p-6 bg-white rounded-lg shadow-md border">
+      <div className="flex items-center gap-2 mb-4">
+        <Shield className="h-6 w-6 text-red-600" />
+        <h3 className="text-xl font-semibold">Đăng Ký Thông Báo Ransomware</h3>
+      </div>
       
       {submitted ? (
-        <div className="text-center py-4">
-          <p className="text-green-600 mb-2">Cảm ơn bạn đã đăng ký!</p>
-          <p className="text-gray-600 mb-4">Vui lòng kiểm tra email của bạn để xác nhận đăng ký.</p>
+        <div className="text-center py-6">
+          <div className="mb-4">
+            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+              <Mail className="h-6 w-6 text-green-600" />
+            </div>
+            <h4 className="text-lg font-semibold text-green-700 mb-2">Đăng Ký Thành Công!</h4>
+            <p className="text-gray-600 mb-4">
+              Cảm ơn bạn đã đăng ký dịch vụ cảnh báo ransomware của chúng tôi.
+            </p>
+          </div>
           
-          {verificationLink && (
-            <Alert className="mb-4 bg-blue-50">
-              <AlertDescription className="text-sm">
-                <span className="font-semibold block mb-2">Chú ý: Đây là phiên bản demo</span>
-                Trong ứng dụng thực tế, một email xác thực sẽ được gửi đến {submittedEmail}. Để mô phỏng việc xác thực, bạn có thể sử dụng liên kết dưới đây:
-                <Button 
-                  variant="link" 
-                  className="flex items-center gap-1 mt-2 mx-auto text-blue-600"
-                  onClick={() => window.open(verificationLink, "_blank")}
-                >
-                  Xác Thực Email <ExternalLink className="h-3 w-3" />
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <Mail className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-blue-900 mb-1">Email xác nhận đã được gửi</p>
+                <p className="text-sm text-blue-700">
+                  Một email xác nhận đã được gửi đến <strong>{submittedEmail}</strong>. 
+                  Bạn sẽ bắt đầu nhận thông báo khi có nạn nhân ransomware mới được phát hiện.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <Clock className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-amber-900 mb-1">Thông tin quan trọng</p>
+                <ul className="text-sm text-amber-700 space-y-1">
+                  <li>• Hệ thống kiểm tra nạn nhân mới mỗi 4 giờ</li>
+                  <li>• Thông báo được gửi ngay khi phát hiện</li>
+                  <li>• Bạn có thể hủy đăng ký bất cứ lúc nào</li>
+                </ul>
+              </div>
+            </div>
+          </div>
           
           <Button 
             variant="outline" 
-            className="mt-2"
+            className="mt-4"
             onClick={() => setSubmitted(false)}
           >
             Đăng ký email khác
@@ -96,18 +109,18 @@ export const SubscriptionForm = () => {
         </div>
       ) : (
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Địa chỉ email</FormLabel>
+                  <FormLabel>Địa chỉ email *</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input 
-                        placeholder="example@example.com" 
+                        placeholder="example@company.com" 
                         type="email" 
                         className="pl-10"
                         {...field} 
@@ -124,20 +137,27 @@ export const SubscriptionForm = () => {
               name="notificationType"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>Tùy Chọn Thông Báo</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Phạm Vi Thông Báo
+                  </FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="flex flex-col space-y-1"
+                      className="flex flex-col space-y-2"
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="all" id="all" />
-                        <Label htmlFor="all">Tất cả quốc gia</Label>
+                        <Label htmlFor="all" className="cursor-pointer">
+                          Tất cả quốc gia (Khuyến nghị)
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="selected" id="selected" />
-                        <Label htmlFor="selected">Chỉ quốc gia đã chọn</Label>
+                        <Label htmlFor="selected" className="cursor-pointer">
+                          Chỉ quốc gia được chọn
+                        </Label>
                       </div>
                     </RadioGroup>
                   </FormControl>
@@ -152,8 +172,8 @@ export const SubscriptionForm = () => {
                 name="selectedCountries"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Chọn quốc gia</FormLabel>
-                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md">
+                    <FormLabel>Chọn quốc gia quan tâm</FormLabel>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-3 border rounded-md bg-gray-50">
                       {countries.map((country) => (
                         <FormField
                           key={country}
@@ -178,7 +198,7 @@ export const SubscriptionForm = () => {
                                     }}
                                   />
                                 </FormControl>
-                                <FormLabel className="text-sm font-normal">
+                                <FormLabel className="text-sm font-normal cursor-pointer">
                                   {country}
                                 </FormLabel>
                               </FormItem>
@@ -193,13 +213,21 @@ export const SubscriptionForm = () => {
               />
             )}
             
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700" disabled={loading}>
               {loading ? 'Đang đăng ký...' : 'Đăng Ký Nhận Thông Báo'}
             </Button>
-            <p className="text-sm text-gray-500 mt-2">
-              Chúng tôi sẽ gửi cho bạn thông báo khi phát hiện nạn nhân ransomware mới.
-              Bạn có thể hủy đăng ký bất cứ lúc nào.
-            </p>
+            
+            <div className="text-sm text-gray-500 space-y-2">
+              <p>
+                ✓ Miễn phí và không yêu cầu xác thực email
+              </p>
+              <p>
+                ✓ Thông báo ngay lập tức khi phát hiện nạn nhân mới
+              </p>
+              <p>
+                ✓ Bạn có thể hủy đăng ký bất cứ lúc nào qua link trong email
+              </p>
+            </div>
           </form>
         </Form>
       )}
