@@ -13,6 +13,7 @@ import SubscriptionManage from "./pages/SubscriptionManage";
 import UnsubscribePage from "./pages/UnsubscribePage";
 import ScrollToTop from "./components/utils/ScrollToTop";
 import Investigation from "./pages/Investigation";
+import Donation from "./pages/Donation";
 
 console.log('App.tsx: Loading App component');
 
@@ -50,6 +51,7 @@ const App = () => {
               <Route path="/investigation" element={<Investigation />} />
               <Route path="/subscription" element={<SubscriptionManage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
+              <Route path="/donation" element={<Donation />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
