@@ -114,7 +114,7 @@ serve(async (req) => {
     const emailResult = await resend.emails.send({
       from: "TakeThemDown Alert <noreply@takethemdown.com.vn>",
       to: [email],
-      subject: "Chào mừng đến với Dịch vụ Cảnh báo Ransomware TakeThemDown",
+      subject: "Chào mừng đến với Dịch vụ Cảnh báo Ransomware",
       html: emailContent,
     });
 
