@@ -8,6 +8,8 @@ import { VictimTableBody } from "./victims-table/VictimTableBody";
 import { ShowMoreButton } from "./victims-table/ShowMoreButton";
 import { useVictimTableState } from "./victims-table/useVictimTableState";
 
+const isDevelopment = import.meta.env.MODE === 'development';
+
 interface VictimsTableProps {
   victims: RansomwareVictim[];
   loading: boolean;
@@ -27,8 +29,10 @@ export const VictimsTable = ({ victims, loading }: VictimsTableProps) => {
     handleShowMore
   } = useVictimTableState(victims);
   
-  // Log some of the victim data for debugging
-  console.log("VictimsTable - First few victims:", victims.slice(0, 3));
+  // Log some of the victim data for debugging in development only
+  if (isDevelopment) {
+    console.log("VictimsTable - First few victims:", victims.slice(0, 3));
+  }
   
   return (
     <div className="space-y-4">

@@ -4,6 +4,8 @@ import { Subscription } from '@/types/ransomware';
 import { supabase } from '@/integrations/supabase/client';
 import { checkRateLimit, logSubscriptionAttempt } from '@/services/subscriptionService';
 
+const isDevelopment = import.meta.env.MODE === 'development';
+
 export const useSubscriptionOperations = (
   setSubscriptions: React.Dispatch<React.SetStateAction<Subscription[]>>,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>
@@ -11,7 +13,7 @@ export const useSubscriptionOperations = (
   const addSubscription = async (email: string, countries: string[] | null) => {
     try {
       setLoading(true);
-      console.log("📝 Starting subscription process for:", email);
+      if (isDevelopment) console.log("📝 Starting subscription process for:", email);
 
       // Check rate limiting
       const withinLimit = await checkRateLimit(email);
@@ -39,7 +41,7 @@ export const useSubscriptionOperations = (
           });
           return;
         } else {
-          console.log("♻️ Reactivating existing subscription for:", email);
+          if (isDevelopment) console.log("♻️ Reactivating existing subscription for:", email);
           // Reactivate subscription
           const { error: updateError } = await supabase
             .from('subscriptions')
@@ -58,7 +60,7 @@ export const useSubscriptionOperations = (
       }
 
       // Create new subscription
-      console.log("🆕 Creating new subscription for:", email);
+      if (isDevelopment) console.log("🆕 Creating new subscription for:", email);
       const { data: newSubscription, error } = await supabase
         .from('subscriptions')
         .insert({
@@ -69,10 +71,10 @@ export const useSubscriptionOperations = (
         .single();
 
       if (error) throw error;
-      console.log("✅ Subscription created successfully:", newSubscription.id);
+      if (isDevelopment) console.log("✅ Subscription created successfully:", newSubscription.id);
 
       // Send welcome email using Supabase functions
-      console.log("📧 Sending welcome email to:", email);
+      if (isDevelopment) console.log("📧 Sending welcome email to:", email);
       const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-welcome-email', {
         body: {
           email,
@@ -82,12 +84,12 @@ export const useSubscriptionOperations = (
       });
 
       if (emailError) {
-        console.error('❌ Failed to send welcome email:', emailError);
+        if (isDevelopment) console.error('❌ Failed to send welcome email:', emailError);
         toast.error("Đăng ký thành công nhưng không thể gửi email xác nhận", {
           description: "Bạn đã được đăng ký thành công nhưng có lỗi khi gửi email."
         });
       } else {
-        console.log("✅ Welcome email sent successfully:", emailResponse);
+        if (isDevelopment) console.log("✅ Welcome email sent successfully:", emailResponse);
         toast.success("Đăng ký thành công!", {
           description: "Bạn sẽ nhận được email xác nhận và thông báo khi có nạn nhân mới."
         });
@@ -104,7 +106,7 @@ export const useSubscriptionOperations = (
       }]);
 
     } catch (error) {
-      console.error("💥 Failed to add subscription:", error);
+      if (isDevelopment) console.error("💥 Failed to add subscription:", error);
       toast.error("Không thể đăng ký", {
         description: "Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại sau."
       });
@@ -125,7 +127,7 @@ export const useSubscriptionOperations = (
       });
       return !error;
     } catch (error) {
-      console.error("Failed to unsubscribe:", error);
+      if (isDevelopment) console.error("Failed to unsubscribe:", error);
       return false;
     }
   };

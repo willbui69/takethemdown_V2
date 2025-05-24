@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VictimsTable } from "@/components/ransomware/VictimsTable";
 import { RansomwareVictim } from "@/types/ransomware";
@@ -5,6 +6,8 @@ import { Bug, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchVictimsByCountry } from "@/services/ransomwareAPI";
 import { toast } from "sonner";
+
+const isDevelopment = import.meta.env.MODE === 'development';
 
 interface VictimsDataTabsProps {
   victims: RansomwareVictim[];
@@ -29,16 +32,16 @@ export const VictimsDataTabs = ({
         setLoadingVietnam(true);
         setVietnamError(null);
         
-        console.log("Fetching Vietnam victims data...");
+        if (isDevelopment) console.log("Fetching Vietnam victims data...");
         const data = await fetchVictimsByCountry("VN");
         
         if (!Array.isArray(data)) {
-          console.error("Invalid Vietnam victims data format:", data);
+          if (isDevelopment) console.error("Invalid Vietnam victims data format:", data);
           setVietnamError("Dữ liệu nạn nhân không đúng định dạng");
           return;
         }
         
-        console.log(`Retrieved ${data.length} Vietnam victims before filtering`);
+        if (isDevelopment) console.log(`Retrieved ${data.length} Vietnam victims before filtering`);
         
         // Only filter out completely invalid entries
         const filteredData = data.filter(victim => {
@@ -51,17 +54,19 @@ export const VictimsDataTabs = ({
                  name !== "Not Available";
         });
         
-        console.log(`Vietnam victims: Total ${data.length}, After filtering ${filteredData.length}`);
-        console.log("First 3 Vietnam victims after filtering:", filteredData.slice(0, 3));
+        if (isDevelopment) {
+          console.log(`Vietnam victims: Total ${data.length}, After filtering ${filteredData.length}`);
+          console.log("First 3 Vietnam victims after filtering:", filteredData.slice(0, 3));
+        }
         
         if (filteredData.length === 0) {
           // If we still don't have enough valid victims, use the unfiltered data as last resort
           if (data.length > 0) {
-            console.log("Using unfiltered data as last resort");
+            if (isDevelopment) console.log("Using unfiltered data as last resort");
             setVietnamVictims(data);
           } else {
             // Final fallback - search for Vietnam in the general victims list
-            console.log("No Vietnam victims found, searching in general list...");
+            if (isDevelopment) console.log("No Vietnam victims found, searching in general list...");
             const fallbackVietnamVictims = victims.filter(victim => {
               const country = (victim.country || "").toLowerCase();
               return country === "vietnam" || 
@@ -71,7 +76,7 @@ export const VictimsDataTabs = ({
             });
             
             if (fallbackVietnamVictims.length > 0) {
-              console.log(`Found ${fallbackVietnamVictims.length} Vietnam victims in general list`);
+              if (isDevelopment) console.log(`Found ${fallbackVietnamVictims.length} Vietnam victims in general list`);
               setVietnamVictims(fallbackVietnamVictims);
             } else {
               setVietnamVictims([]);
@@ -82,7 +87,7 @@ export const VictimsDataTabs = ({
           setVietnamVictims(filteredData);
         }
       } catch (err) {
-        console.error("Error fetching Vietnam victims:", err);
+        if (isDevelopment) console.error("Error fetching Vietnam victims:", err);
         setVietnamError("Không thể tải dữ liệu nạn nhân tại Việt Nam");
         toast.error("Không thể tải dữ liệu Việt Nam", {
           description: "Đã xảy ra lỗi khi tải dữ liệu nạn nhân tại Việt Nam."

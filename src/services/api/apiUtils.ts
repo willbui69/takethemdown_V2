@@ -3,23 +3,26 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeInput, ClientRateLimit } from "@/utils/security";
 
-// Base URL for the Edge Function
-export const EDGE_FUNCTION_URL = "https://euswzjdcxrnuupcyiddb.supabase.co/functions/v1/ransomware-proxy";
+// Use the Supabase client configuration instead of hardcoded values
+const SUPABASE_URL = "https://euswzjdcxrnuupcyiddb.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE";
 
-// Supabase anon key - this is public and safe to include in client-side code
-export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE";
+// Base URL for the Edge Function
+export const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/ransomware-proxy`;
 
 // Client-side rate limiting
 const rateLimit = new ClientRateLimit(50, 60000); // 50 requests per minute
 
+const isDevelopment = import.meta.env.MODE === 'development';
+
 export const checkApiAvailability = async (): Promise<boolean> => {
   try {
     if (!rateLimit.canMakeRequest()) {
-      console.warn("Rate limit exceeded on client side");
+      if (isDevelopment) console.warn("Rate limit exceeded on client side");
       return false;
     }
 
-    console.log("Checking API availability via Edge Function");
+    if (isDevelopment) console.log("Checking API availability via Edge Function");
     const response = await fetch(`${EDGE_FUNCTION_URL}/groups`, {
       method: 'GET',
       headers: {
@@ -29,14 +32,14 @@ export const checkApiAvailability = async (): Promise<boolean> => {
     });
 
     if (!response.ok) {
-      console.error("Edge Function returned status", response.status);
+      if (isDevelopment) console.error("Edge Function returned status", response.status);
       return false;
     }
 
-    console.log("Edge Function is available");
+    if (isDevelopment) console.log("Edge Function is available");
     return true;
   } catch (err) {
-    console.error("Error checking API availability:", err);
+    if (isDevelopment) console.error("Error checking API availability:", err);
     return false;
   }
 };
@@ -58,7 +61,7 @@ export const callEdgeFunction = async (endpoint: string) => {
       throw new Error('Invalid endpoint format');
     }
 
-    console.log(`Calling Edge Function with endpoint: ${sanitizedEndpoint}`);
+    if (isDevelopment) console.log(`Calling Edge Function with endpoint: ${sanitizedEndpoint}`);
     const response = await fetch(`${EDGE_FUNCTION_URL}${sanitizedEndpoint}`, {
       method: 'GET',
       headers: {
@@ -89,7 +92,7 @@ export const callEdgeFunction = async (endpoint: string) => {
 
     return data;
   } catch (error) {
-    console.error(`Error calling Edge Function with endpoint ${endpoint}:`, error);
+    if (isDevelopment) console.error(`Error calling Edge Function with endpoint ${endpoint}:`, error);
     throw error;
   }
 };
@@ -97,7 +100,7 @@ export const callEdgeFunction = async (endpoint: string) => {
 // Helper function to display error toast with better security
 export const handleApiError = (errorMsg: string, fallbackMsg: string) => {
   // Don't log sensitive information in production
-  if (process.env.NODE_ENV === 'development') {
+  if (isDevelopment) {
     console.error(errorMsg);
   }
   
