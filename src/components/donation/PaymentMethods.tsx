@@ -1,6 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Smartphone, CreditCard, Building } from "lucide-react";
+import { useState } from "react";
+import QRCodeDisplay from "./QRCodeDisplay";
 
 interface PaymentMethodsProps {
   finalAmount: number;
@@ -10,6 +12,22 @@ interface PaymentMethodsProps {
 }
 
 const PaymentMethods = ({ finalAmount, formatVND, onPaymentMethod, onBack }: PaymentMethodsProps) => {
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+
+  const handleMethodSelect = (method: string) => {
+    setSelectedMethod(method);
+  };
+
+  if (selectedMethod) {
+    return (
+      <QRCodeDisplay
+        paymentMethod={selectedMethod}
+        amount={finalAmount}
+        onBack={() => setSelectedMethod(null)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="text-center pb-4 border-b border-gray-200">
@@ -24,7 +42,7 @@ const PaymentMethods = ({ finalAmount, formatVND, onPaymentMethod, onBack }: Pay
       <div className="space-y-3">
         {/* Momo */}
         <button
-          onClick={() => onPaymentMethod("Momo")}
+          onClick={() => handleMethodSelect("Momo")}
           className="w-full p-4 border border-gray-200 rounded-lg hover:border-pink-500 hover:bg-pink-50 transition-colors flex items-center gap-3"
         >
           <div className="w-10 h-10 bg-pink-500 rounded-lg flex items-center justify-center">
@@ -38,7 +56,7 @@ const PaymentMethods = ({ finalAmount, formatVND, onPaymentMethod, onBack }: Pay
 
         {/* VNPay */}
         <button
-          onClick={() => onPaymentMethod("VNPay")}
+          onClick={() => handleMethodSelect("VNPay")}
           className="w-full p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors flex items-center gap-3"
         >
           <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
@@ -52,7 +70,7 @@ const PaymentMethods = ({ finalAmount, formatVND, onPaymentMethod, onBack }: Pay
 
         {/* Banking */}
         <button
-          onClick={() => onPaymentMethod("Chuyển khoản ngân hàng")}
+          onClick={() => handleMethodSelect("Chuyển khoản ngân hàng")}
           className="w-full p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors flex items-center gap-3"
         >
           <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
