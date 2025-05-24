@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import ReportingResources from "./pages/ReportingResources";
 import RansomwareMonitor from "./pages/RansomwareMonitor";
 import SubscriptionManage from "./pages/SubscriptionManage";
+import UnsubscribePage from "./pages/UnsubscribePage";
 import ScrollToTop from "./components/utils/ScrollToTop";
 
 // Move queryClient inside the App component to fix the hooks error
@@ -29,6 +30,7 @@ const App = () => {
             <Route path="/reporting" element={<ReportingResources />} />
             <Route path="/ransomware" element={<RansomwareMonitor />} />
             <Route path="/subscription" element={<SubscriptionManage />} />
+            <Route path="/unsubscribe" element={<UnsubscribePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
