@@ -13,9 +13,16 @@ const UnsubscribePage = () => {
   const [email, setEmail] = useState<string>("");
 
   useEffect(() => {
+    console.log("UnsubscribePage mounted");
+    console.log("Current location:", location);
+    console.log("Search params:", location.search);
+    
     const params = new URLSearchParams(location.search);
     const statusParam = params.get("status");
     const emailParam = params.get("email");
+    
+    console.log("Status param:", statusParam);
+    console.log("Email param:", emailParam);
     
     if (statusParam) {
       setStatus(statusParam as any);
