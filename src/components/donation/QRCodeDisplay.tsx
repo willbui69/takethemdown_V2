@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Download } from "lucide-react";
@@ -65,10 +64,10 @@ const QRCodeDisplay = ({ paymentMethod, amount, onBack }: QRCodeDisplayProps) =>
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(paymentInfo);
-      alert("Đã sao chép thông tin thanh toán!");
+      alert("Thông tin thanh toán đã được sao chép vào clipboard!");
     } catch (error) {
       console.error("Failed to copy to clipboard:", error);
-      alert("Không thể sao chép. Vui lòng copy thủ công.");
+      alert("Không thể sao chép thông tin. Vui lòng thử lại hoặc copy thủ công.");
     }
   };
 
