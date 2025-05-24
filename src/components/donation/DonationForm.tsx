@@ -9,7 +9,6 @@ const DonationForm = () => {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
-  const [donationType, setDonationType] = useState<"one-time" | "monthly">("one-time");
 
   const predefinedAmounts = [50000, 100000, 200000, 500000, 1000000, 2000000]; // VND amounts
   
@@ -29,14 +28,8 @@ const DonationForm = () => {
 
   const handlePaymentMethod = (method: string) => {
     const finalAmount = selectedAmount || (customAmount ? parseInt(customAmount) : 0);
-    const donationTypeText = donationType === "monthly" ? "hàng tháng" : "một lần";
-    console.log(`Processing ${donationType} donation of ${formatVND(finalAmount)} via ${method}`);
-    
-    if (donationType === "monthly") {
-      alert(`Tính năng quyên góp hàng tháng sẽ được tích hợp sớm. Hiện tại vui lòng chọn quyên góp một lần.`);
-    } else {
-      alert(`Chuyển hướng đến ${method} để thanh toán ${formatVND(finalAmount)}. Tính năng thanh toán sẽ được tích hợp sớm.`);
-    }
+    console.log(`Processing one-time donation of ${formatVND(finalAmount)} via ${method}`);
+    alert(`Chuyển hướng đến ${method} để thanh toán ${formatVND(finalAmount)}. Tính năng thanh toán sẽ được tích hợp sớm.`);
   };
 
   const finalAmount = selectedAmount || (customAmount ? parseInt(customAmount) : 0);
@@ -55,39 +48,10 @@ const DonationForm = () => {
       <CardContent className="space-y-6">
         {!showPaymentMethods ? (
           <>
-            {/* Donation Type Toggle */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Loại quyên góp:
-              </label>
-              <div className="flex rounded-lg border border-gray-200 p-1 bg-gray-50">
-                <button
-                  onClick={() => setDonationType("one-time")}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                    donationType === "one-time"
-                      ? "bg-white text-security border border-security/20 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  Một lần
-                </button>
-                <button
-                  onClick={() => setDonationType("monthly")}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                    donationType === "monthly"
-                      ? "bg-white text-security border border-security/20 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  Hàng tháng
-                </button>
-              </div>
-            </div>
-
             {/* Predefined amounts */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Chọn số tiền{donationType === "monthly" ? " hàng tháng" : ""}:
+                Chọn số tiền:
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {predefinedAmounts.map((amount) => (
@@ -104,7 +68,6 @@ const DonationForm = () => {
                     }`}
                   >
                     {formatVND(amount)}
-                    {donationType === "monthly" && <div className="text-xs text-gray-500 mt-1">/tháng</div>}
                   </button>
                 ))}
               </div>
@@ -113,7 +76,7 @@ const DonationForm = () => {
             {/* Custom amount */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Hoặc nhập số tiền khác{donationType === "monthly" ? " hàng tháng" : ""}:
+                Hoặc nhập số tiền khác:
               </label>
               <div className="relative">
                 <input
@@ -139,23 +102,10 @@ const DonationForm = () => {
             >
               <Heart className="mr-2 h-5 w-5" />
               {finalAmount > 0 
-                ? `Quyên góp ${formatVND(finalAmount)}${donationType === "monthly" ? "/tháng" : ""}` 
+                ? `Quyên góp ${formatVND(finalAmount)}` 
                 : "Quyên góp"
               }
             </Button>
-
-            {/* Monthly donation info */}
-            {donationType === "monthly" && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start gap-2">
-                  <Heart className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-blue-800">
-                    <p className="font-medium mb-1">Quyên góp hàng tháng</p>
-                    <p>Khoản quyên góp sẽ được tự động lặp lại hàng tháng. Bạn có thể hủy bất cứ lúc nào.</p>
-                  </div>
-                </div>
-              </div>
-            )}
           </>
         ) : (
           <PaymentMethods
