@@ -2,7 +2,6 @@
 import { toast } from '@/components/ui/sonner';
 import { Subscription } from '@/types/ransomware';
 import { supabase } from '@/integrations/supabase/client';
-import { SUPABASE_CONFIG } from '@/config/supabase';
 import { checkRateLimit, logSubscriptionAttempt } from '@/services/subscriptionService';
 
 export const useSubscriptionOperations = (
@@ -72,30 +71,27 @@ export const useSubscriptionOperations = (
       if (error) throw error;
       console.log("✅ Subscription created successfully:", newSubscription.id);
 
-      // Send welcome email
+      // Send welcome email using Supabase functions
       console.log("📧 Sending welcome email to:", email);
-      const welcomeResponse = await fetch(`${SUPABASE_CONFIG.URL}/functions/v1/send-welcome-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_CONFIG.ANON_KEY}`,
-        },
-        body: JSON.stringify({
+      const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-welcome-email', {
+        body: {
           email,
           countries: countries || undefined,
           unsubscribe_token: newSubscription.unsubscribe_token
-        }),
+        }
       });
 
-      if (!welcomeResponse.ok) {
-        console.error('❌ Failed to send welcome email');
+      if (emailError) {
+        console.error('❌ Failed to send welcome email:', emailError);
+        toast.error("Đăng ký thành công nhưng không thể gửi email xác nhận", {
+          description: "Bạn đã được đăng ký thành công nhưng có lỗi khi gửi email."
+        });
       } else {
-        console.log("✅ Welcome email sent successfully");
+        console.log("✅ Welcome email sent successfully:", emailResponse);
+        toast.success("Đăng ký thành công!", {
+          description: "Bạn sẽ nhận được email xác nhận và thông báo khi có nạn nhân mới."
+        });
       }
-
-      toast.success("Đăng ký thành công!", {
-        description: "Bạn sẽ nhận được email xác nhận và thông báo khi có nạn nhân mới."
-      });
 
       // Update local state
       setSubscriptions(prev => [...prev, {
@@ -124,8 +120,10 @@ export const useSubscriptionOperations = (
 
   const unsubscribe = async (token: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${SUPABASE_CONFIG.URL}/functions/v1/unsubscribe?token=${token}`);
-      return response.ok;
+      const { data, error } = await supabase.functions.invoke('unsubscribe', {
+        body: { token }
+      });
+      return !error;
     } catch (error) {
       console.error("Failed to unsubscribe:", error);
       return false;
