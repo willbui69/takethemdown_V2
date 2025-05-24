@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface QRCodeDisplayProps {
   paymentMethod: string;
@@ -12,6 +13,7 @@ const QRCodeDisplay = ({ paymentMethod, amount, onBack }: QRCodeDisplayProps) =>
   const [qrCodeDataURL, setQrCodeDataURL] = useState<string>("");
   const [paymentInfo, setPaymentInfo] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     generateQRCode();
@@ -64,10 +66,17 @@ const QRCodeDisplay = ({ paymentMethod, amount, onBack }: QRCodeDisplayProps) =>
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(paymentInfo);
-      alert("Thông tin thanh toán đã được sao chép vào clipboard!");
+      toast({
+        title: "Đã sao chép!",
+        description: "Thông tin thanh toán đã được sao chép vào clipboard",
+      });
     } catch (error) {
       console.error("Failed to copy to clipboard:", error);
-      alert("Không thể sao chép thông tin. Vui lòng thử lại hoặc copy thủ công.");
+      toast({
+        title: "Lỗi sao chép",
+        description: "Không thể sao chép thông tin. Vui lòng thử lại hoặc copy thủ công.",
+        variant: "destructive",
+      });
     }
   };
 
