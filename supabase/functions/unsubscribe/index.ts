@@ -20,8 +20,8 @@ serve(async (req) => {
     return new Response(`
       <html>
         <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-          <h1 style="color: #dc2626;">Invalid Request</h1>
-          <p>No unsubscribe token provided.</p>
+          <h1 style="color: #dc2626;">Yêu Cầu Không Hợp Lệ</h1>
+          <p>Không có mã hủy đăng ký được cung cấp.</p>
         </body>
       </html>
     `, {
@@ -47,8 +47,8 @@ serve(async (req) => {
       return new Response(`
         <html>
           <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-            <h1 style="color: #dc2626;">Invalid Token</h1>
-            <p>The unsubscribe token is invalid or has expired.</p>
+            <h1 style="color: #dc2626;">Mã Không Hợp Lệ</h1>
+            <p>Mã hủy đăng ký không hợp lệ hoặc đã hết hạn.</p>
           </body>
         </html>
       `, {
@@ -61,8 +61,8 @@ serve(async (req) => {
       return new Response(`
         <html>
           <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-            <h1 style="color: #059669;">Already Unsubscribed</h1>
-            <p>You have already unsubscribed from ransomware notifications.</p>
+            <h1 style="color: #059669;">Đã Hủy Đăng Ký</h1>
+            <p>Bạn đã hủy đăng ký nhận thông báo ransomware.</p>
             <p>Email: ${subscription.email}</p>
           </body>
         </html>
@@ -85,12 +85,12 @@ serve(async (req) => {
     return new Response(`
       <html>
         <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-          <h1 style="color: #059669;">Successfully Unsubscribed</h1>
-          <p>You have been successfully unsubscribed from ransomware notifications.</p>
+          <h1 style="color: #059669;">Hủy Đăng Ký Thành Công</h1>
+          <p>Bạn đã hủy đăng ký thành công khỏi dịch vụ thông báo ransomware.</p>
           <p>Email: ${subscription.email}</p>
-          <p>You will no longer receive alerts about new ransomware victims.</p>
+          <p>Bạn sẽ không còn nhận được cảnh báo về các nạn nhân ransomware mới.</p>
           <p style="margin-top: 30px;">
-            <a href="https://takethemdown.com.vn" style="color: #3b82f6;">Return to TakeThemDown</a>
+            <a href="https://takethemdown.com.vn" style="color: #3b82f6;">Quay lại TakeThemDown</a>
           </p>
         </body>
       </html>
@@ -100,13 +100,13 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error in unsubscribe function:", error);
+    console.error("Lỗi trong hàm unsubscribe:", error);
     return new Response(`
       <html>
         <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-          <h1 style="color: #dc2626;">Error</h1>
-          <p>An error occurred while processing your unsubscribe request.</p>
-          <p>Please try again later or contact support.</p>
+          <h1 style="color: #dc2626;">Lỗi</h1>
+          <p>Đã xảy ra lỗi khi xử lý yêu cầu hủy đăng ký của bạn.</p>
+          <p>Vui lòng thử lại sau hoặc liên hệ hỗ trợ.</p>
         </body>
       </html>
     `, {

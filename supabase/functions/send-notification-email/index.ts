@@ -20,16 +20,16 @@ interface NotificationRequest {
 
 const generateEmailContent = (victims: any[], countries?: string[]) => {
   const countryFilter = countries && countries.length > 0 
-    ? ` for countries: ${countries.join(', ')}`
+    ? ` cho các quốc gia: ${countries.join(', ')}`
     : '';
 
   const victimsList = victims.map(victim => `
     <tr style="border-bottom: 1px solid #eee;">
-      <td style="padding: 8px; font-weight: bold;">${victim.victim_name || victim.victim || 'Unknown'}</td>
-      <td style="padding: 8px;">${victim.group_name || victim.group || 'Unknown'}</td>
-      <td style="padding: 8px;">${victim.country || 'Unknown'}</td>
-      <td style="padding: 8px;">${victim.industry || 'Unknown'}</td>
-      <td style="padding: 8px;">${victim.published || victim.discovered || 'Unknown'}</td>
+      <td style="padding: 8px; font-weight: bold;">${victim.victim_name || victim.victim || 'Không rõ'}</td>
+      <td style="padding: 8px;">${victim.group_name || victim.group || 'Không rõ'}</td>
+      <td style="padding: 8px;">${victim.country || 'Không rõ'}</td>
+      <td style="padding: 8px;">${victim.industry || 'Không rõ'}</td>
+      <td style="padding: 8px;">${victim.published || victim.discovered || 'Không rõ'}</td>
     </tr>
   `).join('');
 
@@ -53,24 +53,24 @@ const generateEmailContent = (victims: any[], countries?: string[]) => {
       <body>
         <div class="container">
           <div class="header">
-            <h1 style="margin: 0;">🚨 New Ransomware Victim(s) Detected</h1>
+            <h1 style="margin: 0;">🚨 Phát Hiện Nạn Nhân Ransomware Mới</h1>
           </div>
           
           <div class="content">
             <div class="warning">
-              <strong>⚠️ Security Alert:</strong> ${victims.length} new ransomware victim(s) have been detected${countryFilter}.
+              <strong>⚠️ Cảnh Báo Bảo Mật:</strong> Đã phát hiện ${victims.length} nạn nhân ransomware mới${countryFilter}.
             </div>
             
-            <p>The following organizations have been identified as victims of ransomware attacks:</p>
+            <p>Các tổ chức sau đây đã được xác định là nạn nhân của các cuộc tấn công ransomware:</p>
             
             <table>
               <thead>
                 <tr>
-                  <th>Victim</th>
-                  <th>Ransomware Group</th>
-                  <th>Country</th>
-                  <th>Industry</th>
-                  <th>Date Published</th>
+                  <th>Nạn Nhân</th>
+                  <th>Nhóm Ransomware</th>
+                  <th>Quốc Gia</th>
+                  <th>Ngành</th>
+                  <th>Ngày Công Bố</th>
                 </tr>
               </thead>
               <tbody>
@@ -78,20 +78,21 @@ const generateEmailContent = (victims: any[], countries?: string[]) => {
               </tbody>
             </table>
             
-            <p><strong>Recommended Actions:</strong></p>
+            <p><strong>Các Hành Động Được Khuyến Nghị:</strong></p>
             <ul>
-              <li>Review your organization's security posture</li>
-              <li>Ensure backups are up to date and tested</li>
-              <li>Verify endpoint protection is active</li>
-              <li>Check for any indicators of compromise</li>
+              <li>Xem xét tình trạng bảo mật của tổ chức bạn</li>
+              <li>Đảm bảo các bản sao lưu được cập nhật và đã kiểm tra</li>
+              <li>Xác minh bảo vệ endpoint đang hoạt động</li>
+              <li>Kiểm tra bất kỳ dấu hiệu xâm phạm nào</li>
+              <li>Cập nhật các biện pháp bảo mật phòng ngừa</li>
             </ul>
             
-            <p><em>This notification was generated automatically by the TakeThemDown ransomware monitoring system.</em></p>
+            <p><em>Thông báo này được tạo tự động bởi hệ thống giám sát ransomware TakeThemDown.</em></p>
           </div>
           
           <div class="footer">
             <p style="margin: 0; text-align: center;">
-              <strong>TakeThemDown</strong> - Ransomware Monitoring & Incident Response
+              <strong>TakeThemDown</strong> - Giám Sát Ransomware & Ứng Phó Sự Cố
             </p>
           </div>
         </div>
@@ -106,7 +107,7 @@ serve(async (req) => {
   }
 
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+    return new Response(JSON.stringify({ error: "Phương thức không được phép" }), {
       status: 405,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -116,7 +117,7 @@ serve(async (req) => {
     const { subscription_id, email, victims, countries }: NotificationRequest = await req.json();
 
     if (!email || !victims || victims.length === 0) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+      return new Response(JSON.stringify({ error: "Thiếu các trường bắt buộc" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -127,13 +128,13 @@ serve(async (req) => {
     const emailResult = await resend.emails.send({
       from: "TakeThemDown <lienhe@takethemdown.com.vn>",
       to: [email],
-      subject: "New Ransomware Victim(s) Detected",
+      subject: "Phát Hiện Nạn Nhân Ransomware Mới",
       html: emailContent,
     });
 
     if (emailResult.error) {
-      console.error("Email sending failed:", emailResult.error);
-      return new Response(JSON.stringify({ error: "Failed to send email" }), {
+      console.error("Gửi email thất bại:", emailResult.error);
+      return new Response(JSON.stringify({ error: "Không thể gửi email" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -152,7 +153,7 @@ serve(async (req) => {
         victim_data: victims
       });
 
-    console.log(`Notification sent successfully to ${email}, email ID: ${emailResult.data?.id}`);
+    console.log(`Thông báo đã được gửi thành công đến ${email}, ID email: ${emailResult.data?.id}`);
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -164,8 +165,8 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error in send-notification-email function:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    console.error("Lỗi trong hàm send-notification-email:", error);
+    return new Response(JSON.stringify({ error: "Lỗi máy chủ nội bộ" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

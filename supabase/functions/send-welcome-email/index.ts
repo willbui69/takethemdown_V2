@@ -18,8 +18,8 @@ interface WelcomeEmailRequest {
 
 const generateWelcomeEmailContent = (countries?: string[], unsubscribe_token?: string) => {
   const countryText = countries && countries.length > 0 
-    ? ` for the following countries: ${countries.join(', ')}`
-    : ' for all countries';
+    ? ` cho các quốc gia: ${countries.join(', ')}`
+    : ' cho tất cả các quốc gia';
 
   const unsubscribeUrl = `${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/functions/v1/unsubscribe?token=${unsubscribe_token}`;
 
@@ -40,44 +40,44 @@ const generateWelcomeEmailContent = (countries?: string[], unsubscribe_token?: s
       <body>
         <div class="container">
           <div class="header">
-            <h1 style="margin: 0;">✅ Subscription Confirmed</h1>
+            <h1 style="margin: 0;">✅ Xác Nhận Đăng Ký</h1>
           </div>
           
           <div class="content">
-            <h2>Welcome to TakeThemDown Ransomware Alerts!</h2>
+            <h2>Chào mừng bạn đến với Dịch vụ Cảnh báo Ransomware TakeThemDown!</h2>
             
-            <p>Thank you for subscribing to our ransomware monitoring service. You will now receive notifications${countryText} when new ransomware victims are detected.</p>
+            <p>Cảm ơn bạn đã đăng ký dịch vụ giám sát ransomware của chúng tôi. Bạn sẽ nhận được thông báo${countryText} khi phát hiện các nạn nhân ransomware mới.</p>
             
             <div class="info-box">
-              <h3 style="margin-top: 0;">What to expect:</h3>
+              <h3 style="margin-top: 0;">Những gì bạn có thể mong đợi:</h3>
               <ul>
-                <li><strong>Real-time alerts:</strong> Immediate notifications when new victims are identified</li>
-                <li><strong>Comprehensive data:</strong> Victim details, ransomware groups, and attack information</li>
-                <li><strong>Regular updates:</strong> Our system checks for new victims every 4 hours</li>
-                <li><strong>Actionable insights:</strong> Security recommendations with each alert</li>
+                <li><strong>Cảnh báo thời gian thực:</strong> Thông báo ngay lập tức khi phát hiện nạn nhân mới</li>
+                <li><strong>Dữ liệu toàn diện:</strong> Chi tiết nạn nhân, nhóm ransomware và thông tin tấn công</li>
+                <li><strong>Cập nhật thường xuyên:</strong> Hệ thống kiểm tra nạn nhân mới mỗi 4 giờ</li>
+                <li><strong>Thông tin hữu ích:</strong> Khuyến nghị bảo mật kèm theo mỗi cảnh báo</li>
               </ul>
             </div>
             
-            <h3>Stay Protected:</h3>
-            <p>While you'll receive alerts about new victims, remember these key security practices:</p>
+            <h3>Giữ An Toàn:</h3>
+            <p>Trong khi bạn nhận được cảnh báo về các nạn nhân mới, hãy nhớ các biện pháp bảo mật chính sau:</p>
             <ul>
-              <li>Keep your systems and software updated</li>
-              <li>Maintain regular, tested backups</li>
-              <li>Use endpoint detection and response tools</li>
-              <li>Train your team on phishing awareness</li>
-              <li>Implement network segmentation</li>
+              <li>Giữ hệ thống và phần mềm luôn được cập nhật</li>
+              <li>Duy trì việc sao lưu thường xuyên và đã được kiểm tra</li>
+              <li>Sử dụng các công cụ phát hiện và phản ứng endpoint</li>
+              <li>Đào tạo nhóm của bạn về nhận biết phishing</li>
+              <li>Triển khai phân đoạn mạng</li>
             </ul>
             
-            <p><strong>Questions or feedback?</strong> Feel free to contact us at lienhe@takethemdown.com.vn</p>
+            <p><strong>Có câu hỏi hoặc góp ý?</strong> Vui lòng liên hệ với chúng tôi tại lienhe@takethemdown.com.vn</p>
             
             <div class="unsubscribe">
-              <p><a href="${unsubscribeUrl}">Unsubscribe from these notifications</a></p>
+              <p><a href="${unsubscribeUrl}">Hủy đăng ký nhận thông báo</a></p>
             </div>
           </div>
           
           <div class="footer">
             <p style="margin: 0; text-align: center;">
-              <strong>TakeThemDown</strong> - Protecting organizations from ransomware threats
+              <strong>TakeThemDown</strong> - Bảo vệ tổ chức khỏi các mối đe dọa ransomware
             </p>
           </div>
         </div>
@@ -92,7 +92,7 @@ serve(async (req) => {
   }
 
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+    return new Response(JSON.stringify({ error: "Phương thức không được phép" }), {
       status: 405,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -102,7 +102,7 @@ serve(async (req) => {
     const { email, countries, unsubscribe_token }: WelcomeEmailRequest = await req.json();
 
     if (!email) {
-      return new Response(JSON.stringify({ error: "Email is required" }), {
+      return new Response(JSON.stringify({ error: "Email là bắt buộc" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -113,19 +113,19 @@ serve(async (req) => {
     const emailResult = await resend.emails.send({
       from: "TakeThemDown <lienhe@takethemdown.com.vn>",
       to: [email],
-      subject: "Welcome to TakeThemDown Ransomware Alerts",
+      subject: "Chào mừng đến với Dịch vụ Cảnh báo Ransomware TakeThemDown",
       html: emailContent,
     });
 
     if (emailResult.error) {
-      console.error("Welcome email sending failed:", emailResult.error);
-      return new Response(JSON.stringify({ error: "Failed to send welcome email" }), {
+      console.error("Gửi email chào mừng thất bại:", emailResult.error);
+      return new Response(JSON.stringify({ error: "Không thể gửi email chào mừng" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log(`Welcome email sent successfully to ${email}, email ID: ${emailResult.data?.id}`);
+    console.log(`Email chào mừng đã được gửi thành công đến ${email}, ID email: ${emailResult.data?.id}`);
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -136,8 +136,8 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error in send-welcome-email function:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    console.error("Lỗi trong hàm send-welcome-email:", error);
+    return new Response(JSON.stringify({ error: "Lỗi máy chủ nội bộ" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
