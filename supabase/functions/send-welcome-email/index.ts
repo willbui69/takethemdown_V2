@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -44,7 +43,7 @@ const generateWelcomeEmailContent = (countries?: string[], unsubscribe_token?: s
           </div>
           
           <div class="content">
-            <h2>Chào mừng bạn đến với Dịch vụ Cảnh báo Ransomware TakeThemDown!</h2>
+            <h2>Chào mừng bạn đến với Dịch vụ Cảnh báo Ransomware!</h2>
             
             <p>Cảm ơn bạn đã đăng ký dịch vụ giám sát ransomware của chúng tôi. Bạn sẽ nhận được thông báo${countryText} khi phát hiện các nạn nhân ransomware mới.</p>
             
