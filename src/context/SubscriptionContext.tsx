@@ -63,7 +63,8 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
   // Check for new victims and send notifications
   const checkAndNotifyNewVictims = async () => {
     try {
-      console.log("Checking for new ransomware victims...");
+      console.log("🔔 Starting notification check process...");
+      console.log("📅 Last processed time:", lastProcessedTime);
       
       // Get all active subscriptions
       const { data: activeSubscriptions, error: subsError } = await supabase
@@ -71,40 +72,59 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
         .select('*')
         .eq('is_active', true);
 
-      if (subsError || !activeSubscriptions || activeSubscriptions.length === 0) {
-        console.log("No active subscriptions found");
+      if (subsError) {
+        console.error("❌ Error fetching subscriptions:", subsError);
         return;
       }
 
+      if (!activeSubscriptions || activeSubscriptions.length === 0) {
+        console.log("📭 No active subscriptions found");
+        return;
+      }
+
+      console.log(`📧 Found ${activeSubscriptions.length} active subscriptions`);
+
       // Fetch latest victims
+      console.log("🔍 Fetching latest victim data...");
       const allVictims = await fetchAllVictims();
+      console.log(`📊 Total victims fetched: ${allVictims.length}`);
       
       // Filter victims discovered after last processed time
+      const lastProcessed = new Date(lastProcessedTime);
+      console.log("⏰ Filtering victims discovered after:", lastProcessed.toISOString());
+      
       const newVictims = allVictims.filter(victim => {
         const victimDate = new Date(victim.discovered || victim.published || victim.attackdate || '');
-        const lastProcessed = new Date(lastProcessedTime);
         return victimDate > lastProcessed;
       });
 
+      console.log(`🆕 New victims found: ${newVictims.length}`);
+      
       if (newVictims.length === 0) {
-        console.log("No new victims found");
+        console.log("✅ No new victims to notify about");
         return;
       }
 
-      console.log(`Found ${newVictims.length} new victims, sending notifications...`);
+      console.log("📬 Processing notifications for each subscriber...");
 
       // Send notifications to each subscriber
       for (const subscription of activeSubscriptions) {
+        console.log(`📤 Processing subscription for: ${subscription.email}`);
+        
         let relevantVictims = newVictims;
         
         // Filter by countries if specified
         if (subscription.countries && subscription.countries.length > 0) {
+          const beforeFilter = relevantVictims.length;
           relevantVictims = newVictims.filter(victim => 
             subscription.countries!.includes(victim.country || "Unknown")
           );
+          console.log(`🌍 Country filter applied for ${subscription.email}: ${beforeFilter} → ${relevantVictims.length} victims`);
         }
 
         if (relevantVictims.length > 0) {
+          console.log(`📨 Sending notification to ${subscription.email} for ${relevantVictims.length} victims`);
+          
           try {
             const response = await fetch(`${SUPABASE_URL}/functions/v1/send-notification-email`, {
               method: 'POST',
@@ -120,41 +140,62 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
               }),
             });
 
+            const responseData = await response.text();
+            console.log(`📧 Email response for ${subscription.email}:`, {
+              status: response.status,
+              ok: response.ok,
+              data: responseData
+            });
+
             if (response.ok) {
-              console.log(`Notification sent to ${subscription.email} for ${relevantVictims.length} victims`);
+              console.log(`✅ Notification sent successfully to ${subscription.email}`);
             } else {
-              console.error(`Failed to send notification to ${subscription.email}`);
+              console.error(`❌ Failed to send notification to ${subscription.email}:`, responseData);
             }
           } catch (error) {
-            console.error(`Error sending notification to ${subscription.email}:`, error);
+            console.error(`💥 Error sending notification to ${subscription.email}:`, error);
           }
+        } else {
+          console.log(`⏭️ No relevant victims for ${subscription.email} (country filter applied)`);
         }
       }
 
       // Update last processed time
       const newLastProcessedTime = new Date().toISOString();
+      console.log("⏰ Updating last processed time to:", newLastProcessedTime);
       setLastProcessedTime(newLastProcessedTime);
       localStorage.setItem('lastProcessedTime', newLastProcessedTime);
 
+      console.log("🎉 Notification check process completed successfully");
+
     } catch (error) {
-      console.error("Error in checkAndNotifyNewVictims:", error);
+      console.error("💥 Error in checkAndNotifyNewVictims:", error);
     }
   };
 
   // Set up data refresh every 4 hours
   useEffect(() => {
+    console.log("🚀 Setting up notification system...");
+    
     // Check immediately on mount
     checkAndNotifyNewVictims();
     
     // Set up interval for every 4 hours
-    const intervalId = setInterval(checkAndNotifyNewVictims, 4 * 60 * 60 * 1000);
+    const intervalId = setInterval(() => {
+      console.log("⏰ Scheduled notification check triggered (4-hour interval)");
+      checkAndNotifyNewVictims();
+    }, 4 * 60 * 60 * 1000);
     
-    return () => clearInterval(intervalId);
+    return () => {
+      console.log("🛑 Cleaning up notification interval");
+      clearInterval(intervalId);
+    };
   }, [lastProcessedTime]);
 
   const addSubscription = async (email: string, countries: string[] | null) => {
     try {
       setLoading(true);
+      console.log("📝 Starting subscription process for:", email);
 
       // Check rate limiting
       const withinLimit = await checkRateLimit(email);
@@ -182,6 +223,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
           });
           return;
         } else {
+          console.log("♻️ Reactivating existing subscription for:", email);
           // Reactivate subscription
           const { error: updateError } = await supabase
             .from('subscriptions')
@@ -200,6 +242,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
       }
 
       // Create new subscription
+      console.log("🆕 Creating new subscription for:", email);
       const { data: newSubscription, error } = await supabase
         .from('subscriptions')
         .insert({
@@ -210,8 +253,10 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
         .single();
 
       if (error) throw error;
+      console.log("✅ Subscription created successfully:", newSubscription.id);
 
       // Send welcome email
+      console.log("📧 Sending welcome email to:", email);
       const welcomeResponse = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
         method: 'POST',
         headers: {
@@ -226,7 +271,9 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
       });
 
       if (!welcomeResponse.ok) {
-        console.error('Failed to send welcome email');
+        console.error('❌ Failed to send welcome email');
+      } else {
+        console.log("✅ Welcome email sent successfully");
       }
 
       toast.success("Đăng ký thành công!", {
@@ -243,8 +290,14 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
         unsubscribeToken: newSubscription.unsubscribe_token,
       }]);
 
+      // Trigger immediate notification check for new subscriber
+      console.log("🔔 Triggering immediate notification check for new subscriber");
+      setTimeout(() => {
+        checkAndNotifyNewVictims();
+      }, 2000); // Small delay to ensure subscription is fully processed
+
     } catch (error) {
-      console.error("Failed to add subscription:", error);
+      console.error("💥 Failed to add subscription:", error);
       toast.error("Không thể đăng ký", {
         description: "Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại sau."
       });
