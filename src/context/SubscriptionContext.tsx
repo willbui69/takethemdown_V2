@@ -16,6 +16,10 @@ interface SubscriptionContextType {
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
+// Supabase configuration constants
+const SUPABASE_URL = "https://euswzjdcxrnuupcyiddb.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3d6amRjeHJudXVwY3lpZGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NTE2MTIsImV4cCI6MjA2MzIyNzYxMn0.Yiy4i60R-1-K3HSwWAQSmPZ3FTLrq0Wd78s0yYRA8NE";
+
 export const useSubscription = () => {
   const context = useContext(SubscriptionContext);
   if (!context) {
@@ -102,11 +106,11 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
 
         if (relevantVictims.length > 0) {
           try {
-            const response = await fetch(`${supabase.supabaseUrl}/functions/v1/send-notification-email`, {
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/send-notification-email`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${supabase.supabaseKey}`,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
               },
               body: JSON.stringify({
                 subscription_id: subscription.id,
@@ -208,11 +212,11 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
       if (error) throw error;
 
       // Send welcome email
-      const welcomeResponse = await fetch(`${supabase.supabaseUrl}/functions/v1/send-welcome-email`, {
+      const welcomeResponse = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           email,
@@ -256,7 +260,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
 
   const unsubscribe = async (token: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/unsubscribe?token=${token}`);
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/unsubscribe?token=${token}`);
       return response.ok;
     } catch (error) {
       console.error("Failed to unsubscribe:", error);
