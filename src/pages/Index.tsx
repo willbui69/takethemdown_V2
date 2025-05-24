@@ -7,7 +7,11 @@ import ProcessSection from "@/components/sections/ProcessSection";
 import FaqSection from "@/components/sections/FaqSection";
 import ContactSection from "@/components/sections/ContactSection";
 
+console.log('Index.tsx: Loading Index page component');
+
 const Index = () => {
+  console.log('Index.tsx: Rendering Index page');
+  
   return (
     <RootLayout>
       <HeroSection />

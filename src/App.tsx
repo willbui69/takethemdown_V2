@@ -14,10 +14,26 @@ import SubscriptionManage from "./pages/SubscriptionManage";
 import UnsubscribePage from "./pages/UnsubscribePage";
 import ScrollToTop from "./components/utils/ScrollToTop";
 
+console.log('App.tsx: Loading App component');
+
 // Move queryClient inside the App component to fix the hooks error
 const App = () => {
+  console.log('App.tsx: Initializing App component');
+  
   // Create a new QueryClient for each App instance
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(() => {
+    console.log('App.tsx: Creating QueryClient');
+    return new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: 3,
+          staleTime: 1000 * 60 * 5, // 5 minutes
+        },
+      },
+    });
+  });
+
+  console.log('App.tsx: Rendering App with all providers');
 
   return (
     <ErrorBoundary>
