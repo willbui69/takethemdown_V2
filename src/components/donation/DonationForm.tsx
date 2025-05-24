@@ -10,7 +10,7 @@ const DonationForm = () => {
   const [customAmount, setCustomAmount] = useState("");
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
 
-  const predefinedAmounts = [50000, 100000, 200000, 500000, 1000000]; // VND amounts
+  const predefinedAmounts = [50000, 100000, 200000, 500000, 1000000, 2000000]; // VND amounts
   
   const formatVND = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
