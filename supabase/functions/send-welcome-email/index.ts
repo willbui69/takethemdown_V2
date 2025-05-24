@@ -110,8 +110,9 @@ serve(async (req) => {
 
     const emailContent = generateWelcomeEmailContent(countries, unsubscribe_token);
 
+    // Use the default Resend sender address for better deliverability
     const emailResult = await resend.emails.send({
-      from: "TakeThemDown <lienhe@takethemdown.com.vn>",
+      from: "onboarding@resend.dev",
       to: [email],
       subject: "Chào mừng đến với Dịch vụ Cảnh báo Ransomware TakeThemDown",
       html: emailContent,
@@ -119,7 +120,7 @@ serve(async (req) => {
 
     if (emailResult.error) {
       console.error("Gửi email chào mừng thất bại:", emailResult.error);
-      return new Response(JSON.stringify({ error: "Không thể gửi email chào mừng" }), {
+      return new Response(JSON.stringify({ error: "Không thể gửi email chào mừng", details: emailResult.error }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -137,7 +138,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Lỗi trong hàm send-welcome-email:", error);
-    return new Response(JSON.stringify({ error: "Lỗi máy chủ nội bộ" }), {
+    return new Response(JSON.stringify({ error: "Lỗi máy chủ nội bộ", details: error.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
