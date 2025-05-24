@@ -1,5 +1,5 @@
 
-import { Globe, UserX, Lock, Search, AlertTriangle } from "lucide-react";
+import { Globe, UserX, Lock, Search, AlertTriangle, FileSearch } from "lucide-react";
 import AnimatedElement from "../utils/AnimatedElement";
 
 const ServicesSection = () => {
@@ -53,10 +53,19 @@ const ServicesSection = () => {
           
           <AnimatedElement className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
             <AlertTriangle className="h-10 w-10 text-security mb-4" />
-            <h3 className="font-bold text-xl mb-2">Cảnh Báo & Điều Tra Ransomware</h3>
+            <h3 className="font-bold text-xl mb-2">Cảnh Báo Ransomware</h3>
             <p className="text-gray-600">
-              Theo dõi và cảnh báo về các nạn nhân ransomware mới, cung cấp dịch vụ 
-              điều tra và hỗ trợ khôi phục sau tấn công ransomware.
+              Theo dõi và cảnh báo về các nạn nhân ransomware mới, cung cấp thông tin 
+              cập nhật về các cuộc tấn công ransomware.
+            </p>
+          </AnimatedElement>
+
+          <AnimatedElement className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <FileSearch className="h-10 w-10 text-security mb-4" />
+            <h3 className="font-bold text-xl mb-2">Điều Tra</h3>
+            <p className="text-gray-600">
+              Dịch vụ điều tra chuyên sâu và hỗ trợ khôi phục sau tấn công ransomware, 
+              phân tích mối đe dọa mạng.
             </p>
           </AnimatedElement>
         </div>
